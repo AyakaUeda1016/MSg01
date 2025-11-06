@@ -26,6 +26,7 @@ SCENARIO = {
 client = OpenAI(api_key="タケチンセンのAPIキー")  # ← あなたのAPIキーを設定
 
 
+
 # ==== Whisper / openSMILE キャッシュ ====
 WHISPER = None
 SMILE = None
@@ -180,14 +181,16 @@ def main():
     log_dir = Path("logs"); log_dir.mkdir(exist_ok=True)
     log_path = log_dir / f"conversation_gpt_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-    # 会話履歴の最初にシナリオと導入会話を追加
     history = [f"シーン: {SCENARIO['scene']}", f"導入会話: {SCENARIO['start_message']}"]
     inappropriate = 0
+    turn = 0  
+
 
     print(f"🎙️ 会話開始: {SCENARIO['scene']}")
     print(f"\n🤖 AI: {SCENARIO['start_message']}")
 
-    for turn in range(5):
+    # 最大5ラリーはwhile turn < nで決めてください^o^
+    while turn < 5:
         print(f"\n=== 🔁 Turn {turn+1} ===")
         audio = record_until_silence()
         transcript = transcribe_whisper(audio)
@@ -196,28 +199,31 @@ def main():
 
         print(f"\n🧍あなた: {transcript}")
 
-        # 直近の履歴を参照用に整形
-        context = "\n".join(history[-6:])
+        context = "\n".join(history[-30:])
 
+      
         # 会話の流れとの関連性をチェック
         judgment = check_appropriateness(transcript, context, SCENARIO['scene'], SCENARIO['start_message'])
 
         if judgment == "無関係な発言":
             inappropriate += 1
-            reply = "⚠️ 無関係な発言です。言葉を選びましょう。"
+            reply = "⚠️ 無関係な発言です。もう一度言い直してください。"
             print(f"🤖 AI: {reply}")
-            if inappropriate >= 2:
+            if inappropriate >= 2: # 無関係カウントはif inappropriate >= nで決めてください^o^
                 print("🚫 会話終了: 無関係発言が多すぎます。")
                 break
-        else:
-            reply = generate_reply(transcript, context)
-            print(f"🤖 AI: {reply}")
+            continue
 
-        # 履歴更新＆ログ保存
+        # 関連している場合のみ turn を進める
+        reply = generate_reply(transcript, context)
+        print(f"🤖 AI: {reply}")
+        turn += 1
+
+        # 履歴とログ保存
         history += [f"あなた: {transcript}", f"AI: {reply}"]
         with open(log_path, "a", encoding="utf-8") as f:
             json.dump({
-                "turn": turn+1,
+                "turn": turn,
                 "timestamp": datetime.now().isoformat(),
                 "transcript": transcript,
                 "reply": reply,
@@ -234,5 +240,3 @@ def main():
     print("🎯 会話終了。")
 
 
-if __name__ == "__main__":
-    main()
