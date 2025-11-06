@@ -23,7 +23,8 @@ SCENARIO = {
 }
 
 # ==== OpenAI設定 ====
-client = OpenAI(api_key="タケチンセンAPIキー最強伝説")  # ← あなたのAPIキーを設定
+client = OpenAI(api_key="タケチンセンのAPIキー")  # ← あなたのAPIキーを設定
+
 
 
 # ==== Whisper / openSMILE キャッシュ ====
@@ -184,6 +185,7 @@ def main():
     inappropriate = 0
     turn = 0  
 
+
     print(f"🎙️ 会話開始: {SCENARIO['scene']}")
     print(f"\n🤖 AI: {SCENARIO['start_message']}")
 
@@ -198,6 +200,9 @@ def main():
         print(f"\n🧍あなた: {transcript}")
 
         context = "\n".join(history[-30:])
+
+      
+        # 会話の流れとの関連性をチェック
         judgment = check_appropriateness(transcript, context, SCENARIO['scene'], SCENARIO['start_message'])
 
         if judgment == "無関係な発言":
@@ -234,5 +239,4 @@ def main():
     print(f"\n💾 ログ保存: {log_path}")
     print("🎯 会話終了。")
 
-if __name__ == "__main__":
-    main()
+
