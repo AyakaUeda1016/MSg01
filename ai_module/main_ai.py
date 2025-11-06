@@ -239,4 +239,7 @@ def main():
     print(f"\n💾 ログ保存: {log_path}")
     print("🎯 会話終了。")
 
+if __name__ == "__main__":
+    main()
+
 
