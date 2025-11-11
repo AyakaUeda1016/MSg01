@@ -47,7 +47,7 @@ html, body {
     position: relative;
     display: flex;
     box-sizing: border-box;
-    padding: 40px 60px 80px;   /* 👈 여기! 아래 80px 정도로, 원래처럼 */
+    padding: 40px 60px 80px;   
     background-image: url("../images/mirai.png");
     background-size: cover;
     background-position: center center;
@@ -128,7 +128,6 @@ html, body {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 되돌아가기 버튼 – ki.png 사용 */
 .back-button {
     position: absolute;
     right: 5px;
@@ -154,7 +153,6 @@ html, body {
     color: #000;
 }
 
-/* 폭 좁을 때 간단히 축소 */
 @media (max-width: 900px) {
     .main-area {
         flex-direction: column;
