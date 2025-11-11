@@ -1,0 +1,190 @@
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+
+.page-wrapper {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #87c9ff;
+}
+
+/* 상단바 */
+.topbar {
+    height: 60px;
+    background-color: #7fb8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+.topbar-left {
+    font-size: 32px;
+    font-weight: 700;
+    color: #000;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+    color: #000;
+}
+
+.topbar-right .username {
+    font-weight: 700;
+}
+
+.main-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    box-sizing: border-box;
+    padding: 40px 60px 80px;   /* 👈 여기! 아래 80px 정도로, 원래처럼 */
+    background-image: url("../images/mirai.png");
+    background-size: cover;
+    background-position: center center;
+}
+
+
+/* 캐릭터 영역 */
+.character-area {
+    flex: 0 0 32%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.character-img {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    transform: translateY(80px); 
+}
+
+/* 대화 로그 영역 */
+.log-area {
+    flex: 1;
+    margin-left: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+    position: relative;
+}
+
+.log-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* 말풍선 공통 */
+.bubble {
+    min-width: 55%;
+    max-width: 90%;
+    padding: 18px 26px;
+    border-radius: 12px;
+    font-size: 22px;
+    box-sizing: border-box;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 상대(NPC) 말풍선 */
+.npc-bubble {
+    background-color: rgba(93, 166, 255, 0.75);
+    color: #000;
+}
+
+/* ME 말풍선 */
+.me-row {
+    justify-content: flex-end;
+}
+
+.me-bubble {
+    background-color: rgba(255, 255, 255, 0.93);
+    color: #000;
+}
+
+/* ME 아이콘 */
+.me-icon {
+    margin-left: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #555;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 되돌아가기 버튼 – ki.png 사용 */
+.back-button {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+
+    width: 360px;
+    height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+    background-image: url("../images/ki.png");   /* ★ */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.back-text {
+    font-size: 30px;
+    font-weight: 700;
+    color: #000;
+}
+
+/* 폭 좁을 때 간단히 축소 */
+@media (max-width: 900px) {
+    .main-area {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .character-area {
+        justify-content: center;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+
+    .log-area {
+        margin-left: 0;
+        margin-top: 20px;
+    }
+
+    .bubble {
+        font-size: 18px;
+        min-width: 70%;
+    }
+
+    .back-button {
+        right: 20px;
+        bottom: 20px;
+        width: 150px;
+        height: 70px;
+    }
+
+    .back-text {
+        font-size: 26px;
+    }
+}

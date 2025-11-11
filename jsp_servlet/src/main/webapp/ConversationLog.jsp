@@ -1,14 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    String ctx = request.getContextPath();
+%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>会話ログ</title>
-    <link rel="stylesheet" href="conversationLog.css">
+    <link rel="stylesheet" href="<%= ctx %>/css/conversationLog.css">
 </head>
 <body>
 <div class="page-wrapper">
-    <!-- 상단 바 -->
     <header class="topbar">
         <div class="topbar-left">
             会話ログ
@@ -20,38 +22,33 @@
         </div>
     </header>
 
-    <!-- 메인 영역 -->
+    <!-- 메인 -->
     <main class="main-area">
-        <!-- 캐릭터 영역 -->
+        <!-- 캐릭터 -->
         <section class="character-area">
-            <img src="dkイラスト/笑う.png" alt="キャラクター" class="character-img">
+            <img src="<%= ctx %>/images/笑う.png" alt="キャラクター" class="character-img">
         </section>
 
-        <!-- 대화 로그 영역 -->
         <section class="log-area">
-            <!-- 1행: 상대 말풍선 -->
             <div class="log-row npc-row">
                 <div class="bubble npc-bubble">
                     おはよー！今日はね、・・・・・・
                 </div>
             </div>
 
-            <!-- 2행: ME 말풍선 -->
             <div class="log-row me-row">
                 <div class="bubble me-bubble">
-                    そうだね・・・・・ 
+                    そうだね・・・・・
                 </div>
                 <div class="me-icon">ME</div>
             </div>
 
-            <!-- 3행: 상대 말풍선 -->
             <div class="log-row npc-row">
                 <div class="bubble npc-bubble">
                     ・・・・・・
                 </div>
             </div>
 
-            <!-- 4행: ME 말풍선 -->
             <div class="log-row me-row">
                 <div class="bubble me-bubble">
                     ・・・・・・
@@ -61,7 +58,7 @@
         </section>
 
         <!-- 되돌아가기 버튼 -->
-        <a href="main.jsp" class="back-button">
+        <a href="" class="back-button">
             <span class="back-text">戻る</span>
         </a>
     </main>
