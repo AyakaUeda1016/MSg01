@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KaiwaNavi ホーム画面</title>
   <!-- 컨텍스트 경로 붙여서 CSS 로드 -->
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css" />
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css" />
 </head>
 <body>
   <!-- 상단바 -->
