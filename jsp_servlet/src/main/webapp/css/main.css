@@ -1,0 +1,80 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  /* css → images 상대경로 */
+  background: url("../images/mirai.png") center/cover no-repeat;
+  font-family: "Noto Sans JP", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #fff;
+  position: relative;
+}
+
+/* 상단바 */
+.topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  background: rgba(255,255,255,.35);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  font-weight: 700; font-size: 15px; color: #111;
+  z-index: 5;
+}
+
+/* 캐릭터 */
+.character {
+  position: absolute;
+  left: 38%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px; height: auto;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,.35));
+  z-index: 2;
+}
+
+/* 말풍선(임시) */
+.speech {
+  position: absolute;
+  left: 43%; top: 28%;
+  background: #fff; color: #333;
+  padding: 10px 16px; border-radius: 18px;
+  font-weight: 600; font-size: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25);
+  z-index: 3;
+}
+
+/* 나무패널 메뉴 */
+.menu {
+  position: absolute;
+  top: 50%; right: 8%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 40px;
+  z-index: 4;
+}
+
+.menu-item { position: relative; width: 520px; height: 135px; }
+
+.menu-item .wood {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  border-radius: 20px;
+  filter: drop-shadow(0 12px 24px rgba(0,0,0,.4));
+}
+
+.menu-item .text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 900; color: #2b1c10;
+  text-shadow: 0 3px 6px rgba(255,255,255,.55);
+  letter-spacing: .6px;
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .character { width: 320px; left: 36%; }
+  .menu { right: 3%; gap: 20px; }
+  .menu-item { width: 340px; height: 90px; }
+  .menu-item .text { font-size: 22px; }
+  .speech { left: 40%; top: 26%; font-size: 13px; }
+}
