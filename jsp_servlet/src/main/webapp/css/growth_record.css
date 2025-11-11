@@ -1,0 +1,402 @@
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Murecho", sans-serif;
+    overflow: hidden;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/classroom-bg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0.95;
+}
+
+.background-scene {
+    background-image: url('../images/chalkboard.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    height: auto;
+    width: 100%;
+    padding: 35%;
+    box-sizing: border-box;
+    position: absolute;
+    left: 10%;
+    top: -15%;
+}
+
+/* Header */
+.header {
+    position: absolute;
+    top: 22%;
+    left: 15%;
+    text-align: center;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.61);
+    padding-bottom: 8px;
+    width: 70%;
+}
+
+.page-title {
+    font-family: "Murecho", sans-serif;
+    font-size: 2.5vw;
+    line-height: 1.4;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0;
+}
+
+/* Filter Section */
+.filter-section {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    width: 100%;
+    opacity: 0.95;
+}
+
+.filter-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    opacity: 0.95;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.filter-select {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(139, 111, 71, 0.3);
+    border-radius: 8px;
+    padding: 0.6vw 2vw 0.6vw 1vw;
+    font-size: 0.9vw;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 9vw;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23555' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7vw center;
+    opacity: 0.95;
+}
+
+.filter-select:hover {
+    background-color: white;
+    border-color: #8BC34A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #7CB342;
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.2);
+}
+
+.date-filters {
+    display: flex;
+    gap: 5px;
+}
+
+.date-select {
+    min-width: 4.5vw;
+    padding: 0.6vw 1.8vw 0.6vw 0.7vw;
+}
+
+.search-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(139, 111, 71, 0.3);
+    border-radius: 8px;
+    padding: 0.7vw 1vw;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: white;
+    border-color: #8BC34A;
+    transform: scale(1.05);
+}
+
+.search-btn svg {
+    width: 1.1vw;
+    height: 1.1vw;
+    color: #555;
+}
+
+/* Records Container */
+.records-container {
+    position: absolute;
+    align-items: center;
+    top: 35%;
+    left: 15%;
+    width: 70%;
+    height: 38%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 0;
+    opacity: 0.95;
+}
+
+.record-list {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* Record Item 1 */
+.record-item:first-child {
+    position: absolute;
+    top: 8%;
+    left: 1.3%;
+    width: 97.4%;
+    height: 35.7%;
+    background: rgba(255, 255, 255, 0.808);
+    border-radius: 10px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.record-item:first-child .record-date {
+    position: absolute;
+    top: 50%;
+    left: 2.7%;
+    transform: translateY(-50%);
+}
+
+.record-item:first-child .record-thumbnail {
+    position: absolute;
+    top: 50%;
+    left: 13.4%;
+    transform: translateY(-50%);
+    width: 21.1%;
+    height: 83.3%;
+    border-radius: 0px;
+    border: 5px solid #323842;
+    overflow: hidden;
+}
+
+.record-item:first-child .record-title {
+    position: absolute;
+    top: 50%;
+    left: 56.6%;
+    transform: translateY(-50%);
+}
+
+/* Record Item 2 */
+.record-item:nth-child(2) {
+    position: absolute;
+    top: 48.8%;
+    left: 1.3%;
+    width: 97.4%;
+    height: 35.7%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.record-item:nth-child(2) .record-date {
+    position: absolute;
+    top: 50%;
+    left: 2.7%;
+    transform: translateY(-50%);
+}
+
+.record-item:nth-child(2) .record-thumbnail {
+    position: absolute;
+    top: 50%;
+    left: 13.4%;
+    transform: translateY(-50%);
+    width: 21.1%;
+    height: 83.3%;
+    border-radius: 0px;
+    border: 5px solid #323842;
+    overflow: hidden;
+}
+
+.record-item:nth-child(2) .record-title {
+    position: absolute;
+    top: 50%;
+    left: 56.6%;
+    transform: translateY(-50%);
+}
+
+/* Common styles for record items */
+.record-item {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.record-item:hover {
+    background: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.record-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-text {
+    font-size: 1.5vw;
+    font-weight: bold;
+    color: #666;
+    font-style: italic;
+}
+
+.record-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    opacity: 0.85;
+}
+
+.record-item:hover .record-thumbnail img {
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+.record-title h2 {
+    font-size: 2vw;
+    color: #666;
+    font-weight: normal;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 4s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    40% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+    60% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+/* Back Button */
+.back-btn {
+    position: absolute;
+    top: 90%;
+    left: 4%;
+    width: 10%;
+    height: 7%;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #D4A373 0%, #C49A6C 100%);
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #C49A6C 0%, #B8936B 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.back-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 1600px) {
+    .background-scene {
+        transform: scale(0.8);
+        transform-origin: top left;
+    }
+}
+
+@media (max-width: 1280px) {
+    .background-scene {
+        transform: scale(0.6);
+        transform-origin: top left;
+    }
+}
+
+@media (max-width: 1024px) {
+    .background-scene {
+        transform: scale(0.5);
+        transform-origin: top left;
+    }
+}
+
+@media (max-width: 768px) {
+    .background-scene {
+        transform: scale(0.4);
+        transform-origin: top left;
+    }
+}
+
+.nav-arrow {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    color: rgba(255, 200, 100, 0.8);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.nav-arrow:hover {
+    color: rgb(217, 129, 48);
+    transform: translateY(-50%) scale(1.2);
+    }
+    
+/* カレンダーのスタイル */
+input[type="date"] {
+  position: absolute;
+  left: -9999px; /* lo escondemos fuera de pantalla */
+}
+
+/* Botón con el ícono */
+.calendar-button {
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  padding: 5px;
+  border: 2px dashed rgba(255,255,255,0.6);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+/* Efecto “hover” */
+.calendar-button:hover {
+  background: rgba(255,255,255,0.1);
+  transform: scale(1.05);
+}
+
