@@ -47,7 +47,7 @@ html, body {
     position: relative;
     display: flex;
     box-sizing: border-box;
-    padding: 40px 60px 80px;   /* 👈 여기! 아래 80px 정도로, 원래처럼 */
+    padding: 40px 60px 80px;   
     background-image: url("../images/mirai.png");
     background-size: cover;
     background-position: center center;
