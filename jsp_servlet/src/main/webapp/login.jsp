@@ -5,12 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KaiwaNavi Login</title>
-  <!-- /css 는 webapp 바로 아래라서 이렇게 -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css" />
 </head>
 <body>
   <main class="wrap">
-    <!-- /images 도 webapp 바로 아래 -->
     <img src="${pageContext.request.contextPath}/images/kaiwanavi2.png"
          alt="KaiwaNavi ロゴ" class="logo" />
 
