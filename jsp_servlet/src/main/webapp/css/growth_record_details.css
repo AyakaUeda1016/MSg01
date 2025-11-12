@@ -1,0 +1,326 @@
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Murecho", sans-serif;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../images/classroom-bg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.container {
+    position: absolute;
+    width: 85%;
+    max-width: 1400px;
+    height: 138vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.chalkboard {
+    background-image: url('../images/chalkboard.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    padding: 15%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    opacity: 0.95;
+}
+
+/* 成長記録詳細ページのスタイル */
+.title {
+    color: white;
+    text-align: center;
+    font-size: 2rem;
+    margin: 0 0 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.61);
+    padding-bottom: 8px;
+    width: 100%;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 30px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.left-section {
+    flex: 1;
+    color: white;
+    overflow-y: auto;
+    padding-right: 10px;
+    min-height: 0;
+}
+
+.right-section {
+    flex: 0 0 350px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    margin: 0 0 15px 0;
+    color: white;
+    flex-shrink: 0;
+}
+
+.feedback-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feedback-title {
+    font-size: 1.1rem;
+    margin: 0 0 12px 0;
+    color: white;
+    flex-shrink: 0;
+}
+
+.feedback-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.feedback-item .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.feedback-item p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.radar-chart {
+    width: 150%;
+    max-width: 400px;
+    margin-top: 20px;
+    flex-shrink: 0;
+}
+
+.radar-svg {
+    width: 100%;
+    height: auto;
+}
+
+.grid-line {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1;
+}
+
+.axis-line {
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 1;
+}
+
+.data-polygon {
+    fill: rgba(100, 150, 255, 0.4);
+    stroke: rgba(100, 150, 255, 0.8);
+    stroke-width: 2;
+}
+
+.label {
+    fill: white;
+    font-size: 14px;
+    text-anchor: middle;
+    font-weight: 500;
+}
+
+.icon-text {
+    font-size: 20px;
+}
+
+.chalk-tray {
+    position: absolute;
+    bottom: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 12px;
+    background: linear-gradient(to bottom, #c8a882, #a08560);
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* バックボタン */
+.back-btn {
+    position: absolute;
+    top: 90%;
+    left: 4%;
+    width: 10%;
+    height: 7%;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #D4A373 0%, #C49A6C 100%);
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #C49A6C 0%, #B8936B 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.back-btn:active {
+    transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.left-section::-webkit-scrollbar,
+.right-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.left-section::-webkit-scrollbar-track,
+.right-section::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.left-section::-webkit-scrollbar-thumb,
+.right-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.left-section::-webkit-scrollbar-thumb:hover,
+.right-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* 棒グラフスタイル */
+.bar-chart-page .content-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-bottom: 0px;
+}
+
+.bar-chart-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 0 40px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chart-title {
+    color: white;
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 0 0 30px 0;
+    padding-bottom: 15px;
+    border-bottom: 3px solid white;
+    flex-shrink: 0;
+}
+
+.bars-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 350px;
+    padding: 0 20px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.bar {
+    width: 80px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bar.green { background: linear-gradient(to top, #7cb342, #9ccc65); }
+.bar.blue { background: linear-gradient(to top, #5c9fad, #81c8d9); }
+.bar.yellow { background: linear-gradient(to top, #e6b85c, #f5d576); }
+.bar.red { background: linear-gradient(to top, #c57c7c, #dc9d9d); }
+.bar.purple { background: linear-gradient(to top, #9c8bb5, #b8a7d1); }
+
+.bar-value {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.bar-label {
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    max-width: 100px;
+    line-height: 1;
+
+}
+
+.nav-arrow {
+    position: absolute;
+    left: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    color: rgba(255, 200, 100, 0.8);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.nav-arrow:hover {
+    color: rgb(217, 129, 48);
+    transform: translateY(-50%) scale(1.2);
+}
