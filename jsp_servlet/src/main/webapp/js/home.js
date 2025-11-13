@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (touchTimer) clearTimeout(touchTimer)
                 touchTimer = setTimeout(() => hideDesc(description), 3000)
             },
-            { passive: true },
+            { passive: true }
         )
 
         const buttonDescription = button.getAttribute("data-description")
