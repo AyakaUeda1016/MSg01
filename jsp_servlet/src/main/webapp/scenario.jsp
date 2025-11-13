@@ -36,9 +36,9 @@
                     <img src="images/l.png" alt="前へ">
                 </button>
 
-                <button type="button" class="decide-btn">
+                <a href="prepare.jsp"><button type="button" class="decide-btn">
                     決定
-                </button>
+                </button></a>
 
                 <button type="button" class="arrow-btn arrow-right" id="btn-right">
                     <img src="images/r.png" alt="次へ">
@@ -49,7 +49,7 @@
     </div>
 
 
-    <a href="#" class="back-button">戻る</a>
+    <a href="home.jsp" class="back-button">戻る</a>
 
 </div>
 
