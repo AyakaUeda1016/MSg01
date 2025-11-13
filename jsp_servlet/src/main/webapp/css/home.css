@@ -1,80 +1,343 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
+@charset "UTF-8";
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.decorations,
+.decorations * {
+    pointer-events: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
 
 body {
-  /* css → images 상대경로 */
-  background: url("../images/mirai.png") center/cover no-repeat;
-  font-family: "Noto Sans JP", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: #fff;
-  position: relative;
+    font-family: "Murecho", sans-serif;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-image: url("../images/room.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
-/* 상단바 */
-.topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 48px;
-  background: rgba(255,255,255,.35);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 20px;
-  font-weight: 700; font-size: 15px; color: #111;
-  z-index: 5;
+/* Unified header styling with semi-transparent background */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 30px;
+    z-index: 100;
+    font-weight: 500;
+    font-size: 15px;
+    background: rgba(200, 210, 220, 0.5);
+    backdrop-filter: blur(5px);
 }
 
-/* 캐릭터 */
+.header-left {
+    color: #333;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+}
+
+.header-center {
+    flex: 1;
+    text-align: center;
+    color: #333;
+    padding: 6px 20px;
+    margin: 0 15px;
+}
+
+.header-right {
+    color: #333;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+}
+
+/* Simplified main content layout */
+.main-content {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 5%;
+    overflow: hidden;
+}
+
+/* Character positioned more to the right */
+.character-area {
+    position: relative;
+    flex: 0 0 auto;
+    z-index: 5;
+    margin-left: 10%;
+    margin-top: 5%;
+}
+
+.speech-bubble {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 14px 24px;
+    border-radius: 20px;
+    border: 2.5px solid #333;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    min-width: 200px;
+    text-align: center;
+    min-height: 46px;
+    /* Add min-height to prevent bubble from collapsing when empty */
+}
+
+.speech-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -16px;
+    left: 28%;
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 16px solid #333;
+}
+
+.speech-bubble::before {
+    content: "";
+    position: absolute;
+    bottom: -11px;
+    left: 28%;
+    margin-left: 2px;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 14px solid white;
+    z-index: 1;
+}
+
 .character {
-  position: absolute;
-  left: 38%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 420px; height: auto;
-  filter: drop-shadow(0 8px 16px rgba(0,0,0,.35));
-  z-index: 2;
+    width: 380px;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin-top: 45px;
 }
 
-/* 말풍선(임시) */
-.speech {
-  position: absolute;
-  left: 43%; top: 28%;
-  background: #fff; color: #333;
-  padding: 10px 16px; border-radius: 18px;
-  font-weight: 600; font-size: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.25);
-  z-index: 3;
+.character:hover {
+    transform: scale(1.03);
 }
 
-/* 나무패널 메뉴 */
-.menu {
-  position: absolute;
-  top: 50%; right: 8%;
-  transform: translateY(-50%);
-  display: flex; flex-direction: column; gap: 40px;
-  z-index: 4;
+/* Note area fixed to the right edge of the screen */
+.note-area {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 700px;
+    height: 90vh;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
-.menu-item { position: relative; width: 520px; height: 135px; }
-
-.menu-item .wood {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; object-fit: cover;
-  border-radius: 20px;
-  filter: drop-shadow(0 12px 24px rgba(0,0,0,.4));
+.note-bg {
+    position: absolute;
+    margin-top: 30px;
+    right: 0;
+    top: 50%;
+    transform: translate(-3.5%, -50%) scale(1.07);
+    /* ← 左へ6%移動＆6%拡大 */
+    transform-origin: center;
+    /* 拡大基点を中央に */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: right center;
+    z-index: 1;
+    /* ボタンより下に置きたい場合は低めに */
+    pointer-events: none;
+    /* 画像がクリックをブロックしないようにする */
 }
 
-.menu-item .text {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 900; color: #2b1c10;
-  text-shadow: 0 3px 6px rgba(255,255,255,.55);
-  letter-spacing: .6px;
+/* Buttons positioned on top of the note */
+.buttons-container {
+    position: absolute;
+    right: 15%;
+    top: 48%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    width: 420px;
+    z-index: 5;
 }
 
-/* 반응형 */
-@media (max-width: 900px) {
-  .character { width: 320px; left: 36%; }
-  .menu { right: 3%; gap: 20px; }
-  .menu-item { width: 340px; height: 90px; }
-  .menu-item .text { font-size: 22px; }
-  .speech { left: 40%; top: 26%; font-size: 13px; }
+.button-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.menu-button {
+    margin-top: 80px;
+    margin-left: 30px;
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 100%;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.menu-button:hover {
+    transform: translateX(3px);
+}
+
+.sticky-note {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.button-text {
+    position: relative;
+    z-index: 2;
+    font-size: 19px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 25px;
+    margin-left: 50px;
+    pointer-events: none;
+}
+
+/* Red underline appears on hover */
+.red-underline {
+    position: absolute;
+    bottom: 10px;
+    left: 40px;
+    width: 0;
+    height: 3px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 3;
+}
+
+.menu-button:hover .red-underline {
+    opacity: 1;
+    width: 180px;
+}
+
+/* Pen and eraser positioned at bottom right of note */
+.decorations {
+    position: absolute;
+    bottom: 8%;
+    right: 8%;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    z-index: 6;
+}
+
+.pen {
+    margin-right: 210px;
+    /* 必要なら微調整 */
+    width: 220px;
+    height: auto;
+    position: relative;
+    /* ← 追加 */
+    top: 100px;
+    /* ← これで下に移動（正の値で下、負で上） */
+    transform: rotate(-30deg);
+    pointer-events: none;
+}
+
+.eraser {
+    margin-bottom: 530px;
+    width: 120px;
+    height: auto;
+    transform: rotate(12deg);
+    pointer-events: none;
+}
+
+/* Responsive adjustments to maintain layout */
+@media (max-width: 1600px) {
+    .note-area {
+        width: 650px;
+    }
+
+    .buttons-container {
+        width: 380px;
+        gap: 35px;
+    }
+
+    .character {
+        width: 340px;
+    }
+}
+
+@media (max-width: 1400px) {
+    .character-area {
+        margin-left: 5%;
+    }
+
+    .character {
+        width: 320px;
+    }
+
+    .note-area {
+        width: 600px;
+    }
+
+    .buttons-container {
+        width: 350px;
+        gap: 32px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .character {
+        width: 280px;
+    }
+
+    .note-area {
+        width: 550px;
+    }
+
+    .buttons-container {
+        width: 320px;
+        gap: 28px;
+    }
+
+    .button-text {
+        font-size: 17px;
+    }
 }
