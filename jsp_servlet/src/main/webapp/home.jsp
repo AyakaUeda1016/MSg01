@@ -1,44 +1,77 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KaiwaNavi ホーム画面</title>
-  <!-- 컨텍스트 경로 붙여서 CSS 로드 -->
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム - Kaiwanavi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/home.css">
 </head>
+
 <body>
-  <!-- 상단바 -->
-  <header class="topbar">
-    <div class="level">Lv 1</div>
-    <div class="username">ユーザー名</div>
-    <div class="time">18:00</div>
-  </header>
+    <!-- Added header with Lv, username, and time -->
+    <header class="header">
+        <div class="header-left">Lv. 1</div>
+        <div class="header-center">ユーザー名</div>
+        <div class="header-right">18:00</div>
+    </header>
 
-  <main class="scene">
-    <!-- 캐릭터 -->
-    <img src="${pageContext.request.contextPath}/images/kaiwanavi.png"
-         alt="KaiwaNavi キャラクター" class="character" />
+    <!-- Restructured main content to match the design -->
+    <main class="main-content">
+        <!-- Left side: Character area -->
+        <div class="character-area">
+            <!-- Added data-default attribute to store default message -->
+            <div class="speech-bubble" data-default="今日も頑張りましょうね">今日も頑張りましょうね</div>
+            <img src="images/kaiwanavi-chara.png" alt="キャラクター" class="character" id="character">
+        </div>
 
-    <!-- 말풍선(내용은 추후 동적 출력) -->
-    <div class="speech"></div>
+        <!-- Right side: Note area with buttons -->
+        <div class="note-area">
+            <img src="images/note.png" alt="ノート" class="note-bg">
 
-    <!-- 나무패널 메뉴 -->
-    <div class="menu">
-      <div class="menu-item">
-        <img src="${pageContext.request.contextPath}/images/ki.png" class="wood" alt="木背景" />
-        <span class="text">シミュレーション</span>
-      </div>
-      <div class="menu-item">
-        <img src="${pageContext.request.contextPath}/images/ki.png" class="wood" alt="木背景" />
-        <span class="text">成長記録</span>
-      </div>
-      <div class="menu-item">
-        <img src="${pageContext.request.contextPath}/images/ki.png" class="wood" alt="木背景" />
-        <span class="text">設定</span>
-      </div>
-    </div>
-  </main>
+            <div class="buttons-container">
+                <!-- Updated button structure with description placeholders -->
+                <div class="button-wrapper">
+                    <a href="scenario.jsp" class="menu-button simulation" data-description="学習シミュレーションを行います">
+                        <img src="images/sticky note_red.png" alt="付箋" class="sticky-note">
+                        <span class="button-text">シミュレーション</span>
+                        <img src="images/red.png" alt="赤線" class="red-underline">
+                        </a>
+                    <!-- Removed description div - now using speech bubble -->
+                </div>
+
+                <div class="button-wrapper">
+                    <a href="growth_record.jsp" class="menu-button growth" data-page="growth-record.html"
+                            data-description="あなたの学習記録と成長を確認できます">
+                            <img src="images/sticky note_blue.png" alt="付箋" class="sticky-note">
+                            <span class="button-text">成長記録</span>
+                            <img src="images/red.png" alt="赤線" class="red-underline">
+                        </a>
+                    <!-- Removed description div - now using speech bubble -->
+                </div>
+
+                <div class="button-wrapper">
+                    <a href="settings.jsp" class="menu-button settings" data-page="settings.html"
+                            data-description="アプリの各種設定を変更できます">
+                            <img src="images/sticky note_green.png" alt="付箋" class="sticky-note">
+                            <span class="button-text">設定</span>
+                            <img src="images/red.png" alt="赤線" class="red-underline">
+                        </a>
+                    <!-- Removed description div - now using speech bubble -->
+                </div>
+            </div>
+
+            <!-- Updated decorations positioning -->
+            <div class="decorations">
+                <img src="images/pen.png" alt="ペン" class="pen">
+                <img src="images/eraser.png" alt="消しゴム" class="eraser">
+            </div>
+        </div>
+    </main>
+
+    <script src="js/home.js"></script>
 </body>
+
 </html>
