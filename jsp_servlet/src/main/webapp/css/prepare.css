@@ -1,0 +1,226 @@
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Murecho", sans-serif;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 背景画像 */
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("../image/room.png") center / cover no-repeat;
+  z-index: 1;
+}
+
+/* 黒板 */
+.blackboard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1000px;
+  height: 600px;
+  background: url("../image/chalkboard.png") center / contain no-repeat;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  padding: 60px;
+}
+
+/* コントロール行 */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* アイコンコンテナ */
+.icon-container {
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px; /* 絵文字を大きく表示 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.control-icon {
+  display: inline-block;
+  line-height: 1;
+}
+
+
+/* 数字ボタングループ */
+.number-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* 数字ボタン */
+.number-btn {
+  width: 60px;
+  height: 60px;
+  background: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: "Murecho", sans-serif;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.number-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.number-btn.active {
+  background: #e07856;
+  color: white;
+}
+
+/* アクションボタンコンテナ */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* 共通ボタンスタイル */
+.btn {
+  padding: 16px 60px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: "Murecho", sans-serif;
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  transition: transform 0.06s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+}
+
+/* オレンジボタン（マイクテスト） */
+.btn-orange {
+  color: white;
+  background: url("../image/ki.png") center / cover no-repeat;
+  background-color: #e07856;
+  box-shadow: 0 6px 0 rgba(180, 90, 60, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-orange:hover {
+  filter: brightness(1.05);
+}
+
+.btn-orange:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(180, 90, 60, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* ライトオレンジボタン（準備完了） */
+.btn-light-orange {
+  color: #2b1d0f;
+  background: url("../image/ki.png") center / cover no-repeat;
+  background-color: #e8b878;
+  box-shadow: 0 6px 0 rgba(200, 150, 90, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-light-orange:hover {
+  filter: brightness(1.05);
+}
+
+.btn-light-orange:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(200, 150, 90, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* 木製ボタン（戻る） */
+.btn-wood {
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 180px;
+  padding: 16px 18px;
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+  border-radius: 22px;
+  background: url("../image/ki.png") center / cover no-repeat;
+  background-color: #d4a574;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
+
+/* ボタンの光沢効果 */
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
+}
+
+.btn-wood:hover {
+  filter: brightness(1.03) saturate(1.02);
+}
+
+.btn-wood:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+
+
+/* レスポンシブ対応 */
+@media (max-width: 1024px) {
+  .blackboard {
+    width: 90%;
+    height: auto;
+    padding: 40px 20px;
+  }
+
+  .number-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .icon-container {
+    width: 70px;
+    height: 70px;
+  }
+
+  .control-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
