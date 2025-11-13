@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>P_voice_ai クライアント</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+      padding-top: 40px;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #startBtn { background-color: #4285f4; color: white; }
+    #stopBtn { background-color: #888; color: white; }
+    #resetBtn { background-color: #4285f4; color: white; }
+    #log {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      width: 60%;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎙️ P_voice_ai クライアント</h1>
+  <p>「録音開始」→話す→「録音停止」で音声をFlaskサーバに送信します。</p>
+  <button id="startBtn">🎙️ 録音開始</button>
+  <button id="stopBtn" disabled>⏹ 録音停止</button>
+  <button id="resetBtn">♻️ 会話リセット</button>
+
+  <div id="log">待機中...</div>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const logDiv = document.getElementById("log");
+
+    // --- 録音開始 ---
+    startBtn.onclick = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(audioChunks, { type: "audio/webm" });
+
+          // ✅ formDataをここで作る
+          const formData = new FormData();
+          formData.append("file", blob, "recorded.webm");
+
+          logDiv.innerHTML = "🎬 録音停止、送信中...";
+
+          try {
+            const res = await fetch("http://127.0.0.1:5000/api/conversation", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            logDiv.innerHTML = `
+              <b>🗣 Whisper文字起こし:</b> ${data.transcript}<br>
+              <b>💬 AIの返答:</b> ${data.reply}<br>
+              <b>⚙️ 感情スコア:</b> Arousal=${data.emotion.arousal}, Valence=${data.emotion.valence}
+            `;
+          } catch (err) {
+            logDiv.innerHTML = `❌ エラー: ${err.message}`;
+          }
+        };
+
+        mediaRecorder.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        logDiv.innerHTML = "🎙️ 録音中... 話しかけてください。";
+
+      } catch (err) {
+        logDiv.innerHTML = `🎧 マイクエラー: ${err.message}`;
+      }
+    };
+
+    // --- 録音停止 ---
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+
+    // --- 会話リセット ---
+    resetBtn.onclick = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/reset", { method: "POST" });
+        const data = await res.json();
+        logDiv.innerHTML = data.message;
+      } catch (err) {
+        logDiv.innerHTML = `⚠️ リセット失敗: ${err.message}`;
+      }
+    };
+  </script>
+</body>
+</html>
