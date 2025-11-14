@@ -5,15 +5,21 @@
   box-sizing: border-box;
 }
 
-body {
-  /* Updated to use Murecho font from Google Fonts */
-  font-family: "Murecho", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
-  overflow: hidden;
-}
-
 a {
     text-decoration: none;
     color: inherit;
+}
+
+body {
+  font-family: "Murecho", sans-serif;
+  overflow: hidden;
+}
+
+.murecho-uniquifier {
+  font-family: "Murecho", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
 }
 
 .classroom {
@@ -27,6 +33,7 @@ a {
   align-items: center;
 }
 
+/* Set chalkboard to original image dimensions 1400px x 900px */
 .chalkboard {
   width: 1400px;
   height: 900px;
@@ -39,41 +46,30 @@ a {
   flex-direction: column;
 }
 
-.top-title {
-  text-align: center;
-  padding-top: 5rem;
-  color: white;
-}
-
-.top-title h1 {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin: 0;
-}
-
 .chalkboard-content {
   flex: 1;
   display: flex;
-  padding: 2rem 3rem;
+  padding: 3rem;
   gap: 2rem;
 }
 
 .left-section {
-  margin-top: 10px;
+  margin-top: 50px;
   margin-left: 90px;
   flex: 1;
   color: white;
 }
 
+/* Updated selectors to use class names */
 .left-section .title {
-  font-size: 1.6rem;
-  margin-bottom: 0.8rem;
+  font-size: 2rem;
+  margin-bottom: 1rem;
   font-weight: bold;
 }
 
 .left-section .subtitle {
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .feedback-section .feedback-title {
@@ -89,6 +85,7 @@ a {
   gap: 0.8rem;
 }
 
+/* Updated icon styling for SVG icons */
 .feedback-item .icon {
   width: 24px;
   height: 24px;
@@ -103,18 +100,19 @@ a {
 
 .right-section {
   flex: 0 0 45%;
-  margin-top: 10px;
+  margin-top: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  /* Added padding-top to prevent chart from being cut off */
   padding-top: 2rem;
 }
 
 .chart-title {
   color: white;
   font-size: 1.8rem;
-  margin-bottom: 1.7rem;
+  margin-bottom: 1.5rem;
   font-weight: bold;
 }
 
@@ -154,3 +152,6 @@ a {
   background-color: #4ecdc4;
   color: white;
 }
+
+
+/* Removed all chalk-tray, chalk, and eraser styles */
