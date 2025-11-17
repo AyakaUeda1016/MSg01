@@ -13,7 +13,6 @@
 <body>
     <!-- Added header with Lv, username, and time -->
     <header class="header">
-        <div class="header-left">Lv. 1</div>
         <div class="header-center">ユーザー名</div>
         <div class="header-right">18:00</div>
     </header>
