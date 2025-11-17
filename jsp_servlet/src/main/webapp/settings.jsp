@@ -18,15 +18,15 @@
 
     <div class="menu-container">
 
-        <button class="menu-btn btn-mic" onclick="location.href='micSettings.jsp'">
+        <button class="menu-btn btn-mic" onclick="location.href='mic_settings.jsp'">
             <span>マイク/音量</span>
         </button>
 
-        <button class="menu-btn btn-account" onclick="location.href='accountSettings.jsp'">
+        <button class="menu-btn btn-account" onclick="location.href='account_settings.jsp'">
             <span>アカウント詳細</span>
         </button>
 
-        <button class="menu-btn btn-back" onclick="history.back()">
+        <button class="menu-btn btn-back" onclick="location.href='home.jsp'">
             <span>戻る</span>
         </button>
 

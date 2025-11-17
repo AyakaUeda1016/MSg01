@@ -26,7 +26,7 @@
                     <button class="number-btn" data-value="4">4</button>
                     <button class="number-btn" data-value="5">5</button>
                     <button class="number-btn" data-value="6">6</button>
-                    <button class="number-btn active" data-value="7">7</button>
+                    <button class="number-btn" data-value="7">7</button>
                     <button class="number-btn" data-value="8">8</button>
                     <button class="number-btn" data-value="9">9</button>
                     <button class="number-btn" data-value="10">10</button>
@@ -43,7 +43,7 @@
                     <button class="number-btn" data-value="2">2</button>
                     <button class="number-btn" data-value="3">3</button>
                     <button class="number-btn" data-value="4">4</button>
-                    <button class="number-btn active" data-value="5">5</button>
+                    <button class="number-btn" data-value="5">5</button>
                     <button class="number-btn" data-value="6">6</button>
                     <button class="number-btn" data-value="7">7</button>
                     <button class="number-btn" data-value="8">8</button>

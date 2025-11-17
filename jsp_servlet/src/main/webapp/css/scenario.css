@@ -5,9 +5,20 @@
     padding: 0;
 }
 
+.decorations,
+.decorations * {
+    pointer-events: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
 html, body {
     height: 100%;
-    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-family: "Murecho", sans-serif;
+
 }
 
 /* 全体 */
@@ -129,6 +140,20 @@ html, body {
     height: auto;
 }
 
+.btn {
+  padding: 16px 60px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: "Murecho", sans-serif;
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  transition: transform 0.06s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+}
+
+
 /* 決定ボタン*/
 .decide-btn {
     width: 150px;
@@ -151,27 +176,37 @@ html, body {
     background-color: #ffa726;
 }
 
-.back-button {
-    position: absolute;
-    left: 30px;
-    bottom: 0px;
-
-  
-    width: 200px;   
-    height: 200px;   
-
-    background-image: url("../images/ki.png");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    color: #000000;
-    font-weight: bold;
-    font-size: 2.5rem; 
+.btn-wood {
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 180px;
+  padding: 16px 18px;
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+  border-radius: 22px;
+  background: url("../images/ki.png") center / cover no-repeat;
+  background-color: #d4a574;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
 }
 
+/* ボタンの光沢効果 */
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
+}
+
+.btn-wood:hover {
+  filter: brightness(1.03) saturate(1.02);
+}
+
+.btn-wood:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}

@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>シナリオ選択</title>
+    <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/scenario.css">
+    
 </head>
 <body>
 <div class="bg-mirai">
@@ -49,7 +51,7 @@
     </div>
 
 
-    <a href="home.jsp" class="back-button">戻る</a>
+    <a href="home.jsp"><button class="btn btn-wood" id="backBtn">戻る</button></a>
 
 </div>
 

@@ -26,8 +26,8 @@
   </main>
 
   <div class="fixed-buttons">
-    <button type="submit" form="loginForm" class="btn btn-ok">OK</button>
-    <a class="btn btn-register" href="${pageContext.request.contextPath}/register">新規登録</a>
+    <a href="register.jsp"><button class="btn btn-ok">新規登録</button></a>
+    <a href="home.jsp"><button class="btn btn-register">ログイン</button></a>
   </div>
 </body>
 </html>
