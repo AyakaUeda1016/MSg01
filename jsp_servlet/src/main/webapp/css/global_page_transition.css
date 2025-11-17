@@ -1,0 +1,33 @@
+/* ===========================
+   ページ全体のトランジション演出（白いフラッシュを防ぐバージョン）
+   =========================== */
+
+/* 背景：サイト全体で共有する背景画像。常に存在させておく */
+html {
+  height: 100%;
+  background: url("/img/classroom.png") center / cover fixed no-repeat;
+}
+
+/* 前面のコンテンツ（body）：通常はそのまま表示。opacity を 0 にしない */
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* ページ遷移で「離脱（退場）」する時のみアニメーションを適用 */
+body.pt-leave {
+  opacity: 0;
+  transform: translateY(-18px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+/* （任意）ユーザーが「動きを減らす」設定をしている場合はアニメーションを無効化 */
+@media (prefers-reduced-motion: reduce) {
+  body.pt-leave {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
