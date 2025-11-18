@@ -44,6 +44,10 @@
                                 <label for="fecha" class="calendar-button" id="calendar-button">
                                     <i class="fa-solid fa-calendar-days"></i>
                                 </label>
+                                <!-- カレンダーボタンの横に×ボタンを追加してフィルターをクリアできるようにした -->
+                                <button class="clear-date-button" id="clear-date-button" title="日付フィルターをクリア">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
                                 <input type="date" id="fecha" name="fecha">
                                 <div class="calendar-picker" id="calendar-picker">
                                     <div class="calendar-header">
