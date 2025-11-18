@@ -22,12 +22,14 @@
         <span class="label">password:</span>
         <input type="password" name="password" required />
       </label>
+      
+      <div class="fixed-buttons">
+      <a href="register.jsp" class="btn">新規登録</a>
+      <button class="btn btn-register">ログイン</button>
+      </div>
+      
     </form>
   </main>
-
-  <div class="fixed-buttons">
-    <a href="register.jsp"><button class="btn btn-ok">新規登録</button></a>
-    <a href="home.jsp"><button class="btn btn-register">ログイン</button></a>
-  </div>
+  	
 </body>
 </html>
