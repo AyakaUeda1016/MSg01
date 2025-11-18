@@ -51,7 +51,7 @@
 <script>
   document.getElementById('btnBack').addEventListener('click', function(){
     if (history.length > 1) history.back();
-    else window.location.href = '${pageContext.request.contextPath}/index.jsp';
+    else window.location.href = '${pageContext.request.contextPath}/settings.jsp';
   });
 </script>
 </body>

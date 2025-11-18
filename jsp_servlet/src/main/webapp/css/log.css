@@ -1,3 +1,12 @@
+.decorations,
+.decorations * {
+    pointer-events: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
 
 html, body {
     margin: 0;
@@ -14,32 +23,42 @@ html, body {
 }
 
 /* 상단바 */
-.topbar {
-    height: 60px;
-    background-color: #7fb8f0;
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
-    box-sizing: border-box;
-}
-
-.topbar-left {
-    font-size: 32px;
-    font-weight: 700;
-    color: #000;
-}
-
-.topbar-right {
-    display: flex;
     align-items: center;
-    gap: 24px;
-    font-size: 14px;
-    color: #000;
+    padding: 12px 30px;
+    z-index: 100;
+    font-weight: 500;
+    font-size: 15px;
+    background: rgba(200, 210, 220, 0.5);
+    backdrop-filter: blur(5px);
 }
 
-.topbar-right .username {
-    font-weight: 700;
+.header-left {
+    color: #333;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+}
+
+.header-center {
+    flex: 1;
+    text-align: center;
+    color: #333;
+    padding: 6px 20px;
+    margin: 0 15px;
+}
+
+.header-right {
+    color: #333;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
 }
 
 .main-area {
@@ -128,29 +147,52 @@ html, body {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
-.back-button {
-    position: absolute;
-    right: 5px;
-    bottom: 5px;
-
-    width: 360px;
-    height: 180px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    background-image: url("../images/ki.png");   /* ★ */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
+.btn{
+  padding: 16px 60px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: "Murecho", sans-serif;
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  transition: transform 0.06s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
 }
 
-.back-text {
-    font-size: 30px;
-    font-weight: 700;
-    color: #000;
+.btn-wood {
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 180px;
+  padding: 16px 18px;
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+  border-radius: 22px;
+  background: url("../images/ki.png") center / cover no-repeat;
+  background-color: #d4a574;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
+
+/* ボタンの光沢効果 */
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
+}
+
+.btn-wood:hover {
+  filter: brightness(1.03) saturate(1.02);
+}
+
+.btn-wood:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 @media (max-width: 900px) {

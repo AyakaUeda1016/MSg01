@@ -7,26 +7,20 @@
 <head>
     <meta charset="UTF-8">
     <title>会話ログ</title>
-    <link rel="stylesheet" href="<%= ctx %>/css/conversationLog.css">
+    <link rel="stylesheet" href="css/log.css">
 </head>
 <body>
 <div class="page-wrapper">
-    <header class="topbar">
-        <div class="topbar-left">
-            会話ログ
-        </div>
-        <div class="topbar-right">
-            <span class="level">Lv. 1</span>
-            <span class="username">ユーザー名</span>
-            <span class="time">18:00</span>
-        </div>
+    <header class="header">
+        <div class="header-center">ユーザー名</div>
+        <div class="header-right">18:00</div>
     </header>
 
     <!-- 메인 -->
     <main class="main-area">
         <!-- 캐릭터 -->
         <section class="character-area">
-            <img src="<%= ctx %>/images/笑う.png" alt="キャラクター" class="character-img">
+            <img src="images/笑う.png" alt="キャラクター" class="character-img">
         </section>
 
         <section class="log-area">
@@ -57,9 +51,8 @@
             </div>
         </section>
 
-        <!-- 되돌아가기 버튼 -->
-        <a href="" class="back-button">
-            <span class="back-text">戻る</span>
+        <a href="result.jsp" class="back-button">
+            <button class="btn btn-wood">戻る</button>
         </a>
     </main>
 </div>
