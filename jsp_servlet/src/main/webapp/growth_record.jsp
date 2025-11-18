@@ -68,7 +68,7 @@
                 <div class="records-container">
                     <div class="record-list">
                         <!-- Item 1: クリック可能なリンクとして全体を囲む -->
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="self-intro" data-date="2024-10-22">
                                 <div class="record-date">
                                     <span class="date-text">10/22</span>
@@ -83,7 +83,7 @@
                         </a>
 
                         <!-- Item 2: クリック可能なリンクとして全体を囲む -->
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="after-school" data-date="2024-10-27">
                                 <div class="record-date">
                                     <span class="date-text">10/27</span>
@@ -98,7 +98,7 @@
                         </a>
 
                         <!-- さらにレコードアイテムを追加 -->
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="club" data-date="2024-10-29">
                                 <div class="record-date">
                                     <span class="date-text">10/29</span>
@@ -112,7 +112,7 @@
                             </div>
                         </a>
 
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="self-intro" data-date="2024-11-01">
                                 <div class="record-date">
                                     <span class="date-text">11/01</span>
@@ -126,7 +126,7 @@
                             </div>
                         </a>
 
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="after-school" data-date="2024-11-03">
                                 <div class="record-date">
                                     <span class="date-text">11/03</span>
@@ -140,7 +140,7 @@
                             </div>
                         </a>
 
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="club" data-date="2024-11-05">
                                 <div class="record-date">
                                     <span class="date-text">11/05</span>
@@ -154,7 +154,7 @@
                             </div>
                         </a>
 
-                        <a href="growth_record_details.jsp" class="record-link">
+                        <a href="growth_record?action=details&recordId=1" class="record-link">
                             <div class="record-item" data-category="self-intro" data-date="2024-11-07">
                                 <div class="record-date">
                                     <span class="date-text">11/07</span>
@@ -177,9 +177,9 @@
             <div class="nav-arrow">▶</div>
         </a>
         <!-- 戻るボタンのスタイルを適用 -->
-        <a href="home.jsp">
-            <button class="btn btn-wood">戻る</button>
-        </a>
+        <a href="growth_record?action=home">
+    		<button class="btn btn-wood">戻る</button>
+		</a>
     </div>
     
     <script src="js/growth_record.js"></script>
