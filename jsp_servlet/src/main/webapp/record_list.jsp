@@ -15,15 +15,15 @@
     <!-- 背景画像 -->
     <div class="background"></div>
 
-    <!-- 黒板の外の左矢印ボタンを追加 -->
-    <button class="nav-arrow-btn nav-left-arrow" id="navLeftArrow">
-      <svg width="100" height="100" viewBox="0 0 100 100">
-        <polygon points="60,20 30,50 60,80" fill="#f97316"/>
-      </svg>
-    </button>
-
     <!-- 黒板コンテナ -->
     <div class="blackboard-container">
+      <!-- 黒板の外の左矢印ボタンを追加 -->
+      <button class="nav-arrow-btn nav-left-arrow" id="navLeftArrow">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <polygon points="60,20 30,50 60,80" fill="#f97316"/>
+        </svg>
+      </button>
+
       <!-- 黒板画像 -->
       <div class="blackboard">
         <!-- タイトル -->
@@ -80,8 +80,6 @@
       </div>
     </div>
 
-    <!-- 戻るボタン -->
-    <a href="growth_record.jsp"><button class="btn btn-wood" id="backBtn">戻る</a>
   </div>
 
   <script src="js/record_list.js"></script>
