@@ -3,65 +3,87 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>棒グラフ画面</title>
-    <link rel="stylesheet" href="css/growth_record_details.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>棒グラフ画面</title>
+  <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/record_list.css">
 </head>
 <body>
-    <div class="container">
-        <div class="chalkboard bar-chart-page">
-            <div class="content-wrapper">
-                <div class="bar-chart-container">
-                    <h1 class="chart-title">棒グラフ画面</h1>
-                    
-                    <div class="bars-container">
-                        <div class="bar-wrapper">
-                            <div class="bar green" style="height: 320px;">
-                                <span class="bar-value">80</span>
-                            </div>
-                            <div class="bar-label">自己<br>認識</div>
-                        </div>
-                        
-                        <div class="bar-wrapper">
-                            <div class="bar blue" style="height: 272px;">
-                                <span class="bar-value">68</span>
-                            </div>
-                            <div class="bar-label">気持ちの<br>コントロール<br>(緊張など)</div>
-                        </div>
-                        
-                        <div class="bar-wrapper">
-                            <div class="bar yellow" style="height: 300px;">
-                                <span class="bar-value">75</span>
-                            </div>
-                            <div class="bar-label">理際力</div>
-                        </div>
-                        
-                        <div class="bar-wrapper">
-                            <div class="bar red" style="height: 288px;">
-                                <span class="bar-value">72</span>
-                            </div>
-                            <div class="bar-label">話す力</div>
-                        </div>
-                        
-                        <div class="bar-wrapper">
-                            <div class="bar purple" style="height: 340px;">
-                                <span class="bar-value">85</span>
-                            </div>
-                            <div class="bar-label">思いやり</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- メイン画面コンテナを追加してスライドアニメーションに対応 -->
+  <div class="screen-wrapper">
+    <!-- 背景画像 -->
+    <div class="background"></div>
 
-            <div class="chalk-tray"></div>
+    <!-- 黒板の外の左矢印ボタンを追加 -->
+    <button class="nav-arrow-btn nav-left-arrow" id="navLeftArrow">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="60,20 30,50 60,80" fill="#f97316"/>
+      </svg>
+    </button>
+
+    <!-- 黒板コンテナ -->
+    <div class="blackboard-container">
+      <!-- 黒板画像 -->
+      <div class="blackboard">
+        <!-- タイトル -->
+        <h1 class="title">棒グラフ画面</h1>
+
+        <!-- 凡例 -->
+        <div class="legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #a855f7;"></span>
+            <span class="legend-text">自己認識</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #ec4899;"></span>
+            <span class="legend-text">気持ちの<br>コントロール</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #3b82f6;"></span>
+            <span class="legend-text">思いやり</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #10b981;"></span>
+            <span class="legend-text">理解力</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #f97316;"></span>
+            <span class="legend-text">話す力</span>
+          </div>
         </div>
-        <a href="growth_record.jsp">
-        <div class="nav-arrow" a="growth_record">◀</div>
-        </a>
-        <button class="back-button">
-            <span>戻る</span>
-        </button>
+
+        <!-- グラフエリアと矢印を黒板内部に配置 -->
+        <div class="graph-area-wrapper">
+          <!-- 黒板内の左矢印 -->
+          <button class="arrow-btn left-arrow" id="leftArrow">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <polygon points="40,10 20,30 40,50" fill="#f97316"/>
+            </svg>
+          </button>
+
+          <!-- グラフエリア -->
+          <div class="graph-area">
+            <!-- グラフコンテンツ -->
+            <div class="graph-content" id="graphContent">
+              <!-- グラフはJavaScriptで生成 -->
+            </div>
+          </div>
+
+          <!-- 黒板内の右矢印 -->
+          <button class="arrow-btn right-arrow" id="rightArrow">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <polygon points="20,10 40,30 20,50" fill="#f97316"/>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- 戻るボタン -->
+    <a href="growth_record.jsp"><button class="btn btn-wood" id="backBtn">戻る</a>
+  </div>
+
+  <script src="js/record_list.js"></script>
 </body>
 </html>
