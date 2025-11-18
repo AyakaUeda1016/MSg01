@@ -77,8 +77,10 @@
             </div>
             <!-- Removed chalk-tray section -->
             <div class="bottom-buttons">
-                <a href="log.jsp"><button class="btn btn-log">ログ</button></a>
-                <a href="home.jsp"><button class="btn btn-finish">終了</button></a>
+            	<form action="./ResultServlet" action="get">
+                	<button name="sb" value="log" class="btn btn-log">ログ</button>
+                	<button name="sb" value="home" class="btn btn-finish">終了</button>
+                </form>
             </div>
         </div>
     </div>
