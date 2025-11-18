@@ -77,7 +77,7 @@
             </div>
             <!-- Removed chalk-tray section -->
             <div class="bottom-buttons">
-            	<form action="./ResultServlet" action="get">
+            	<form action="${pageContext.request.contextPath}/result" action="get">
                 	<button name="sb" value="log" class="btn btn-log">ログ</button>
                 	<button name="sb" value="home" class="btn btn-finish">終了</button>
                 </form>

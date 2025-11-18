@@ -1,12 +1,12 @@
-package com.kaiwanavi.servlet;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 	@WebServlet("/register")
 	public class RegisterServlet extends HttpServlet {
@@ -44,6 +44,23 @@ import jakarta.servlet.http.HttpServletResponse;
 	        // ▼ ホーム画面へ遷移
 	        request.getRequestDispatcher("home.jsp").forward(request, response);
 	    }
+	    
+	    /**
+		 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+		 */
+		protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+			// TODO Auto-generated method stub
+			//response.getWriter().append("Served at: ").append(request.getContextPath());
+			request.setCharacterEncoding("UTF-8");
+			String sb = request.getParameter("sb");
+			System.out.println(sb);
+			
+			if(sb.equals("register")) {
+				RequestDispatcher rd = request.getRequestDispatcher("./register.jsp");
+				rd.forward(request, response);
+			}
+			
+		}
 	
 
 	

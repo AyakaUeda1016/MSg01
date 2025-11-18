@@ -33,7 +33,7 @@
             <div class="buttons-container">
                 <!-- Updated button structure with description placeholders -->
                 <div class="button-wrapper">
-                    <a href="scenario.jsp" class="menu-button simulation" data-description="学習シミュレーションを行います">
+                    <a href="home?sb=scenario" class="menu-button simulation" data-description="学習シミュレーションを行います">
                         <img src="images/sticky note_red.png" alt="付箋" class="sticky-note">
                         <span class="button-text">シミュレーション</span>
                         <img src="images/red.png" alt="赤線" class="red-underline">
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="button-wrapper">
-                    <a href="growth_record.jsp" class="menu-button growth" data-page="growth-record.html"
+                    <a href="home?sb=growth_record" class="menu-button growth" data-page="growth-record.html"
                             data-description="あなたの学習記録と成長を確認できます">
                             <img src="images/sticky note_blue.png" alt="付箋" class="sticky-note">
                             <span class="button-text">成長記録</span>
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="button-wrapper">
-                    <a href="settings.jsp" class="menu-button settings" data-page="settings.html"
+                    <a href="home?sb=setting" class="menu-button settings" data-page="settings.html"
                             data-description="アプリの各種設定を変更できます">
                             <img src="images/sticky note_green.png" alt="付箋" class="sticky-note">
                             <span class="button-text">設定</span>
