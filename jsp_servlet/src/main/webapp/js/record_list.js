@@ -103,27 +103,18 @@ document.getElementById("rightArrow").addEventListener("click", () => {
   }
 })
 
-// 戻るボタンクリック
-document.getElementById("backBtn").addEventListener("click", () => {
-  // 戻る処理（必要に応じて実装）
-  console.log("戻るボタンがクリックされました")
-  // 例: window.history.back();
-})
 
-document.getElementById("navLeftArrow").addEventListener("click", () => {
-  const screenWrapper = document.querySelector(".screen-wrapper")
+// ページスライドで黒板のみ動かす
+document.getElementById("navLeftArrow").onclick = () => {
+  const board = document.querySelector(".blackboard-container");
 
-  // スライドアウトアニメーション開始
-  screenWrapper.classList.add("slide-out-right")
+  board.classList.add("slide-out-right");
 
-  // アニメーション完了後に別ページへ遷移
   setTimeout(() => {
-    // 例: 前のページに戻る
-    window.history.back()
-    // または特定のページへ遷移:
-    // window.location.href = "previous-page.html"
-  }, 500)
-})
+    window.location.href = "growth_record.jsp";
+  }, 500);
+};
+
 
 // 初期描画
 renderGraph()
