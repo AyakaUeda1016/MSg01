@@ -32,6 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const categoryFilter = document.getElementById("category-filter");
   const dateInput = document.getElementById("fecha"); // 隠し input（状態管理用）
   const calendarButton = document.getElementById("calendar-button");
+  const clearDateButton = document.getElementById("clear-date-button");
   let calendarPicker = document.getElementById("calendar-picker");
   const calendarGrid = document.getElementById("calendarGrid");
   const currentMonthSpan = document.getElementById("currentMonth");
@@ -305,6 +306,18 @@ window.addEventListener("DOMContentLoaded", () => {
   renderCalendar();
   // initial sort (desc)
   sortRecords(sortFilter ? sortFilter.value : "desc");
+
+  if (clearDateButton) {
+    clearDateButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      console.log("[v0] 日付フィルターをクリア");
+      selectedDate = null;
+      dateInput.value = "";
+      filterRecords();
+      closeCalendar();
+    });
+  }
 
   const navRightArrow = document.getElementById("navRightArrow");
   if (navRightArrow) {
