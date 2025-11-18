@@ -10,31 +10,20 @@ a {
     color: inherit;
 }
 
-body {
-  font-family: "Murecho", sans-serif;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  min-width: 1400px;
-  min-height: 800px;
-}
-
-/* スライドアニメーション用のラッパーを追加 */
-.screen-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
+body, html {
   width: 100%;
   height: 100%;
-  transition: transform 0.5s ease-out;
+  overflow: hidden;
 }
 
-.screen-wrapper.slide-out-right {
-  transform: translateX(100%);
+body {
+  font-family: "Murecho", sans-serif;
+  min-width: 1400px;
+  min-height: 800px;
+  position: relative;
 }
 
-/* 背景画像 */
+/* ← 背景はそのまま固定 */
 .background {
   position: fixed;
   top: 0;
@@ -45,19 +34,43 @@ body {
   z-index: 1;
 }
 
-/* 黒板コンテナ */
-.blackboard-container {
+/* 画面全体は動かさない */
+.screen-wrapper {
+  width: 100%;
+  height: 100vh;
   position: relative;
-  z-index: 2;
+  overflow: hidden;
+}
+
+/* ★ 黒板だけ動かす */
+.blackboard-container {
+  position: absolute; /* ←絶対配置して独立させる（重要） */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 中央固定 */
   width: 100%;
   height: 100%;
+  z-index: 2;
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 40px;
+
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 黒板の外のナビゲーション矢印ボタンを追加 */
+/* 左へスライドアウト */
+.blackboard-container.slide-out-left {
+  transform: translate(calc(-50% - 100vw), -50%);
+}
+
+/* 右へスライドアウト */
+.blackboard-container.slide-out-right {
+  transform: translate(calc(-50% + 100vw), -50%);
+}
+
+/* 以下の黒板・矢印・グラフなどはそのまま */
 .nav-arrow-btn {
   position: absolute;
   top: 50%;
@@ -70,21 +83,17 @@ body {
   z-index: 20;
   opacity: 0.7;
 }
-
 .nav-arrow-btn:hover {
   opacity: 1;
   transform: translateY(-50%) scale(1.1);
 }
-
 .nav-arrow-btn:active {
   transform: translateY(-50%) scale(0.95);
 }
-
 .nav-left-arrow {
   left: 40px;
 }
 
-/* 黒板 */
 .blackboard {
   width: 1200px;
   height: 75%;
@@ -96,6 +105,9 @@ body {
   padding: 60px 100px 100px 100px;
   flex-shrink: 0;
 }
+
+/* …以下はあなたのオリジナルCSSをそのまま保持 … */
+
 
 /* タイトル */
 .title {
