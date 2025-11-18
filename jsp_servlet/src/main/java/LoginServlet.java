@@ -1,0 +1,43 @@
+package com.kaiwanavi.servlet;
+
+import java.io.IOException;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        String id = request.getParameter("id");
+        String password = request.getParameter("password");
+
+        // ▼ 仮の認証ロジック（必要に応じて DB などに変更）
+        if (id == null || password == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        // 例：ID=admin、PW=1234 の場合ログイン成功
+        if ("test".equals(id) && "1234".equals(password)) {
+            request.getSession().setAttribute("user", id);
+
+            // ★ ログイン成功 → home.jsp へ遷移
+            request.getRequestDispatcher("home.jsp").forward(request, response);
+        } else {
+
+            // ★ ログイン失敗 → register.jsp へ遷移（あなたの要望通り）
+            request.setAttribute("loginError", "ユーザーが存在しません。新規登録してください。");
+            request.getRequestDispatcher("login.jsp").forward(request, response);
+        }
+    }
+}
