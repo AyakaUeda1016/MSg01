@@ -38,7 +38,7 @@
                     <img src="images/l.png" alt="前へ">
                 </button>
                 
-                <form action="./SenalioServlet" method="get">
+                <form action="./ScenarioServlet" method="get">
                 	<input type="hidden" name="scenarioId"  id="scenarioId" value="1">
                 	<button type="submit" name="sb"  value="decide" class="decide-btn">決定</button>
                 </form>
@@ -52,7 +52,7 @@
     </div>
 
 
-    <a href="./SenalioServlet?sb=home"><button class="btn btn-wood" id="backBtn">戻る</button></a>
+    <a href="./ScenarioServlet?sb=home"><button class="btn btn-wood" id="backBtn">戻る</button></a>
 
 </div>
 
