@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Murecho', sans-serif;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 背景 */
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/room.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
+/* 黒板ラッパー */
+.chalkboard-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 85%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 黒板 */
+.chalkboard {
+    width: 1400px;
+    height: 1000px;
+    background-image: url('../images/chalkboard.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+}
+
+/* フォームセクション */
+.form-section {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    margin-bottom: 30px;
+}
+
+/* フォームグループ */
+.form-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 50px;
+    width: 100%;
+}
+
+.form-group label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 32px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 140px;
+    margin-top: 0;
+}
+
+/* Added input wrapper to position placeholder text above the line */
+.input-wrapper {
+	margin-top: 10px;
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Placeholder text positioned above the input line */
+.placeholder-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 入力線 */
+.input-line {
+    width: 100%;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Added password wrapper styling for correct layout */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+/* Added password input wrapper for eye icon positioning */
+.password-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Added styling for actual password input field */
+.password-input {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    font-family: 'Murecho', sans-serif;
+    outline: none;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 8px;
+}
+
+.password-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Added password toggle eye icon styling */
+.password-toggle {
+    position: absolute;
+    right: -60px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.password-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 戻るボタン */
+.back-button {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: 180px;
+    padding: 16px 18px;
+    color: #2b1d0f;
+    text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+    border-radius: 22px;
+    background: url("../images/button.png") center / cover no-repeat;
+    background-color: #d4a574;
+    box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+    border: none;
+    cursor: pointer;
+    font-family: 'Murecho', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    z-index: 15;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Added wood button shine effect */
+.back-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+    pointer-events: none;
+}
+
+.back-button:hover {
+    filter: brightness(1.03) saturate(1.02);
+}
+
+.back-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1024px) {
+    .chalkboard {
+        padding: 40px 60px;
+    }
+    
+    .form-group {
+        gap: 30px;
+    }
+    
+    .form-group label {
+        font-size: 24px;
+        width: 100px;
+    }
+    
+    .form-section {
+        gap: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .chalkboard-wrapper {
+        width: 90%;
+        height: 75%;
+    }
+    
+    .chalkboard {
+        padding: 30px 40px;
+    }
+    
+    .form-group {
+        gap: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-group label {
+        font-size: 20px;
+        width: auto;
+    }
+    
+    .form-section {
+        gap: 30px;
+    }
+    
+    .input-line {
+        width: 100%;
+        margin-top: 8px;
+    }
+    
+    .password-toggle {
+        position: relative;
+        right: auto;
+    }
+}

@@ -22,7 +22,7 @@
             <span>マイク/音量</span>
         </button>
 
-        <button class="menu-btn btn-account" onclick="location.href='account_settings.jsp'">
+        <button class="menu-btn btn-account" onclick="location.href='account_details.jsp'">
             <span>アカウント詳細</span>
         </button>
 
