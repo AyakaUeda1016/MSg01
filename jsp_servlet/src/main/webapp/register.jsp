@@ -13,7 +13,8 @@
     <div class="container">
         <div class="card">
             <h1 class="title">新規登録</h1>
-            <form>
+            
+            <form action="${pageContext.request.contextPath}/register" method="post">
                 <!-- ユーザー名入力欄を追加 -->
                 <div class="form-group">
                     <label for="username">ユーザー名</label>
@@ -60,8 +61,8 @@
                 </div>
 
                 <div class="button-group">
-                    <a><button type="button" class="btn btn-back">戻る</button></a>
-                    <a><button type="button" class="btn btn-submit">作成</button></a>
+                    <button type="button" class="btn btn-back" onclick="history.back()">戻る</button>
+                    <button type="submit" class="btn btn-submit">作成</button>
                 </div>
             </form>
         </div>
