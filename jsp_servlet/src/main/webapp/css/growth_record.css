@@ -79,6 +79,7 @@ body {
     left: 0;
     width: 100%;
     opacity: 0.95;
+    z-index: 100;
 }
 
 .filter-controls {
@@ -91,6 +92,7 @@ body {
 
 .dropdown {
     position: relative;
+    z-index: 100;
 }
 
 .filter-select {
@@ -415,7 +417,8 @@ input[type="date"] {
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.9);
     transition: all 0.3s ease;
-    z-index: 100;
+    z-index: 1001;
+    position: relative;
 }
 
 .calendar-button:hover {
@@ -428,10 +431,38 @@ input[type="date"] {
     font-size: 1.1vw;
 }
 
+/* クリアボタンを追加 */
+.clear-date-button {
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6vw 0.8vw;
+    border: 2px solid rgba(139, 111, 71, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    z-index: 1001;
+    position: relative;
+    margin-left: 8px;
+}
+
+.clear-date-button:hover {
+    background: white;
+    border-color: #ff6b6b;
+    transform: scale(1.05);
+}
+
+.clear-date-button i {
+    font-size: 0.9vw;
+}
+
 /* カレンダーピッカーUIのスタイルを追加 */
 .calendar-container {
     position: relative;
-    z-index: 1000;
+    z-index: 1001;
 }
 
 .flatpickr-calendar {
@@ -447,7 +478,7 @@ input[type="date"] {
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    z-index: 9999;
+    z-index: 99999;
     min-width: 280px;
 }
 
