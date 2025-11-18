@@ -37,10 +37,11 @@
                 <button type="button" class="arrow-btn arrow-left" id="btn-left">
                     <img src="images/l.png" alt="前へ">
                 </button>
-
-                <a href="prepare.jsp"><button type="button" class="decide-btn">
-                    決定
-                </button></a>
+                
+                <form action="./ScenarioServlet" method="get">
+                	<input type="hidden" name="scenarioId"  id="scenarioId" value="1">
+                	<button type="submit" name="sb"  value="decide" class="decide-btn">決定</button>
+                </form>
 
                 <button type="button" class="arrow-btn arrow-right" id="btn-right">
                     <img src="images/r.png" alt="次へ">
@@ -51,7 +52,7 @@
     </div>
 
 
-    <a href="home.jsp"><button class="btn btn-wood" id="backBtn">戻る</button></a>
+    <a href="./ScenarioServlet?sb=home"><button class="btn btn-wood" id="backBtn">戻る</button></a>
 
 </div>
 

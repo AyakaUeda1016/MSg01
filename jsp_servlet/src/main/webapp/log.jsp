@@ -51,7 +51,7 @@
             </div>
         </section>
 
-        <a href="result.jsp" class="back-button">
+        <a href="./ResultServlet?sb=result" class="back-button">
             <button class="btn btn-wood">戻る</button>
         </a>
     </main>

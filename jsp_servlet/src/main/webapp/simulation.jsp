@@ -35,7 +35,7 @@
         </div>
 
         <!-- 右上: メニューボタン -->
-        <a href="result.jsp"><button class="menu-button" id="menuButton">
+        <a href="./SimulationServlet"><button class="menu-button" id="menuButton">
             <span class="menu-icon">|||</span>
         </button></a>
 
