@@ -1,176 +1,119 @@
-window.addEventListener("load", () => {
-  const canvas = document.getElementById("radarChart")
-  const ctx = canvas.getContext("2d")
+document.addEventListener("DOMContentLoaded", function () {
+    /* =========================================================
+     *  右側：Chart.js レーダーチャート描画
+     * ========================================================= */
+    const canvas = document.getElementById("growthRadar");
 
-  canvas.width = 400
-  canvas.height = 400
+    if (canvas && window.Chart) {
+        const ctx = canvas.getContext("2d");
 
-  const centerX = canvas.width / 2
-  const centerY = canvas.height / 2
-  const radius = 140
+        // ★ 将来的に JSP 変数へ差し替え可能
+        //   例) data: [<%= selfAwareness %>, ...]
+        const radarData = {
+            labels: ["自己認識", "気持ち", "思いやり", "理解力", "話す力"],
+            datasets: [{
+                label: "今回の評価",
+                data: [5, 4, 5, 4, 4],  // ← 評価スコアをここで変更
+                fill: true,
+                backgroundColor: "rgba(255,255,255,0.18)",
+                borderColor: "rgba(255,255,255,0.9)",
+                borderWidth: 2,
+                pointBackgroundColor: "#ffffff",
+                pointBorderColor: "#ffffff",
+                pointHoverBackgroundColor: "#000000",
+                pointHoverBorderColor: "#ffffff"
+            }]
+        };
 
-  const labels = ["自己認識", "気持ちのコントロール", "理解力", "話す力", "思いやり"]
+        const radarOptions = {
+            responsive: true,
+            maintainAspectRatio: false, // 高さは .radar-chart の CSS に従わせる
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                r: {
+                    min: 0,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1,
+                        color: "#ffffff",
+                        showLabelBackdrop: false
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,0.25)"
+                    },
+                    angleLines: {
+                        color: "rgba(255,255,255,0.35)"
+                    },
+                    pointLabels: {
+                        color: "#ffffff",
+                        font: { size: 13 }
+                    }
+                }
+            }
+        };
 
-  const data = [85, 90, 88, 92, 87]
-
-  // Draw background grid
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"
-  ctx.lineWidth = 1
-
-  for (let i = 1; i <= 5; i++) {
-    ctx.beginPath()
-    ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2)
-    ctx.stroke()
-  }
-
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2
-    const x = centerX + Math.cos(angle) * radius
-    const y = centerY + Math.sin(angle) * radius
-
-    ctx.beginPath()
-    ctx.moveTo(centerX, centerY)
-    ctx.lineTo(x, y)
-    ctx.stroke()
-  }
-
-  // Draw data polygon
-  ctx.strokeStyle = "rgba(100, 150, 255, 1)"
-  ctx.fillStyle = "rgba(100, 150, 255, 0.3)"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2
-    const value = data[i] / 100
-    const x = centerX + Math.cos(angle) * radius * value
-    const y = centerY + Math.sin(angle) * radius * value
-
-    if (i === 0) {
-      ctx.moveTo(x, y)
+        new Chart(ctx, {
+            type: "radar",
+            data: radarData,
+            options: radarOptions
+        });
     } else {
-      ctx.lineTo(x, y)
+        console.warn("Chart.js または #growthRadar が存在しないため、レーダーチャートを描画できません。");
     }
-  }
 
-  ctx.closePath()
-  ctx.fill()
-  ctx.stroke()
+    /* =========================================================
+     *  左側：成長記録フィードバックのスライドイン演出
+     *  - シナリオタイトル
+     *  - 「KAIWA NAVIからのフィードバック」
+     *  - 各.feedback-item（アイコン＋長文コメント）
+     *  上記を順番に左側から滑り込むように表示
+     * ========================================================= */
+    const leftSection = document.querySelector(".left-section");
+    if (!leftSection) return;
 
-  ctx.fillStyle = "white"
-  ctx.font = "14px 'Murecho', sans-serif"
+    const sectionTitle = leftSection.querySelector(".section-title");      // 例：「シナリオ 放課後」
+    const feedbackTitle = leftSection.querySelector(".feedback-title");    // 例：「KAIWA NAVIからのフィードバック」
+    const feedbackItems = leftSection.querySelectorAll(".feedback-item");  // 各項目（アイコン＋テキスト）
 
-  const iconSize = 20
-  const labelOffset = 40
+    // 表示順：シナリオタイトル → フィードバック見出し → 各項目
+    const blockTargets = [];
+    if (sectionTitle) blockTargets.push(sectionTitle);
+    if (feedbackTitle) blockTargets.push(feedbackTitle);
+    feedbackItems.forEach(item => blockTargets.push(item));
 
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2
-    const x = centerX + Math.cos(angle) * (radius + labelOffset)
-    const y = centerY + Math.sin(angle) * (radius + labelOffset)
+    const baseDelay = 200; // 各ブロックの表示間隔（ミリ秒）
 
-    // Adjust text alignment based on position
-    if (i === 0) {
-      // Top
-      ctx.textAlign = "center"
-      ctx.textBaseline = "bottom"
-      drawLightbulbIcon(ctx, x, y - 25, iconSize)
-      ctx.fillText(labels[i], x, y - 5)
-    } else if (i === 1) {
-      // Top-right
-      ctx.textAlign = "left"
-      ctx.textBaseline = "middle"
-      drawHeartIcon(ctx, x + 5, y - 10, iconSize)
-      ctx.fillText(labels[i], x + 5, y + 15)
-    } else if (i === 2) {
-      // Bottom-right
-      ctx.textAlign = "left"
-      ctx.textBaseline = "middle"
-      drawTargetIcon(ctx, x + 5, y + 10, iconSize)
-      ctx.fillText(labels[i], x + 5, y + 35)
-    } else if (i === 3) {
-      // Bottom-left
-      ctx.textAlign = "right"
-      ctx.textBaseline = "middle"
-      drawUsersIcon(ctx, x - 5, y + 10, iconSize)
-      ctx.fillText(labels[i], x - 5, y + 35)
-    } else if (i === 4) {
-      // Top-left
-      ctx.textAlign = "right"
-      ctx.textBaseline = "middle"
-      drawMessageIcon(ctx, x - 5, y - 10, iconSize)
-      ctx.fillText(labels[i], x - 5, y + 15)
-    }
-  }
-})
+    // ブロック全体（アイコン＋テキスト）をスライドイン
+    blockTargets.forEach((el, index) => {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(-24px)";
+        el.style.transition = "opacity 0.6s ease, transform 0.6s ease";
 
-function drawLightbulbIcon(ctx, x, y, size) {
-  ctx.strokeStyle = "white"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.arc(x, y + 2, size / 3, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(x - size / 4, y + size / 2.5)
-  ctx.lineTo(x + size / 4, y + size / 2.5)
-  ctx.moveTo(x - size / 6, y + size / 1.8)
-  ctx.lineTo(x + size / 6, y + size / 1.8)
-  ctx.stroke()
-}
+        setTimeout(() => {
+            el.style.opacity = "1";
+            el.style.transform = "translateX(0)";
+        }, baseDelay * index);
+    });
 
-function drawHeartIcon(ctx, x, y, size) {
-  ctx.strokeStyle = "white"
-  ctx.fillStyle = "rgba(255, 255, 255, 0)"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.moveTo(x, y + size / 2.2)
-  ctx.bezierCurveTo(x - size / 2, y + size / 8, x - size / 2, y - size / 5, x - size / 8, y - size / 3.5)
-  ctx.bezierCurveTo(x - size / 16, y - size / 2.2, x, y - size / 3, x, y - size / 8)
-  ctx.bezierCurveTo(x, y - size / 3, x + size / 16, y - size / 2.2, x + size / 8, y - size / 3.5)
-  ctx.bezierCurveTo(x + size / 2, y - size / 5, x + size / 2, y + size / 8, x, y + size / 2.2)
-  ctx.closePath()
-  ctx.stroke()
-}
+    // 各.feedback-item 内の <p> テキストに別のディレイで軽いフェード演出を付与
+    const textOffset = 120; // ブロック本体より少し遅れて開始
+    feedbackItems.forEach(item => {
+        const p = item.querySelector("p");
+        if (!p) return;
 
-function drawTargetIcon(ctx, x, y, size) {
-  ctx.strokeStyle = "white"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.arc(x, y, size / 2.5, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(x, y, size / 4.5, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(x, y, size / 9, 0, Math.PI * 2)
-  ctx.stroke()
-}
+        // 空間上の再生順序に合わせるため、blockTargets 内の index を参照
+        const blockIndex = blockTargets.indexOf(item);
+        if (blockIndex === -1) return;
 
-function drawUsersIcon(ctx, x, y, size) {
-  ctx.strokeStyle = "white"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.arc(x - size / 4, y - size / 3, size / 6, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(x - size / 4, y + size / 6, size / 4, 0, Math.PI, true)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(x + size / 4, y - size / 3, size / 6, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(x + size / 4, y + size / 6, size / 4, 0, Math.PI, true)
-  ctx.stroke()
-}
+        p.style.opacity = "0";
+        p.style.transform = "translateX(-8px)";
+        p.style.transition = "opacity 0.4s ease, transform 0.4s ease";
 
-function drawMessageIcon(ctx, x, y, size) {
-  ctx.strokeStyle = "white"
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.roundRect(x - size / 2, y - size / 2, size, size * 0.7, 3)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(x - size / 6, y + size / 5)
-  ctx.lineTo(x - size / 3, y + size / 2)
-  ctx.lineTo(x, y + size / 5)
-  ctx.stroke()
-}
+        setTimeout(() => {
+            p.style.opacity = "1";
+            p.style.transform = "translateX(0)";
+        }, baseDelay * blockIndex + textOffset);
+    });
+});

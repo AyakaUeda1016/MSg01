@@ -1,0 +1,116 @@
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", sans-serif;
+  background: url("../img/classroom.png") no-repeat center center / cover;
+}
+
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 15px;
+}
+
+
+.icon-btn {
+  border: none;
+  background: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 45px);
+  gap: 10px;
+}
+
+.num-box {
+  width: 45px;
+  height: 45px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+.num-box:hover { border-color: #4A7CFF; }
+.active { background: #ef8354; color: #fff; font-weight: 700; }
+
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+/*ここからは木の色のボタンの部分*/
+.btn {
+  /*<button class="btn btn-wood" id="btnMicTest">マイクテスト</button>
+  私jspを書く時のボタン、役たちなら幸いです。
+  */
+  width: 220px;
+  padding: 16px 18px;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  transition: transform .06s ease, box-shadow .12s ease, filter .12s ease, opacity .12s ease;
+}
+
+
+.btn-wood {
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);/*文字のcss*/
+  border-radius: 22px;
+  background: url("../img/btn_wood.png") center / cover no-repeat;/*背景*/
+  box-shadow:/*ここはバッタン下の黒いの部分*/
+    0 6px 0 rgba(120, 80, 40, .55),
+    0 8px 14px rgba(0,0,0,.25);
+}
+
+.btn-wood::before {/* ボタンの天面（表面）に「光沢」を追加するレイヤー  */
+  content: "";/*偽物のレイヤーを生成する時必要なもの*/
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.25), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.06));
+  pointer-events: none;/* このレイヤーはクリック判定を無視 */
+}
+  
+.btn-wood:hover { filter: brightness(1.03) saturate(1.02); }/* ホバー時：ほんの少し明るく,触っているの感じ*/
+
+.btn-wood:active {/*クリックする時の動画*/
+  transform: translateY(2px);
+  box-shadow:
+    0 4px 0 rgba(120, 80, 40, .55),
+    0 6px 10px rgba(0,0,0,.25);
+}
