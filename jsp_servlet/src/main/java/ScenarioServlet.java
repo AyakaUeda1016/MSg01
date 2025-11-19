@@ -38,10 +38,16 @@ public class ScenarioServlet extends HttpServlet {
 		System.out.println(sb);
 		
 		if(sb.equals("decide")) {
-			RequestDispatcher rd = request.getRequestDispatcher("./simulation.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("./prepare.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("home")) {
 			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
+			rd.forward(request, response);
+		}else if(sb.equals("start")) {
+			RequestDispatcher rd = request.getRequestDispatcher("./simulation.jsp");
+			rd.forward(request, response);
+		}else if(sb.equals("back")) {
+			RequestDispatcher rd = request.getRequestDispatcher("./scenario.jsp");
 			rd.forward(request, response);
 		}
 		

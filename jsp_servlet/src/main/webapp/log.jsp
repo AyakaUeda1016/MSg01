@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
     String ctx = request.getContextPath();
+	String returnurl = (String)request.getAttribute("RETURNURL");
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -51,7 +52,7 @@
             </div>
         </section>
 
-        <a href="result?sb=result" class="back-button">
+        <a href=<%=returnurl %> class="back-button">
             <button class="btn btn-wood">戻る</button>
         </a>
     </main>

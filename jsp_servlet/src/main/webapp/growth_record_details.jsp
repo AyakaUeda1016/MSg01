@@ -78,7 +78,7 @@
             </div>
             
             <div class="bottom-buttons">
-                <a href="log.jsp"><button class="btn btn-log">ログ</button></a>
+                <a href="result?sb=log_growth"><button class="btn btn-log">ログ</button></a>
                 <a href="growth_record">
     				<button class="btn btn-log">戻る</button>
 				</a>
