@@ -1,17 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
     const scenes = [
         {
-            img: "../images/haru.jpg",
+            img: "images/haru.jpg",
             title: "シナリオ1",
             desc: "みんなの前で自己紹介をやってみよう！"
-        },
+        }, 
         {
-            img: "../images/kyo.jpg",
+            img: "images/kyo.jpg",
             title: "シナリオ2",
             desc: "先生に相談してみよう！"
         },
         {
-            img: "../images/natu.jpg",
+            img: "images/natu.jpg",
             title: "シナリオ3",
             desc: "友達と放課後の予定を決めてみよう！"
         }
@@ -27,7 +27,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnLeft  = document.getElementById("btn-left");
     const btnRight = document.getElementById("btn-right");
 
-    let current = 1; 
+    // 👇 JSP 内の hidden 要素を取得
+    const hiddenScenarioId = document.getElementById("scenarioId");
+
+    // current = 0 → シナリオ1
+    // デフォルトがシナリオ2にしたい場合は 1 に変更
+    let current = 0;
     let isAnimating = false;
 
     let titleTimer = null;
@@ -45,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     /**
-     * 
+     * タイピング風アニメーション処理
      * @param {HTMLElement} el  
      * @param {string} text     
      * @param {number} speed    
@@ -80,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // シーン画像のフェードイン・フェードアウト用アニメーション
     [imgLeft, imgCenter, imgRight].forEach(img => {
         img.style.transition = "opacity 0.35s ease, transform 0.35s ease";
     });
@@ -94,18 +100,29 @@ document.addEventListener("DOMContentLoaded", function() {
         imgRight.src  = scenes[rightIndex].img;
     }
 
+    // 👇 hidden の値を同期する処理
+    // current は 0/1/2 → サーブレットに渡すのは 1/2/3 にしたいので +1
+    function syncScenarioId() {
+        if (hiddenScenarioId) {
+            hiddenScenarioId.value = current + 1;
+        }
+    }
+
     function renderTexts() {
         const scene = scenes[current];
         clearTyping();
         typeText(titleEl, scene.title, 60, "title");
         typeText(descEl,  scene.desc,  35, "desc");
+
+        // テキスト更新時に hidden の値も更新
+        syncScenarioId();
     }
 
-    
     function switchGroup(dir) {
         if (isAnimating) return;
         isAnimating = true;
 
+        // dir = 1 → 右に移動 / dir = -1 → 左に移動
         const offset = dir === 1 ? -15 : 15; 
 
         [imgLeft, imgCenter, imgRight].forEach(img => {
@@ -114,10 +131,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         setTimeout(() => {
+            // current を更新して次のシーンへ切り替える
             current = (current + dir + scenes.length) % scenes.length;
-            renderImages();
 
-            renderTexts();
+            // 新しい current に基づいて画像とテキストを反映
+            renderImages();
+            renderTexts(); // 内部で hidden も同期される
 
             [imgLeft, imgCenter, imgRight].forEach(img => {
                 img.style.transition = "none";
@@ -125,6 +144,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 img.style.opacity    = "0";
             });
 
+            // リフロー（アニメーション再適用のため）
             void imgCenter.offsetWidth;
 
             [imgLeft, imgCenter, imgRight].forEach(img => {
@@ -146,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function() {
         switchGroup(1);
     });
 
+    // 初期表示（ページ読み込み時）
     renderImages();
-    renderTexts();
+    renderTexts(); // 初期表示時に hidden の値も 1 回同期
 });
