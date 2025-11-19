@@ -173,7 +173,7 @@
             </div>
         </div>
         <!-- 右矢印にIDとクリックイベントを追加 -->
-        <a href="record_list.jsp" id="navRightArrow">
+        <a href="growth_record?action=list" id="navRightArrow">
             <div class="nav-arrow">▶</div>
         </a>
         <!-- 戻るボタンのスタイルを適用 -->
