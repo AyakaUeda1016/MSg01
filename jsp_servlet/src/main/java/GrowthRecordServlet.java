@@ -41,9 +41,14 @@ public class GrowthRecordServlet extends HttpServlet {
             return;
         }
         
-        // 3 recordlist画面へ遷移
+        //3. グラフ画面に移動する
+        if("list".equals(action)) {
+        	//いままでの結果のJSONファイルをとってくる処理を行う
+        	response.sendRedirect("record_list.jsp");
+            return;
+        }
 
-        // 🔹 4. 初期表示（成長記録画面）
+        // 🔹 4.初期表示（成長記録画面）
         request.getRequestDispatcher("growth_record.jsp").forward(request, response);
     }
 }
