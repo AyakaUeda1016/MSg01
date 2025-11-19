@@ -57,11 +57,11 @@
             </div>
 
             <div class="action-buttons">
-                <a href="simulation.jsp"><button class="btn btn-light-orange" id="readyBtn">準備完了</button></a>
+                <a href="scenario?sb=start"><button class="btn btn-light-orange" id="readyBtn">準備完了</button></a>
             </div>
         </div>
 
-        <a href="scenario.jsp"><button class="btn btn-wood" id="backBtn">戻る</button></a>
+        <a href="scenario?sb=back"><button class="btn btn-wood" id="backBtn">戻る</button></a>
     </div>
 
     <script src="js/prepare.js"></script>
