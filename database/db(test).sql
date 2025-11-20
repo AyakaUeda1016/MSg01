@@ -28,7 +28,7 @@ CREATE TABLE scenario(
 CREATE TABLE feedback(
     member_id INT,
     scenario_id INT,
-    finish_date DATE,
+    finish_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     result_data JSON,
     conversation_log JSON,
     FOREIGN KEY(member_id)
