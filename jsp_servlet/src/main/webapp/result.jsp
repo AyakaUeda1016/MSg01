@@ -75,16 +75,23 @@
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
-            <!-- Removed chalk-tray section -->
+            <!-- ボタンをテキストから画像に置き換え -->
             <div class="bottom-buttons">
-            	<form action="${pageContext.request.contextPath}/result" action="get">
-                	<button name="sb" value="log" class="btn btn-log">ログ</button>
-                	<button name="sb" value="home" class="btn btn-finish">終了</button>
+            	<form action="${pageContext.request.contextPath}/result" method="get">
+                	<button name="sb" value="log" class="btn btn-log">
+                        <img src="images/blackboard eraser.png" alt="ログボタン">
+                        <span>ログ</span>
+                    </button>
+                	<button name="sb" value="home" class="btn btn-finish">
+                        <img src="images/eraser.png" alt="終了ボタン">
+                        <span>終了</span>
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/result.js"></script>
 </body>
 
