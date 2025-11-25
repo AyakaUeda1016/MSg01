@@ -75,7 +75,7 @@ pageEncoding="UTF-8"%>
         </div>
 
         <div class="bottom-buttons">
-            <a href="log.jsp" class="btn btn-log">
+            <a href="result?sb=log_growth" class="btn btn-log">
                 <img src="images/blackboard eraser.png" alt="ログボタン">
                 <span>ログ</span>
             </a>
