@@ -3,34 +3,50 @@ CREATE DATABASE msg01test DEFAULT CHARACTER SET utf8;
 
 /* 会員テーブル　*/
 CREATE TABLE member(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    /*login_id CHAR(4), */
-    name VARCHAR(64),
-    birthday DATE,
-    sex CHAR(1),
-    password CHAR(4),
-    ftime_select INT,
-    ftime_simulation INT
+    id INT AUTO_INCREMENT PRIMARY KEY, /*ユーザーID*/
+    name VARCHAR(64),/*名前*/
+    birthday DATE,/*誕生日*/
+    sex CHAR(1),/*性別*/
+    password CHAR(4),/*パスワード*/
+    ftime_select INT,/*初めてシナリオ選択画面に行ったか*/
+    ftime_simulation INT/*初めてシミュレーション画面に行ったか*/
 );
 
 /* シナリオテーブル */
 CREATE TABLE scenario(
-    ID INT  AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(30),
-    explain VARCHAR(60),
-    imagelink VARCHAR(60),
-    scene VARCHAR(60),
-    scenario_message VARCHAR(60),
-    max_turns INT
+    id INT  AUTO_INCREMENT PRIMARY KEY, /*シナリオのID*/
+    title VARCHAR(30), /*シナリオのタイトル*/
+    explain VARCHAR(60), /*シナリオの説明文(secnario.js用)*/
+    imagelink VARCHAR(60), /*シナリオのイメージ画像*/
+    /*以下会話用AIに入れる項目*/
+    scene VARCHAR(60), /*会話を行うシチュエーションの設定*/
+    start_message VARCHAR(60), /*AIが話す最初の言葉*/
+    max_turns INT, /*最大ターン数*/
+    character_role  VARCHAR(60), /*AIの人物像の設定*/
+    reply_style VARCHAR(60),/*AIの話し方の設定*/
 );
+
+/*AI用のシナリオ内容*/
+/**CREATE TABLE ai_scenario(
+    scenarrio_id INT
+    scene VARCHAR(60),
+    start_message VARCHAR(60),
+    max_turns INT,
+    character_role  VARCHAR(60),
+    reply_style VARCHAR(60),
+    FOREIGN KEY(scenario_id)
+    REFERENCES scenario(id),
+    PRIMARY KEY(scenario_id)
+)**/
+
 
 /* 成績、フィードバックテーブル */
 CREATE TABLE feedback(
-    member_id INT,
-    scenario_id INT,
-    finish_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    result_data JSON,
-    conversation_log JSON,
+    member_id INT,/*会員ID*/
+    scenario_id INT,/*シナリオのID*/
+    finish_date DATETIME DEFAULT CURRENT_TIMESTAMP,/*終了日※INSERTしたら勝手に入るようにしてます*/
+    result_data JSON,/*結果データ(チャート用のスコア、フィードバック文)*/
+    conversation_log JSON,/*会話ログ*/
     FOREIGN KEY(member_id)
     REFERENCES member(id),
     FOREIGN KEY(scenario_id)
