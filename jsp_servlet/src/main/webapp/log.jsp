@@ -21,7 +21,7 @@
     <main class="main-area">
         <!-- 캐릭터 -->
         <section class="character-area">
-            <img src="images/笑う.png" alt="キャラクター" class="character-img">
+            <img src="images/boy_smile.png" alt="キャラクター" class="character-img">
         </section>
 
         <section class="log-area">
