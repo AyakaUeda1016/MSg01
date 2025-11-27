@@ -1,14 +1,12 @@
 @charset "UTF-8";
-/* 下部: メッセージボックス */
+
+/* ---------------------------------------------- */
+/* 全体リセット                                   */
+/* ---------------------------------------------- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
 }
 
 body {
@@ -19,7 +17,14 @@ body {
   position: relative;
 }
 
-/* 背景 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------------------------------------------- */
+/* 背景                                           */
+/* ---------------------------------------------- */
 .background-container {
   position: absolute;
   top: 0;
@@ -35,7 +40,9 @@ body {
   object-fit: cover;
 }
 
-/* メインコンテンツ */
+/* ---------------------------------------------- */
+/* メインコンテンツ                               */
+/* ---------------------------------------------- */
 .main-content {
   position: relative;
   width: 100%;
@@ -43,7 +50,9 @@ body {
   z-index: 1;
 }
 
-/* 左上: ラリー数カウンター */
+/* ---------------------------------------------- */
+/* 左上: ラリーカウンター                         */
+/* ---------------------------------------------- */
 .rally-counter {
   position: absolute;
   top: 20px;
@@ -53,7 +62,6 @@ body {
 
 .compass-container {
   position: relative;
-  /* Updated size to match compass image */
   width: 150px;
   height: 150px;
 }
@@ -66,18 +74,15 @@ body {
 
 .rally-numbers {
   position: absolute;
-  /* Position numbers in the center of compass */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  align-items: flex-start; /* Changed from baseline to flex-start so each element can be positioned independently */
   gap: 2px;
   font-weight: 700;
 }
 
 .current-rally {
-  /* Adjusted font size for compass display */
   margin-top: 30px;
   margin-left: 50px;
   font-size: 28px;
@@ -85,21 +90,20 @@ body {
 }
 
 .rally-separator {
-  /* Made separator match needle appearance */
   font-size: 28px;
   color: #5a8dc7;
-  margin: 0 1px;
 }
 
 .max-rally {
-  /* Adjusted font size for compass display */
   margin-right: 30px;
-  margin-top: 60px; /* This now only moves the "10" down, not the entire baseline */
+  margin-top: 60px;
   font-size: 28px;
   color: #5a8dc7;
 }
 
-/* 右上: メニューボタン */
+/* ---------------------------------------------- */
+/* 右上: メニューボタン                           */
+/* ---------------------------------------------- */
 .menu-button {
   position: absolute;
   top: 20px;
@@ -113,22 +117,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 10;
+  transition: 0.3s;
+  z-index: 1500;
 }
 
 .menu-button:hover {
-  background: rgba(180, 190, 255, 0.9);
   transform: scale(1.05);
 }
 
 .menu-icon {
   font-size: 28px;
-  font-weight: 700;
   color: #4a5a8a;
 }
 
-/* キャラクター */
+/* ---------------------------------------------- */
+/* キャラクター画像                               */
+/* ---------------------------------------------- */
 .character-container {
   position: absolute;
   top: 50%;
@@ -141,70 +145,40 @@ body {
   max-width: 400px;
   max-height: 500px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-/* 右側: 緊張度ポップアップ */
-.tension-popup {
+/* ---------------------------------------------- */
+/* 🟦 ユーザーメッセージ                          */
+/* ---------------------------------------------- */
+.user-message-box {
   position: absolute;
-  top: 50%;
-  right: 40px;
-  transform: translateY(-50%);
-  max-width: 380px;
-  z-index: 15;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  bottom: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  max-width: 1200px;
+  background: #1f2d3a;
+  border: 6px solid #2c3e50;
+  border-radius: 4px;
+  padding: 20px 30px;
+  min-height: 90px;
+  z-index: 19;
+  display: none;
 }
 
-.tension-popup.hidden {
-  opacity: 0;
-  pointer-events: none;
+.user-name {
+  font-size: 17px;
+  color: #cce4ff;
 }
 
-.popup-content {
-  background: rgba(210, 220, 255, 0.95);
-  border: 2px solid rgba(150, 170, 230, 0.8);
-  border-radius: 16px;
-  padding: 24px 28px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  position: relative;
+.user-content {
+  font-size: 22px;
+  color: #ffffff;
 }
 
-.popup-content::before {
-  content: "";
-  position: absolute;
-  left: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  border-right: 12px solid rgba(150, 170, 230, 0.8);
-}
-
-.popup-content::after {
-  content: "";
-  position: absolute;
-  left: -9px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-right: 10px solid rgba(210, 220, 255, 0.95);
-}
-
-.popup-content p {
-  font-size: 18px;
-  line-height: 1.6;
-  color: #2c3e5a;
-  font-weight: 500;
-  margin: 0;
-}
-
-/* 下部: メッセージボックス */
+/* ---------------------------------------------- */
+/* 下部メッセージウィンドウ（AI）                */
+/* ---------------------------------------------- */
 .message-box {
   position: absolute;
   bottom: 30px;
@@ -212,116 +186,48 @@ body {
   transform: translateX(-50%);
   width: 85%;
   max-width: 1200px;
-  background: linear-gradient(135deg, #2d4a3e 0%, #1e3329 100%);
+  background: #2d4a3e;
   border: 8px solid #8b7355;
   border-radius: 4px;
   padding: 28px 45px;
   min-height: 140px;
   z-index: 20;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.1), inset 0 -2px 4px
-    rgba(0, 0, 0, 0.2);
-}
-
-.message-box::before {
-  content: "";
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  pointer-events: none;
 }
 
 .speaker-name {
   font-size: 17px;
   color: #f0e6d2;
-  font-weight: 600;
-  margin-bottom: 10px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .message-content {
   font-size: 24px;
-  line-height: 1.7;
-  color: #ffffff;
-  font-weight: 500;
-  /* text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.4); */
+  color: #fff;
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-  .rally-counter {
-    top: 10px;
-    left: 10px;
-  }
+/* ---------------------------------------------- */
+/* 🎙 録音ボタン                                */
+/* ---------------------------------------------- */
+.recording-controls {
+  position: absolute;
+  top: 120px;
+  right: 40px;
+  z-index: 3000;
+}
 
-  .compass-container {
-    /* Updated responsive size */
-    width: 100px;
-    height: 100px;
-  }
+.record-btn {
+  padding: 12px 22px;
+  font-size: 18px;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-left: 10px;
+}
 
-  /* Added responsive style for compass icon */
-  .compass-icon {
-    width: 100px;
-    height: 100px;
-  }
+.record-btn.start {
+  background: #4caf50;
+}
 
-  .current-rally {
-    /* Adjusted responsive font size */
-    font-size: 20px;
-  }
-
-  .rally-separator {
-    /* Adjusted responsive separator size */
-    font-size: 20px;
-  }
-
-  .max-rally {
-    /* Adjusted responsive font size */
-    margin-top: 6px; /* Added margin-top for responsive display */
-    font-size: 20px;
-  }
-
-  .menu-button {
-    top: 10px;
-    right: 10px;
-    width: 50px;
-    height: 50px;
-  }
-
-  .character-image {
-    max-width: 280px;
-    max-height: 350px;
-  }
-
-  .tension-popup {
-    right: 20px;
-    max-width: 280px;
-  }
-
-  .popup-content {
-    padding: 16px 20px;
-  }
-
-  .popup-content p {
-    font-size: 15px;
-  }
-
-  .message-box {
-    bottom: 20px;
-    width: 90%;
-    padding: 20px 25px;
-    min-height: 110px;
-  }
-
-  .speaker-name {
-    font-size: 15px;
-  }
-
-  .message-content {
-    font-size: 19px;
-  }
+.record-btn.stop {
+  background: #f44336;
 }
