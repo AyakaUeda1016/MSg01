@@ -11,6 +11,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+    <!-- チュートリアルモーダルとオーバーレイを追加 -->
+    <div id="tutorial-overlay" class="tutorial-overlay"></div>
+    <div id="tutorial-tooltip" class="tutorial-tooltip">
+        <div class="tooltip-content">
+            <p id="tutorial-text"></p>
+            <div class="tooltip-footer">
+                <span id="tutorial-step" class="step-indicator"></span>
+                <button id="skip-tutorial" class="skip-btn">スキップ</button>
+            </div>
+        </div>
+        <div class="tooltip-arrow"></div>
+    </div>
+
+    <!-- チュートリアルヘルプボタンを右上に追加 -->
+    <button id="tutorial-help-btn" class="tutorial-help-btn" title="チュートリアルを表示">
+        ?
+    </button>
+
     <!-- スライドアニメーション用のラッパーを追加 -->
     <div class="screen-wrapper">
         <div class="background-scene">
@@ -44,9 +62,9 @@
                                 <label for="fecha" class="calendar-button" id="calendar-button">
                                     <i class="fa-solid fa-calendar-days"></i>
                                 </label>
-                                <!-- カレンダーボタンの横に×ボタンを追加してフィルターをクリアできるようにした -->
+                                <!-- ×ボタンをdli-redoアイコンに変更 -->
                                 <button class="clear-date-button" id="clear-date-button" title="日付フィルターをクリア">
-                                    <i class="fa-solid fa-times"></i>
+                                    <span class="dli-redo"></span>
                                 </button>
                                 <input type="date" id="fecha" name="fecha">
                                 <div class="calendar-picker" id="calendar-picker">
@@ -178,7 +196,7 @@
         </a>
         <!-- 戻るボタンのスタイルを適用 -->
         <a href="growth_record?action=home">
-    		<button class="btn btn-wood">戻る</button>
+    		<button class="btn btn-wood" id="back-button">戻る</button>
 		</a>
     </div>
     
