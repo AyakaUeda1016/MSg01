@@ -20,15 +20,10 @@
         <!-- 左上: ラリー数カウンター -->
         <div class="rally-counter">
             <div class="compass-container">
-                <svg class="compass-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="45" fill="rgba(100, 180, 255, 0.3)" stroke="rgba(100, 180, 255, 0.8)" stroke-width="2"/>
-                    <circle cx="50" cy="50" r="35" fill="rgba(100, 180, 255, 0.2)" stroke="rgba(100, 180, 255, 0.6)" stroke-width="1"/>
-                    <line x1="50" y1="50" x2="50" y2="15" stroke="rgba(100, 180, 255, 0.9)" stroke-width="3" stroke-linecap="round"/>
-                    <circle cx="50" cy="50" r="5" fill="rgba(100, 180, 255, 0.9)"/>
-                </svg>
+                <div class="compass-icon"></div>
                 <div class="rally-numbers">
-                    <span class="current-rally" id="currentRally">7</span>
-                    <span class="rally-separator">/</span>
+                    <span class="current-rally" id="currentRally">0</span>
+                    <span class="rally-separator">　</span>
                     <span class="max-rally" id="maxRally">10</span>
                 </div>
             </div>
@@ -38,6 +33,7 @@
         <a href="${pageContext.request.contextPath}/simulation"><button class="menu-button" id="menuButton">
             <span class="menu-icon">|||</span>
         </button></a>
+        <a href ="result.jsp"><p>次へ</p></a>
 
         <!-- キャラクター画像 -->
         <div class="character-container">
@@ -45,9 +41,9 @@
         </div>
 
         <!-- 右側: 緊張度ポップアップ -->
-        <div class="tension-popup" id="tensionPopup">
+        <div class="tension-popup hidden" id="tensionPopup">
             <div class="popup-content">
-                <p>彼女の逆鱗に触れてしまったようです！<br>頑張って彼女を落ち着かせましょう。</p>
+                <p id="tensionMessage">緊張度が高まっています！<br>落ち着いて対応しましょう。</p>
             </div>
         </div>
 
@@ -55,11 +51,16 @@
         <div class="message-box">
             <div class="speaker-name" id="speakerName">あい</div>
             <div class="message-content" id="messageContent">
-                「ソシャゲのガチャなんて滅びればいいのよッ！！」
+                会話を開始してください...
             </div>
         </div>
     </div>
 
+    <!-- サーブレットのURLを設定（必要に応じて変更） -->
+    <script>
+        // サーブレットから返されるJSONのURLを設定
+        window.SERVLET_JSON_URL = '${pageContext.request.contextPath}/api/conversation';
+    </script>
     <script src="js/simulation.js"></script>
 </body>
 </html>

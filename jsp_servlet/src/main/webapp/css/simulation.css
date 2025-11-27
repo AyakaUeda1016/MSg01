@@ -7,8 +7,8 @@
 }
 
 a {
-    text-decoration: none;
-    color: inherit;
+  text-decoration: none;
+  color: inherit;
 }
 
 body {
@@ -53,39 +53,49 @@ body {
 
 .compass-container {
   position: relative;
-  width: 100px;
-  height: 100px;
+  /* Updated size to match compass image */
+  width: 150px;
+  height: 150px;
 }
 
 .compass-icon {
-  width: 100%;
-  height: 100%;
+  background: url("../images/compass.png") center / contain no-repeat;
+  width: 160px;
+  height: 150px;
 }
 
 .rally-numbers {
   position: absolute;
+  /* Position numbers in the center of compass */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  align-items: baseline;
+  align-items: flex-start; /* Changed from baseline to flex-start so each element can be positioned independently */
   gap: 2px;
   font-weight: 700;
 }
 
 .current-rally {
-  font-size: 32px;
+  /* Adjusted font size for compass display */
+  margin-top: 30px;
+  margin-left: 50px;
+  font-size: 28px;
   color: #2c5aa0;
 }
 
 .rally-separator {
-  font-size: 20px;
+  /* Made separator match needle appearance */
+  font-size: 28px;
   color: #5a8dc7;
-  margin: 0 2px;
+  margin: 0 1px;
 }
 
 .max-rally {
-  font-size: 24px;
+  /* Adjusted font size for compass display */
+  margin-right: 30px;
+  margin-top: 60px; /* This now only moves the "10" down, not the entire baseline */
+  font-size: 28px;
   color: #5a8dc7;
 }
 
@@ -212,8 +222,6 @@ body {
     rgba(0, 0, 0, 0.2);
 }
 
-
-
 .message-box::before {
   content: "";
   position: absolute;
@@ -250,16 +258,31 @@ body {
   }
 
   .compass-container {
-    width: 70px;
-    height: 70px;
+    /* Updated responsive size */
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Added responsive style for compass icon */
+  .compass-icon {
+    width: 100px;
+    height: 100px;
   }
 
   .current-rally {
-    font-size: 24px;
+    /* Adjusted responsive font size */
+    font-size: 20px;
+  }
+
+  .rally-separator {
+    /* Adjusted responsive separator size */
+    font-size: 20px;
   }
 
   .max-rally {
-    font-size: 18px;
+    /* Adjusted responsive font size */
+    margin-top: 6px; /* Added margin-top for responsive display */
+    font-size: 20px;
   }
 
   .menu-button {
