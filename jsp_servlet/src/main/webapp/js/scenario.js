@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = ""
     let i = 0
 
+
     const timer = setInterval(() => {
       if (i >= text.length) {
         clearInterval(timer)
@@ -204,9 +205,11 @@ document.addEventListener("DOMContentLoaded", () => {
     tutorialTooltip.style.display = "block"
     tutorialTooltip.classList.add("active")
 
+
     // テキストとステップインジケーターを設定
     tutorialText.innerHTML = step.text
     tutorialStep.textContent = `${stepIndex + 1} / ${tutorialSteps.length}`
+
 
     // ツールチップのクラスをリセット
     tutorialTooltip.className = "tutorial-tooltip active"
@@ -234,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const rect = targetElement.getBoundingClientRect()
     const tooltip = tutorialTooltip
 
+
     // ツールチップのサイズを取得するために一時的に表示
     tooltip.style.visibility = "hidden"
     tooltip.style.display = "block"
@@ -242,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const padding = 20
     tooltip.style.transform = "none"
+           
 
     // 矢印のクラスを設定
     switch (position) {
@@ -344,3 +349,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderImages()
   renderTexts()
 })
+

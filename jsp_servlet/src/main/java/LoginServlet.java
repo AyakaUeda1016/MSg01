@@ -36,7 +36,7 @@ public class LoginServlet extends HttpServlet {
         } else {
 
             // ★ ログイン失敗 → register.jsp へ遷移（あなたの要望通り）
-            request.setAttribute("loginError", "ユーザーが存在しません。新規登録してください。");
+            request.setAttribute("loginError", "ログインできません");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }
