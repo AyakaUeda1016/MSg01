@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentMessageIndex = 0
     let characterMessageTimer = null
+    let currentHoveredButton = null // ホバー中のボタンを追跡する変数を追加
+    let speechBubbleHideTimeout = null
+    let speechBubbleShowTimeout = null
 
     // Initialize descriptions (so they exist without clicking)
     document.querySelectorAll(".description").forEach((desc) => {
@@ -37,21 +40,115 @@ document.addEventListener("DOMContentLoaded", () => {
         desc.style.display = "none"
     }
 
+    const showSpeechBubble = (description) => {
+        if (!speechBubble || !description) return
+        
+        // 古いアニメーション処理をキャンセル
+        if (speechBubbleHideTimeout) {
+            clearTimeout(speechBubbleHideTimeout)
+            speechBubbleHideTimeout = null
+        }
+        if (speechBubbleShowTimeout) {
+            clearTimeout(speechBubbleShowTimeout)
+            speechBubbleShowTimeout = null
+        }
+
+        // Clear any active character message timer
+        if (characterMessageTimer) {
+            clearTimeout(characterMessageTimer)
+            characterMessageTimer = null
+        }
+
+        speechBubble.style.display = "block"
+        speechBubble.style.transition = "opacity 0.2s ease"
+        speechBubble.style.opacity = "0"
+        
+        speechBubbleShowTimeout = setTimeout(() => {
+            speechBubble.textContent = description
+            speechBubble.style.opacity = "1"
+            speechBubbleShowTimeout = null
+        }, 50)
+    }
+
+    const hideSpeechBubble = () => {
+        if (!speechBubble) return
+        
+        // 前のアニメーションをクリア
+        if (speechBubbleShowTimeout) {
+            clearTimeout(speechBubbleShowTimeout)
+            speechBubbleShowTimeout = null
+        }
+
+        speechBubble.style.transition = "opacity 0.2s ease"
+        speechBubble.style.opacity = "0"
+        
+        speechBubbleHideTimeout = setTimeout(() => {
+            speechBubble.textContent = ""
+            speechBubble.style.opacity = "1"
+            speechBubble.style.display = "none"
+            speechBubbleHideTimeout = null
+        }, 200)
+    }
+
     // Add hover/focus/touch handlers so description shows only when hovering/focusing the button
     menuButtons.forEach((button) => {
         // description element matched by class (simulation/growth/settings)
         const buttonClass = Array.from(button.classList).find((c) => c !== "menu-button")
         const description = document.querySelector(`.description[data-button="${buttonClass}"]`)
+        const buttonDescription = button.getAttribute("data-description")
 
-        // Mouse: hover on the actual button element
-        button.addEventListener("mouseenter", () => showDesc(description))
-        button.addEventListener("mouseleave", () => hideDesc(description))
+        button.addEventListener("mouseenter", () => {
+            if (currentHoveredButton && currentHoveredButton !== button) {
+                // 古いボタンのアニメーションをクリア
+                if (speechBubbleHideTimeout) {
+                    clearTimeout(speechBubbleHideTimeout)
+                    speechBubbleHideTimeout = null
+                }
+                if (speechBubbleShowTimeout) {
+                    clearTimeout(speechBubbleShowTimeout)
+                    speechBubbleShowTimeout = null
+                }
+            }
+            currentHoveredButton = button
+            
+            showDesc(description)
+            showSpeechBubble(buttonDescription)
+        })
+
+        button.addEventListener("mouseleave", () => {
+            if (currentHoveredButton === button) {
+                currentHoveredButton = null
+                hideDesc(description)
+                hideSpeechBubble()
+            }
+        })
 
         // If button is wrapped by an <a>, also use the link's hover (some browsers focus anchor)
         const linkParent = button.closest("a")
         if (linkParent) {
-            linkParent.addEventListener("mouseenter", () => showDesc(description))
-            linkParent.addEventListener("mouseleave", () => hideDesc(description))
+            linkParent.addEventListener("mouseenter", () => {
+                if (currentHoveredButton && currentHoveredButton !== button) {
+                    if (speechBubbleHideTimeout) {
+                        clearTimeout(speechBubbleHideTimeout)
+                        speechBubbleHideTimeout = null
+                    }
+                    if (speechBubbleShowTimeout) {
+                        clearTimeout(speechBubbleShowTimeout)
+                        speechBubbleShowTimeout = null
+                    }
+                }
+                currentHoveredButton = button
+                
+                showDesc(description)
+                showSpeechBubble(buttonDescription)
+            })
+            linkParent.addEventListener("mouseleave", () => {
+                if (currentHoveredButton === button) {
+                    currentHoveredButton = null
+                    hideDesc(description)
+                    hideSpeechBubble()
+                }
+            })
         }
 
         // Keyboard accessibility: focus/blur on button (and also focusin on wrapper to catch child focus)
@@ -88,38 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             { passive: true }
         )
-
-        const buttonDescription = button.getAttribute("data-description")
-
-        button.addEventListener("mouseenter", () => {
-            if (speechBubble && buttonDescription) {
-                // Clear any active character message timer
-                if (characterMessageTimer) {
-                    clearTimeout(characterMessageTimer)
-                    characterMessageTimer = null
-                }
-
-                speechBubble.style.display = "block"
-                speechBubble.style.transition = "opacity 0.2s ease"
-                speechBubble.style.opacity = "0"
-                setTimeout(() => {
-                    speechBubble.textContent = buttonDescription
-                    speechBubble.style.opacity = "1"
-                }, 200)
-            }
-        })
-
-        button.addEventListener("mouseleave", () => {
-            if (speechBubble) {
-                speechBubble.style.transition = "opacity 0.2s ease"
-                speechBubble.style.opacity = "0"
-                setTimeout(() => {
-                    speechBubble.textContent = ""
-                    speechBubble.style.opacity = "1"
-                    speechBubble.style.display = "none"
-                }, 200)
-            }
-        })
     })
 
     if (character && speechBubble) {

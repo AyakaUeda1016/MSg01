@@ -1,116 +1,137 @@
 @charset "UTF-8";
 
+/* リセット */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: "Murecho", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  background-image: url("../images/room.png");
-  background-size: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #dcecff;
-  background-color: #dcecff;
-  width: 100vw;
-  height: 100vh;
+    font-family: "Murecho", sans-serif;
+    width: 100vw;
+    height: 100vh;
+    background-image: url("../images/classroom-bg.png");
+    background-size: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #dcecff;
 }
 
-/* メニュー全体を中央配置 */
+/* メニュー配置 */
 .menu-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
 }
 
-/* ボタンの共通デザイン */
-/* ✅ 木の質感をしっかり出したボタンデザイン */
-.menu-btn {
-  width: 220px;
-  padding: 16px 18px;
-  font-size: 20px;
-  font-weight: 700;
-  border: none;
-  border-radius: 22px;
-  cursor: pointer;
-  line-height: 1;
-  position: relative;
-  transition: transform .06s ease, box-shadow .12s ease, filter .12s ease, opacity .12s ease;
+/* ▼ マイク / アカウント詳細ボタン（背景画像指定可能） ▼ */
+.menu-btn-normal {
+    width: 480px;
+    height: 120px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff, #e7e7e7);
+    box-shadow: 0 6px 0 #b5b5b5, 0 10px 20px rgba(0,0,0,0.25);
+    cursor: pointer;
 
-  /* ✅ 木のテクスチャ */
-  background: url("../images/button.png") center / cover no-repeat;
-  color: #2a1b0e; /* 少し濃くして読みやすい */
-  text-shadow: 0 2px 2px rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
 
-  /* ✅ 下の影（立体感強化） */
-  box-shadow:
-      0 8px 0 rgba(100, 60, 30, .6),
-      0 12px 18px rgba(0,0,0,.25);
+    font-size: 28px;
+    transition: .06s ease;
 }
 
-/* ✅ 表面の光沢 */
-.menu-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(130% 120% at 50% 0%, rgba(255,255,255,.27), transparent 65%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.07));
-  pointer-events: none;
+.menu-btn-normal.btn-mic {
+    background: url("../images/button.png") center / cover no-repeat;
 }
 
-/* ✅ ホバー：より「板っぽい反射」 */
-.menu-btn:hover {
-  transform: translateY(-4px);
-  filter: brightness(1.05) saturate(1.05);
-  box-shadow:
-      0 8px 0 rgba(100, 60, 30, .6),
-      0 14px 22px rgba(0,0,0,.32);
+.menu-btn-normal.btn-account {
+    background: url("../images/button.png") center / cover no-repeat;
 }
 
-/* ✅ クリック時の沈み込み */
-.menu-btn:active {
-  transform: translateY(-2px);
+.menu-btn-normal:hover {
+    transform: translateY(-4px);
+    filter: brightness(1.05);
+    box-shadow: 0 6px 0 #b5b5b5, 0 12px 22px rgba(0,0,0,0.32);
 }
 
-/* ✅ 元の大きさ維持 */
-.btn-mic,
-.btn-account {
-  width: 480px;
-  height: 120px;
+.menu-btn-normal:active {
+    transform: translateY(-2px);
 }
 
-.btn-back {
-  position: absolute;
-  bottom: 60px;
+/* ▼ 戻るボタン（透明修正バージョン） ▼ */
+.menu-btn-eraser {
+   position: absolute;
+  bottom: 30px;
   left: 60px;
-  width: 180px;
-  padding: 16px 18px;
+  width: 150px;
+  height: 150px;
+  padding: 0;
+  background: url("../images/eraser.png") center / contain no-repeat;
+  background-size: 100% 100%;
+  border-radius: 0;
+  border: none;
+  z-index: 3;
   color: #2b1d0f;
   text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
-  border-radius: 22px;
-  background: url("../images/ki.png") center / cover no-repeat;
-  background-color: #d4a574;
-  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
-  z-index: 3;
-}
-
-.menu-btn span {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
-  color: #2a1b0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-back span {
-  font-size: 22px;
+.menu-btn-eraser::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+    pointer-events none;
+}
+
+.menu-btn-eraser:hover {
+    transform: translateY(-4px);
+    filter: brightness(1.05) saturate(1.05);
+}
+
+.menu-btn-eraser:active {
+    transform: translateY(-2px);
+}
+
+/* ▼ ツールチップ ▼ */
+.tooltip-text {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateX(0) translateY(-50%);
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #333 transparent transparent;
 }
