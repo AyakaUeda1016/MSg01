@@ -1,131 +1,325 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>P_voice_ai クライアント</title>
+  <meta charset="UTF-8" />
+  <title>P_voice_ai シナリオ切り替え & テスト画面</title>
+
+  <link rel="stylesheet" href="css/loading.css">
+
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      text-align: center;
-      background-color: #f5f5f5;
-      padding-top: 40px;
+      font-family: system-ui, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
     }
-    h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
+    h1 { font-size: 22px; margin-bottom: 10px; }
+    .card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
     button {
-      font-size: 18px;
-      padding: 12px 24px;
+      padding: 10px 18px;
       border: none;
-      border-radius: 10px;
-      margin: 10px;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 15px;
     }
-    #startBtn { background-color: #4285f4; color: white; }
-    #stopBtn { background-color: #888; color: white; }
-    #resetBtn { background-color: #4285f4; color: white; }
+    #recBtn { background: #ff5252; color: #fff; }
+    #previewOK { background: #4caf50; color: #fff; }
+    #previewNG { background: #ff9800; color: #fff; }
+
     #log {
-      margin-top: 20px;
-      background: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      width: 60%;
-      margin-left: auto;
-      margin-right: auto;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      text-align: left;
+      white-space: pre-wrap;
+      background: #222;
+      color: #0f0;
+      padding: 12px;
+      border-radius: 8px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+
+    #textResult .label { font-weight: bold; color: #333; }
+    #textResult .user { color: #1565c0; }
+    #textResult .ai { color: #2e7d32; }
+
+    #previewArea {
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
     }
   </style>
 </head>
+
 <body>
-  <h1>🎙️ P_voice_ai クライアント</h1>
-  <p>「録音開始」→話す→「録音停止」で音声をFlaskサーバに送信します。</p>
-  <button id="startBtn">🎙️ 録音開始</button>
-  <button id="stopBtn" disabled>⏹ 録音停止</button>
-  <button id="resetBtn">♻️ 会話リセット</button>
 
-  <div id="log">待機中...</div>
+<!-- ================================
+     ★ フルスクリーン ローディング
+================================ -->
+<div id="voicevoxOverlay">
+  <div>
+    <div class="loading-icon"></div>
+    <div class="loading-text">NowLoading...</div>
+  </div>
+</div>
 
-  <script>
-    let mediaRecorder;
-    let audioChunks = [];
+<h1>P_voice_ai シナリオ切り替え & 会話テスト</h1>
 
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const logDiv = document.getElementById("log");
+<!-- ■ シナリオ情報 -->
+<div class="card">
+  <h2>📘 現在のシナリオ</h2>
+  <p><strong>タイトル:</strong> <span id="sc_title">取得中...</span></p>
+  <p><strong>シーン説明:</strong> <span id="sc_scene">取得中...</span></p>
+  <p><strong>開始メッセージ:</strong> <span id="sc_start">取得中...</span></p>
+</div>
 
-    // --- 録音開始 ---
-    startBtn.onclick = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-        audioChunks = [];
+<!-- ■ シナリオ切替 -->
+<div class="card">
+  <h2>🔄 シナリオ切り替え</h2>
 
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            audioChunks.push(e.data);
-          }
-        };
+  <label>シナリオIDを選択:
+    <select id="scenarioSelect">
+      <option value="1">1: 朝礼後の友達との会話</option>
+      <option value="2">2: 就活の面接シナリオ</option>
+      <option value="3">3: 部活後の帰り道シナリオ</option>
+    </select>
+  </label>
 
-        mediaRecorder.onstop = async () => {
-          const blob = new Blob(audioChunks, { type: "audio/webm" });
+  <br><br>
+  <button id="switchBtn">⚙ シナリオ変更</button>
+  <p id="switchStatus"></p>
+</div>
 
-          // ✅ formDataをここで作る
-          const formData = new FormData();
-          formData.append("file", blob, "recorded.webm");
+<!-- ■ 録音 & プレビュー -->
+<div class="card">
+  <h2>🎤 録音してプレビュー</h2>
+  <button id="recBtn">● 録音開始</button>
 
-          logDiv.innerHTML = "🎬 録音停止、送信中...";
+  <p>状態: <span id="status">停止中</span></p>
 
-          try {
-            const res = await fetch("http://127.0.0.1:5000/api/conversation", {
-              method: "POST",
-              body: formData,
-            });
+  <div id="previewArea">
+    <p><strong>📝 Whisper文字起こし結果（送信前確認）</strong></p>
+    <p id="previewText"></p>
 
-            if (!res.ok) {
-              throw new Error(`HTTP ${res.status}`);
-            }
+    <button id="previewOK">OK（この内容で送信）</button>
+    <button id="previewNG">録音しなおす</button>
+  </div>
+</div>
 
-            const data = await res.json();
-            logDiv.innerHTML = `
-              <b>🗣 Whisper文字起こし:</b> ${data.transcript}<br>
-              <b>💬 AIの返答:</b> ${data.reply}<br>
-              <b>⚙️ 感情スコア:</b> Arousal=${data.emotion.arousal}, Valence=${data.emotion.valence}
-            `;
-          } catch (err) {
-            logDiv.innerHTML = `❌ エラー: ${err.message}`;
-          }
-        };
+<!-- ■ テキスト表示 -->
+<div class="card">
+  <h2>🗣 会話テキスト</h2>
+  <div id="textResult">ここにユーザー発話とAI応答が表示されます。</div>
+</div>
 
-        mediaRecorder.start();
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        logDiv.innerHTML = "🎙️ 録音中... 話しかけてください。";
+<!-- ■ VoiceVox 音声 -->
+<div class="card">
+  <h2>🔊 VoiceVox 音声</h2>
+  <div id="audioArea">ここに音声が表示されます。</div>
+</div>
 
-      } catch (err) {
-        logDiv.innerHTML = `🎧 マイクエラー: ${err.message}`;
-      }
+<!-- ■ JSONログ -->
+<div class="card">
+  <h2>📩 サーバ応答 JSON</h2>
+  <div id="log">ここに応答が表示されます。</div>
+</div>
+
+<script>
+// ---------------------------------------------------
+// API URL
+// ---------------------------------------------------
+const API_BASE = "http://127.0.0.1:5000";
+
+// Overaly ON/OFF
+function showLoading() {
+  document.getElementById("voicevoxOverlay").style.display = "flex";
+}
+function hideLoading() {
+  document.getElementById("voicevoxOverlay").style.display = "none";
+}
+
+// ---------------------------------------------------
+// シナリオ情報
+// ---------------------------------------------------
+async function loadScenario() {
+  const res = await fetch(`${API_BASE}/api/current_scenario`);
+  const json = await res.json();
+
+  document.getElementById("sc_title").innerText = json.character_role + " のシナリオ";
+  document.getElementById("sc_scene").innerText = json.scene;
+  document.getElementById("sc_start").innerText = json.start_message;
+}
+loadScenario();
+
+// ---------------------------------------------------
+// シナリオ切替
+// ---------------------------------------------------
+document.getElementById("switchBtn").onclick = async () => {
+  const id = document.getElementById("scenarioSelect").value;
+
+  const res = await fetch(`${API_BASE}/api/set_scenario`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: Number(id) })
+  });
+
+  const json = await res.json();
+  document.getElementById("switchStatus").innerText = json.message;
+
+  loadScenario();
+};
+
+// ---------------------------------------------------
+// 録音処理
+// ---------------------------------------------------
+let mediaRecorder;
+let audioChunks = [];
+let audioBlob = null;
+
+document.getElementById("recBtn").onclick = async () => {
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+
+    audioChunks = [];
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+    mediaRecorder.onstop = async () => {
+      audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+      document.getElementById("status").innerText =
+        "録音完了 → Whisperで解析中…";
+
+      // ロードON（Whisper解析前）
+      showLoading();
+
+      await previewTranscription();
     };
 
-    // --- 録音停止 ---
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
+    mediaRecorder.start();
+    document.getElementById("status").innerText = "録音中…";
+    document.getElementById("recBtn").innerText = "■ 録音停止";
 
-    // --- 会話リセット ---
-    resetBtn.onclick = async () => {
-      try {
-        const res = await fetch("http://127.0.0.1:5000/api/reset", { method: "POST" });
-        const data = await res.json();
-        logDiv.innerHTML = data.message;
-      } catch (err) {
-        logDiv.innerHTML = `⚠️ リセット失敗: ${err.message}`;
-      }
-    };
-  </script>
+  } else {
+    mediaRecorder.stop();
+    document.getElementById("recBtn").innerText = "● 録音開始";
+  }
+};
+
+// ---------------------------------------------------
+// Whisper プレビュー解析
+// ---------------------------------------------------
+async function previewTranscription() {
+  const formData = new FormData();
+  formData.append("file", audioBlob, "audio.webm");
+
+  const res = await fetch(`${API_BASE}/api/transcribe_preview`, {
+    method: "POST",
+    body: formData
+  });
+  const json = await res.json();
+
+  document.getElementById("previewText").innerText =
+    json.transcript || "（空です）";
+  document.getElementById("previewArea").style.display = "block";
+  document.getElementById("status").innerText = "確認してください ↓";
+
+  // Whisper解析が終わったらロードOFF
+  hideLoading();
+}
+
+// ---------------------------------------------------
+// OK → 本番送信
+// ---------------------------------------------------
+document.getElementById("previewOK").onclick = async () => {
+
+  showLoading(); // 本番処理全体
+
+  const formData = new FormData();
+  formData.append("file", audioBlob, "audio.webm");
+
+  const res = await fetch(`${API_BASE}/api/conversation`, {
+    method: "POST",
+    body: formData
+  });
+  const json = await res.json();
+
+  document.getElementById("log").innerText =
+    JSON.stringify(json, null, 2);
+
+  document.getElementById("textResult").innerHTML = `
+    <div><span class="label">🧑 あなた:</span>
+    <span class="user">${json.transcript}</span></div>
+    <div><span class="label">🤖 AI:</span>
+    <span class="ai">${json.reply}</span></div>
+  `;
+
+  const audioArea = document.getElementById("audioArea");
+  audioArea.innerHTML = "";
+
+  if (json.voice_audio_url) {
+    const src = json.voice_audio_url.startsWith("http")
+      ? json.voice_audio_url
+      : API_BASE + json.voice_audio_url;
+
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.autoplay = true;
+    audio.src = src;
+    audioArea.appendChild(audio);
+  } else {
+    audioArea.innerText = "音声なし（VoiceVox エラー）";
+  }
+
+  hideLoading();
+  document.getElementById("previewArea").style.display = "none";
+  document.getElementById("status").innerText = "送信完了";
+};
+
+// ---------------------------------------------------
+// NG → 再録音
+// ---------------------------------------------------
+document.getElementById("previewNG").onclick = async () => {
+
+  audioChunks = [];
+  audioBlob = null;
+
+  // プレビュー閉じる
+  document.getElementById("previewArea").style.display = "none";
+  document.getElementById("status").innerText =
+    "再録音を開始します…";
+
+  // 自動録音開始
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+  mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+  mediaRecorder.onstop = async () => {
+    audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+    document.getElementById("status").innerText =
+      "録音完了 → Whisperで解析中…";
+
+    showLoading(); // 再録音 Whisper前
+    await previewTranscription();
+  };
+
+  mediaRecorder.start();
+  document.getElementById("status").innerText =
+    "録音中…（NG後の録音）";
+
+  document.getElementById("recBtn").innerText = "■ 録音停止";
+};
+
+</script>
+
 </body>
 </html>
