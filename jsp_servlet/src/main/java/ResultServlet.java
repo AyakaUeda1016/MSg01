@@ -32,9 +32,17 @@ public class ResultServlet extends HttpServlet {
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		request.setCharacterEncoding("UTF-8");
 		String sb = request.getParameter("sb");
+		String returnurl = null;
 		System.out.println(sb);
 		
 		if(sb.equals("log")) {
+			returnurl = "result?sb=result";
+			request.setAttribute("RETURNURL", returnurl);
+			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
+			rd.forward(request, response);
+		}else if(sb.equals("log_growth")) {
+			returnurl = "growth_record?action=details&recordId=1";
+			request.setAttribute("RETURNURL", returnurl);
 			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("result")) {

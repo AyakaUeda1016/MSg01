@@ -80,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = ""
     let i = 0
 
+
     const timer = setInterval(() => {
       if (i >= text.length) {
         clearInterval(timer)
@@ -239,6 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const padding = 20
     tooltip.style.transform = "none"
+           
 
     switch (position) {
       case "top":
@@ -327,3 +329,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderImages()
   renderTexts()
 })
+

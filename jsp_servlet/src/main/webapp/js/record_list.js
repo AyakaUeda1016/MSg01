@@ -111,7 +111,7 @@ document.getElementById("navLeftArrow").onclick = () => {
   board.classList.add("slide-out-right");
 
   setTimeout(() => {
-    window.location.href = "growth_record.jsp";
+    window.location.href = "home?sb=growth_record";
   }, 500);
 };
 
