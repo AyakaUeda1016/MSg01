@@ -182,7 +182,8 @@ def init_models():
 
     if WHISPER is None:
         print("[INIT] WhisperModel 読み込み中...")
-        WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
+        #WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
+        WHISPER = WhisperModel("small", device="cuda", compute_type="float16")
 
     if SMILE is None:
         print("[INIT] openSMILE 初期化中...")
@@ -333,6 +334,69 @@ def convert_webm_to_wav(input_path: str) -> str:
 # 9. ターンログ / セッションログを保存
 # =====================================================================
 
+
+# ================================
+# 文字起こしだけ返す API
+# ================================
+@app.route("/api/transcribe_preview", methods=["POST"])
+def transcribe_preview():
+    try:
+        init_models()
+
+        if "file" not in request.files:
+            return Response(
+                json.dumps({"error": "音声がありません"}, ensure_ascii=False),
+                status=400,
+                content_type="application/json",
+            )
+
+        # WebM -> 一時保存
+        audio_file = request.files["file"]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
+            audio_file.save(tmp.name)
+            webm_path = tmp.name
+
+        # WebM → WAV
+        wav_path = convert_webm_to_wav(webm_path)
+        os.remove(webm_path)
+
+        # Whisper 文字起こし
+        transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
+        os.remove(wav_path)
+
+        if not transcript or not transcript.strip():
+            return Response(
+                json.dumps({"error": "無音でした"}, ensure_ascii=False),
+                status=400,
+                content_type="application/json",
+            )
+
+        result = {
+            "transcript": transcript,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        return Response(
+            json.dumps(result, ensure_ascii=False),
+            status=200,
+            content_type="application/json",
+        )
+
+    except Exception as e:
+        import traceback
+        return Response(
+            json.dumps(
+                {"error": str(e), "traceback": traceback.format_exc()},
+                ensure_ascii=False,
+            ),
+            status=500,
+            content_type="application/json",
+        )
+
+
+# ================================
+# 送られてきた録音データ（音声ファイル）が存在するかどうかをチェック
+# ================================
 @app.route("/api/conversation", methods=["POST"])
 def conversation_api():
     try:
