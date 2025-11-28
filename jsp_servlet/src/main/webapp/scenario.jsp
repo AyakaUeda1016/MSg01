@@ -56,10 +56,10 @@
                     <img src="${pageContext.request.contextPath}/images/l.png" alt="前へ">
                 </button>
                 
-                <!-- Updated decide button to use blackboard eraser style -->
+                <!-- Updated form to include scenario ID that updates dynamically -->
                 <form action="${pageContext.request.contextPath}/scenario" method="get">
-                	<input type="hidden" name="scenarioId"  id="scenarioId" value="1">
-                	<button type="submit" name="sb"  value="decide" class="decide-btn" id="decide-btn">決定</button>
+                	<input type="hidden" name="scenarioId" id="scenarioId" value="1">
+                	<button type="submit" name="sb" value="decide" class="decide-btn" id="decide-btn">決定</button>
                 </form>
  
                 <button type="button" class="arrow-btn arrow-right" id="btn-right">

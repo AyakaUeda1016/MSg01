@@ -1,19 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[v0] シナリオ選択画面初期化")
   const basePath = window.contextPath || ""
 
   const scenes = [
     {
+      id: 1,
       img: basePath + "/images/haru.jpg",
       title: "シナリオ1",
       desc: "みんなの前で自己紹介をやってみよう！",
     },
     {
+      id: 2,
       img: basePath + "/images/kyo.jpg",
       title: "シナリオ2",
       desc: "先生に相談してみよう！",
     },
     {
+      id: 3,
       img: basePath + "/images/natu.jpg",
       title: "シナリオ3",
       desc: "友達と放課後の予定を決めてみよう！",
@@ -37,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tutorialStep = document.getElementById("tutorial-step")
   const skipButton = document.getElementById("skip-tutorial")
   const tooltipArrow = document.getElementById("tooltip-arrow")
+  const scenarioIdInput = document.getElementById("scenarioId")
 
   let current = 1
   let isAnimating = false
@@ -111,6 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTyping()
     typeText(titleEl, scene.title, 60, "title")
     typeText(descEl, scene.desc, 35, "desc")
+    if (scenarioIdInput) {
+      scenarioIdInput.value = scene.id
+    }
   }
 
   function switchGroup(dir) {
@@ -178,14 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
   ]
 
   function startTutorial() {
-    console.log("[v0] チュートリアル開始")
     tutorialActive = true
     currentStep = 0
     showStep(currentStep)
   }
 
   function showStep(stepIndex) {
-    console.log("[v0] ステップ表示:", stepIndex)
     if (stepIndex >= tutorialSteps.length) {
       endTutorial()
       return
@@ -193,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const step = tutorialSteps[stepIndex]
 
-    // すべてのハイライトをクリア
     document.querySelectorAll(".tutorial-highlight").forEach((el) => {
       el.classList.remove("tutorial-highlight")
     })
@@ -204,11 +207,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tutorialTooltip.style.display = "block"
     tutorialTooltip.classList.add("active")
 
-    // テキストとステップインジケーターを設定
     tutorialText.innerHTML = step.text
     tutorialStep.textContent = `${stepIndex + 1} / ${tutorialSteps.length}`
 
-    // ツールチップのクラスをリセット
     tutorialTooltip.className = "tutorial-tooltip active"
 
     if (step.target) {
@@ -216,17 +217,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (targetElement) {
         targetElement.classList.add("tutorial-highlight")
         positionTooltip(targetElement, step.position)
-        console.log("[v0] ターゲット要素にハイライト:", step.target)
       } else {
         console.warn("[v0] ターゲット要素が見つかりません:", step.target)
       }
     } else {
-      // 画面中央に表示
       tutorialTooltip.classList.add("center")
       tutorialTooltip.style.left = "50%"
       tutorialTooltip.style.top = "50%"
       tutorialTooltip.style.transform = "translate(-50%, -50%)"
-      console.log("[v0] 中央表示")
     }
   }
 
@@ -234,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const rect = targetElement.getBoundingClientRect()
     const tooltip = tutorialTooltip
 
-    // ツールチップのサイズを取得するために一時的に表示
     tooltip.style.visibility = "hidden"
     tooltip.style.display = "block"
     const tooltipRect = tooltip.getBoundingClientRect()
@@ -243,7 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const padding = 20
     tooltip.style.transform = "none"
 
-    // 矢印のクラスを設定
     switch (position) {
       case "top":
         tooltip.classList.add("arrow-bottom")
@@ -267,7 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
         break
     }
 
-    // 画面外に出ないように調整
     const finalLeft = Number.parseFloat(tooltip.style.left)
     const finalTop = Number.parseFloat(tooltip.style.top)
 
@@ -282,7 +277,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function endTutorial() {
-    console.log("[v0] チュートリアル終了")
     tutorialActive = false
     tutorialOverlay.classList.remove("active")
     tutorialOverlay.style.display = "none"
@@ -294,49 +288,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function nextStep() {
-    console.log("[v0] 次のステップへ")
     currentStep++
     showStep(currentStep)
   }
 
-  // ヘルプボタンでチュートリアル開始
   if (helpBtn) {
     helpBtn.addEventListener("click", (e) => {
       e.stopPropagation()
-      console.log("[v0] ヘルプボタンクリック - チュートリアル開始")
       startTutorial()
     })
   }
 
-  // スキップボタンでチュートリアル終了
   if (skipButton) {
     skipButton.addEventListener("click", (e) => {
       e.stopPropagation()
-      console.log("[v0] スキップボタンクリック")
       endTutorial()
     })
   }
 
-  // オーバーレイまたはツールチップをクリックで次へ
   tutorialOverlay.addEventListener("click", (e) => {
     if (tutorialActive && e.target === tutorialOverlay) {
-      console.log("[v0] オーバーレイクリック")
       nextStep()
     }
   })
 
   tutorialTooltip.addEventListener("click", (e) => {
-    // スキップボタンのクリックは除外
     if (e.target !== skipButton && !skipButton.contains(e.target)) {
-      console.log("[v0] ツールチップクリック")
       nextStep()
     }
   })
 
-  // ESCキーでチュートリアル終了
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && tutorialActive) {
-      console.log("[v0] ESCキーでチュートリアル終了")
       endTutorial()
     }
   })

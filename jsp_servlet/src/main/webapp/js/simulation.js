@@ -1,158 +1,214 @@
-// グローバル変数
-let conversationData = null;
-const currentTurnIndex = 0;
-const MAX_TURNS = 10;
+//------------------------------------------------------
+// WebM録音 → Flask API → Whisper/GPT/VoiceVox の処理
+//------------------------------------------------------
 
-// DOM要素の取得
-const currentRallyElement = document.getElementById("currentRally");
-const maxRallyElement = document.getElementById("maxRally");
-const tensionPopup = document.getElementById("tensionPopup");
-const tensionMessage = document.getElementById("tensionMessage");
-const menuButton = document.getElementById("menuButton");
-const messageContent = document.getElementById("messageContent");
-const speakerName = document.getElementById("speakerName");
+let mediaRecorder = null
+let audioChunks = []
+let MAX_TURNS = 10 // Declare the variable n here
 
-/**
- * サーブレットからJSONデータを取得
- */
-async function fetchConversationData() {
-  try {
-    console.log("[v0] JSONデータを取得中...");
+// DOM 要素
+const turnElement = document.getElementById("turn")
+const maxTurnsElement = document.getElementById("max_turns")
+const transcriptElement = document.getElementById("transcript")
+const replyElement = document.getElementById("reply")
+const userMessageBox = document.getElementById("userMessageBox")
 
-    const url = window.SERVLET_JSON_URL || "./log.json";
+const totalScoreElement = document.getElementById("totalScore")
+const rankBadgeElement = document.getElementById("rankBadge")
+const selfUnderstandingBar = document.getElementById("selfUnderstandingBar")
+const selfUnderstandingScore = document.getElementById("selfUnderstandingScore")
+const speakingBar = document.getElementById("speakingBar")
+const speakingScore = document.getElementById("speakingScore")
+const comprehensionBar = document.getElementById("comprehensionBar")
+const comprehensionScore = document.getElementById("comprehensionScore")
+const emotionControlBar = document.getElementById("emotionControlBar")
+const emotionControlScore = document.getElementById("emotionControlScore")
+const empathyBar = document.getElementById("empathyBar")
+const empathyScore = document.getElementById("empathyScore")
 
-    const response = await fetch(url);
+const transcriptionConfirmation = document.getElementById("transcriptionConfirmation")
+const confirmedText = document.getElementById("confirmedText")
+const pendingTranscription = null
+let pendingResult = null
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+//======================================================
+// 録音開始
+//======================================================
+async function startRecording() {
+  console.log("[REC] 録音開始")
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  audioChunks = []
+  mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" })
+  mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data)
+  mediaRecorder.start()
+}
+
+//======================================================
+// 録音停止 → Flaskへ送信
+//======================================================
+async function stopRecording() {
+  if (!mediaRecorder) return
+
+  console.log("[REC] 録音停止")
+  mediaRecorder.stop()
+
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(audioChunks, { type: "audio/webm" })
+    const result = await sendAudioToFlask(blob)
+    console.log("[FLASK RESPONSE]", result)
+
+    if (result && result.transcript) {
+      showTranscriptionConfirmation(result)
     }
-
-    const data = await response.json();
-    console.log("[v0] JSONデータ取得成功:", data);
-
-    conversationData = data;
-    updateDisplay();
-  } catch (error) {
-    console.error("[v0] JSONデータ取得エラー:", error);
-    messageContent.textContent = "データの取得に失敗しました。";
   }
 }
 
-/**
- * 画面表示を更新
- */
-function updateDisplay() {
-  if (!conversationData || !conversationData.conversations) {
-    console.warn("[v0] 会話データが存在しません");
-    return;
+//======================================================
+// Flask へ WebM を送信
+//======================================================
+async function sendAudioToFlask(blob) {
+  const formData = new FormData()
+  formData.append("file", blob, "audio.webm")
+
+  const response = await fetch("http://127.0.0.1:5000/api/conversation", {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    console.error("[API ERROR]", await response.text())
+    return null
   }
 
-  const totalTurns = conversationData.turns || 0;
-  updateRallyCount(totalTurns, MAX_TURNS);
+  return await response.json()
+}
 
-  const conversations = conversationData.conversations;
-  if (conversations.length > 0) {
-    const latestConversation = conversations[conversations.length - 1];
+//======================================================
+//======================================================
+function getRankFromScore(score) {
+  if (score >= 40) return { rank: "S", color: "#ffd700" }
+  if (score >= 30) return { rank: "A", color: "#c0c0c0" }
+  if (score >= 20) return { rank: "B", color: "#cd7f32" }
+  return { rank: "C", color: "#8b8b8b" }
+}
 
-    updateMessage("あい", latestConversation.ai || "");
+//======================================================
+//======================================================
+function updateScoreMeter(scores) {
+  if (!scores) return
 
-    checkAndShowTensionPopup(latestConversation, totalTurns);
+  // 各スコアを取得（10点満点）
+  const selfUnderstanding = scores.self_understanding?.score || 0
+  const speaking = scores.speaking?.score || 0
+  const comprehension = scores.comprehension?.score || 0
+  const emotionControl = scores.emotion_control?.score || 0
+  const empathy = scores.empathy?.score || 0
+  const total = scores.total_score || 0
+
+  // バーの幅を計算（10点満点を100%として表示）
+  const toPercent = (score) => (score / 10) * 100
+
+  // 自己理解
+  selfUnderstandingBar.style.width = toPercent(selfUnderstanding) + "%"
+  selfUnderstandingScore.textContent = Math.round(selfUnderstanding)
+
+  // 話す力
+  speakingBar.style.width = toPercent(speaking) + "%"
+  speakingScore.textContent = Math.round(speaking)
+
+  // 理解力
+  comprehensionBar.style.width = toPercent(comprehension) + "%"
+  comprehensionScore.textContent = Math.round(comprehension)
+
+  // 感情制御
+  emotionControlBar.style.width = toPercent(emotionControl) + "%"
+  emotionControlScore.textContent = Math.round(emotionControl)
+
+  // 思いやり
+  empathyBar.style.width = toPercent(empathy) + "%"
+  empathyScore.textContent = Math.round(empathy)
+
+  // 総合スコアとランク（50点満点）
+  totalScoreElement.textContent = Math.round(total)
+  const rankInfo = getRankFromScore(total)
+  rankBadgeElement.textContent = rankInfo.rank
+  rankBadgeElement.style.background = rankInfo.color
+}
+
+//======================================================
+// UI に結果を反映
+//======================================================
+function updateDisplayFromFlask(result) {
+  if (!result) return
+
+  // transcript（ユーザー発話）
+  transcriptElement.textContent = result.transcript
+  userMessageBox.style.display = "block"
+
+  // reply（AI応答）
+  replyElement.textContent = result.reply
+
+  // turn
+  turnElement.textContent = result.turn
+
+  if (result.scores) {
+    updateScoreMeter(result.scores)
+  }
+
+  // VoiceVox音声再生
+  if (result.voice_audio_url) {
+    const audioUrl = "http://127.0.0.1:5000" + result.voice_audio_url
+    new Audio(audioUrl).play()
   }
 }
 
-/**
- * ラリー数を更新
- */
-function updateRallyCount(current, max) {
-  currentRallyElement.textContent = current;
-  maxRallyElement.textContent = max;
-
-  console.log(`[v0] ラリー数更新: ${current}/${max}`);
+//======================================================
+// 音声認識結果の確認画面を表示
+//======================================================
+function showTranscriptionConfirmation(result) {
+  pendingResult = result
+  confirmedText.textContent = result.transcript
+  transcriptionConfirmation.style.display = "flex"
 }
 
-/**
- * メッセージを更新
- */
-function updateMessage(speaker, message) {
-  speakerName.textContent = speaker;
-  messageContent.textContent = message;
-
-  console.log(`[v0] メッセージ更新 - ${speaker}: ${message}`);
-}
-
-/**
- * 緊張度ポップアップの表示判定
- */
-function checkAndShowTensionPopup(conversation, turns) {
-  let shouldShow = false;
-  let popupText = "";
-
-  if (conversation.appropriateness === "無関係な発言") {
-    shouldShow = true;
-    popupText = "文脈に関係のない話題になっています！<br>会話の流れを戻しましょう。";
-  } else if (turns >= 7) {
-    shouldShow = true;
-    popupText = "会話が長引いています！";
-  }
-
-  if (shouldShow) {
-    tensionMessage.innerHTML = popupText;
-    showTensionPopup();
-  } else {
-    hideTensionPopup();
+//======================================================
+// 確認後に送信
+//======================================================
+function confirmTranscription() {
+  transcriptionConfirmation.style.display = "none"
+  if (pendingResult) {
+    updateDisplayFromFlask(pendingResult)
+    pendingResult = null
   }
 }
 
-/**
- * 緊張度ポップアップを表示
- */
-function showTensionPopup() {
-  tensionPopup.classList.remove("hidden");
-  console.log("[v0] 緊張度ポップアップ表示");
+//======================================================
+// 録音をやり直す
+//======================================================
+function retryRecording() {
+  transcriptionConfirmation.style.display = "none"
+  pendingResult = null
+  // 自動的に録音を再開
+  startRecording()
 }
 
-/**
- * 緊張度ポップアップを非表示
- */
-function hideTensionPopup() {
-  tensionPopup.classList.add("hidden");
-  console.log("[v0] 緊張度ポップアップ非表示");
-}
-
-/**
- * メニューボタンのクリックイベント
- */
-menuButton.addEventListener("click", (e) => {
-  e.preventDefault();
-  console.log("[v0] メニューボタンがクリックされました");
-});
-
-/**
- * 定期的にデータを更新（オプション）
- */
-function startAutoRefresh(intervalMs = 5000) {
-  setInterval(() => {
-    console.log("[v0] 自動更新実行");
-    fetchConversationData();
-  }, intervalMs);
-}
-
-/**
- * 初期化処理
- */
+//======================================================
+// ページロード時：max_turns を取得
+//======================================================
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[v0] ページ読み込み完了");
+  fetch("http://127.0.0.1:5000/api/current_scenario")
+    .then((res) => res.json())
+    .then((data) => {
+      MAX_TURNS = data.max_turns
+      maxTurnsElement.textContent = MAX_TURNS
+    })
+})
 
-  fetchConversationData();
-  // startAutoRefresh(5000);
-});
-
-// 外部から呼び出せる関数をエクスポート
+//======================================================
 window.chatInterface = {
-  fetchConversationData,
-  updateRallyCount,
-  updateMessage,
-  showTensionPopup,
-  hideTensionPopup,
-  updateDisplay,
-};
+  startRecording,
+  stopRecording,
+  confirmTranscription, // 追加
+  retryRecording, // 追加
+}
