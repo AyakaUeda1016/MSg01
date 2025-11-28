@@ -36,15 +36,68 @@
             </div>
         </div>
 
+        <!-- 追加: スコアメーター -->
+        <div class="score-meter-container">
+            <!-- 総合スコア＆ランク予測 -->
+            <div class="total-score-display">
+                <div class="rank-badge" id="rankBadge">-</div>
+                <div class="total-score-value">
+                    <span id="totalScore">0</span>
+                    <span class="score-unit">pts</span>
+                </div>
+                <div class="rank-label">予測ランク</div>
+            </div>
+
+            <!-- 5つのスキルバー -->
+            <div class="skill-bars">
+                <div class="skill-item">
+                    <div class="skill-label">自己理解</div>
+                    <div class="skill-bar-container">
+                        <div class="skill-bar" id="selfUnderstandingBar" style="width: 0%"></div>
+                        <div class="skill-score" id="selfUnderstandingScore">0</div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-label">話す力</div>
+                    <div class="skill-bar-container">
+                        <div class="skill-bar" id="speakingBar" style="width: 0%"></div>
+                        <div class="skill-score" id="speakingScore">0</div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-label">理解力</div>
+                    <div class="skill-bar-container">
+                        <div class="skill-bar" id="comprehensionBar" style="width: 0%"></div>
+                        <div class="skill-score" id="comprehensionScore">0</div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-label">感情制御</div>
+                    <div class="skill-bar-container">
+                        <div class="skill-bar" id="emotionControlBar" style="width: 0%"></div>
+                        <div class="skill-score" id="emotionControlScore">0</div>
+                    </div>
+                </div>
+
+                <div class="skill-item">
+                    <div class="skill-label">思いやり</div>
+                    <div class="skill-bar-container">
+                        <div class="skill-bar" id="empathyBar" style="width: 0%"></div>
+                        <div class="skill-score" id="empathyScore">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- メニューボタン（触ってません） -->
         <a href="${pageContext.request.contextPath}/simulation">
             <button id="menuButton" class="menu-button">
                 <span class="menu-icon">|||</span>
             </button>
         </a>
-
-        <!-- 次へ（触ってません） -->
-        <a href="result.jsp" class="next-link">次へ</a>
 
         <!-- キャラクター画像 --(触ってません)-->
         <div class="character-container">
@@ -69,6 +122,20 @@
         <div class="recording-controls">
             <button class="record-btn start" onclick="chatInterface.startRecording()">🎙️ 録音開始</button>
             <button class="record-btn stop" onclick="chatInterface.stopRecording()">■ 停止</button>
+        </div>
+
+        <!-- 追加: 音声認識結果の確認画面 -->
+        <div class="transcription-confirmation" id="transcriptionConfirmation" style="display: none;">
+            <div class="confirmation-overlay" onclick="chatInterface.confirmTranscription()"></div>
+            <div class="confirmation-box">
+                <h3>発話内容を確認してください</h3>
+                <div class="confirmed-text" id="confirmedText"></div>
+                <div class="confirmation-actions">
+                    <button class="confirm-btn retry" onclick="chatInterface.retryRecording()">🎙️ 録音し直す</button>
+                    <button class="confirm-btn submit" onclick="chatInterface.confirmTranscription()">✓ OK!（クリックで送信）</button>
+                </div>
+                <p class="confirm-hint">画面のどこでもクリックで送信できます</p>
+            </div>
         </div>
 
     </div>

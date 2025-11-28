@@ -148,6 +148,117 @@ a {
 }
 
 /* ---------------------------------------------- */
+/* メーターをラリーカウンター下に移動、幅を狭く調整 */
+/* ---------------------------------------------- */
+.score-meter-container {
+  position: absolute;
+  top: 190px;
+  left: 20px;
+  width: 500px;
+  background: rgba(30, 40, 60, 0.95);
+  border: 4px solid #4a6fa5;
+  border-radius: 16px;
+  padding: 20px 25px;
+  z-index: 15;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* 総合スコア表示エリア */
+.total-score-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.rank-badge {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #8b8b8b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.total-score-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.score-unit {
+  font-size: 18px;
+  color: #a0c4ff;
+  margin-left: 5px;
+}
+
+.rank-label {
+  font-size: 14px;
+  color: #a0c4ff;
+  margin-left: auto;
+}
+
+/* スキルバー一覧 */
+.skill-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skill-label {
+  width: 80px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #cce4ff;
+  text-align: right;
+}
+
+.skill-bar-container {
+  position: relative;
+  flex: 1;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.skill-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4a90e2 0%, #50c878 50%, #ffd700 100%);
+  border-radius: 12px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+}
+
+.skill-score {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* ---------------------------------------------- */
 /* 🟦 ユーザーメッセージ                          */
 /* ---------------------------------------------- */
 .user-message-box {
@@ -230,4 +341,103 @@ a {
 
 .record-btn.stop {
   background: #f44336;
+}
+
+/* ---------------------------------------------- */
+/* 音声認識結果の確認画面                         */
+/* ---------------------------------------------- */
+.transcription-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+}
+
+.confirmation-box {
+  position: relative;
+  background: #2d4a3e;
+  border: 8px solid #8b7355;
+  border-radius: 16px;
+  padding: 40px 50px;
+  max-width: 700px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+}
+
+.confirmation-box h3 {
+  font-size: 24px;
+  color: #f0e6d2;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.confirmed-text {
+  font-size: 22px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.confirm-btn {
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.confirm-btn.retry {
+  background: #ff9800;
+  color: #fff;
+}
+
+.confirm-btn.retry:hover {
+  background: #fb8c00;
+  transform: scale(1.05);
+}
+
+.confirm-btn.submit {
+  background: #4caf50;
+  color: #fff;
+}
+
+.confirm-btn.submit:hover {
+  background: #43a047;
+  transform: scale(1.05);
+}
+
+.confirm-hint {
+  text-align: center;
+  font-size: 14px;
+  color: #a0c4ff;
+  margin-top: 10px;
 }
