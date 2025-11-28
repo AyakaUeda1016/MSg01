@@ -3,19 +3,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const scenes = [
     {
       id: 1,
-      img: basePath + "/images/haru.png",
+      img: basePath + "/images/haru.jpg",
       title: "シナリオ1",
       desc: "みんなの前で自己紹介をやってみよう！",
     },
     {
       id: 2,
-      img: basePath + "/images/kyo.png",
+      img: basePath + "/images/kyo.jpg",
       title: "シナリオ2",
       desc: "先生に相談してみよう！",
     },
     {
       id: 3,
-      img: basePath + "/images/natu.png",
+      img: basePath + "/images/natu.jpg",
       title: "シナリオ3",
       desc: "友達と放課後の予定を決めてみよう！",
     },
