@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
   const basePath = window.contextPath || ""
-
   const scenes = [
     {
       id: 1,
@@ -20,18 +19,31 @@ document.addEventListener("DOMContentLoaded", () => {
       title: "シナリオ3",
       desc: "友達と放課後の予定を決めてみよう！",
     },
+    // <CHANGE> シナリオ4を追加
+    {
+      id: 4,
+      img: basePath + "/images/room.png",
+      title: "シナリオ4",
+      desc: "部活動の見学に行ってみよう！",
+    },
+    // <CHANGE> シナリオ5を追加
+    {
+      id: 5,
+      img: basePath + "/images/sky.png",
+      title: "シナリオ5",
+      desc: "クラスメイトと冬の思い出を作ろう！",
+    },
   ]
+
+  // ... existing code ...
 
   const imgLeft = document.getElementById("scene-left")
   const imgCenter = document.getElementById("scene-center")
   const imgRight = document.getElementById("scene-right")
-
   const titleEl = document.getElementById("scenario-title")
   const descEl = document.getElementById("scenario-desc")
-
   const btnLeft = document.getElementById("btn-left")
   const btnRight = document.getElementById("btn-right")
-
   const helpBtn = document.getElementById("help-btn")
   const tutorialOverlay = document.getElementById("tutorial-overlay")
   const tutorialTooltip = document.getElementById("tutorial-tooltip")
@@ -43,10 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let current = 1
   let isAnimating = false
-
   let titleTimer = null
   let descTimer = null
-
   let currentStep = 0
   let tutorialActive = false
 
@@ -76,11 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(descTimer)
       descTimer = null
     }
-
     el.textContent = ""
     let i = 0
-
-
     const timer = setInterval(() => {
       if (i >= text.length) {
         clearInterval(timer)
@@ -89,13 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent += text.charAt(i)
       i++
     }, speed)
-
     if (kind === "title") {
       titleTimer = timer
     } else {
       descTimer = timer
     }
   }
+
   ;[imgLeft, imgCenter, imgRight].forEach((img) => {
     img.style.transition = "opacity 0.35s ease, transform 0.35s ease"
   })
@@ -104,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = scenes.length
     const leftIndex = (current + total - 1) % total
     const rightIndex = (current + 1) % total
-
     imgCenter.src = scenes[current].img
     imgLeft.src = scenes[leftIndex].img
     imgRight.src = scenes[rightIndex].img
@@ -123,24 +129,20 @@ document.addEventListener("DOMContentLoaded", () => {
   function switchGroup(dir) {
     if (isAnimating) return
     isAnimating = true
-
     const offset = dir === 1 ? -15 : 15
     ;[imgLeft, imgCenter, imgRight].forEach((img) => {
       img.style.opacity = "0"
       img.style.transform = `translateX(${offset}px) scale(0.98)`
     })
-
     setTimeout(() => {
       current = (current + dir + scenes.length) % scenes.length
       renderImages()
-
       renderTexts()
       ;[imgLeft, imgCenter, imgRight].forEach((img) => {
         img.style.transition = "none"
         img.style.transform = `translateX(${-offset}px) scale(0.98)`
         img.style.opacity = "0"
       })
-
       void imgCenter.offsetWidth
       ;[imgLeft, imgCenter, imgRight].forEach((img) => {
         img.style.transition = "opacity 0.35s ease, transform 0.35s ease"
@@ -148,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
         img.style.opacity = "1"
       })
     }, 180)
-
     setTimeout(() => {
       isAnimating = false
     }, 380)
@@ -157,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
   btnLeft.addEventListener("click", () => {
     switchGroup(-1)
   })
+
   btnRight.addEventListener("click", () => {
     switchGroup(1)
   })
@@ -195,24 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
       endTutorial()
       return
     }
-
     const step = tutorialSteps[stepIndex]
-
     document.querySelectorAll(".tutorial-highlight").forEach((el) => {
       el.classList.remove("tutorial-highlight")
     })
-
     tutorialOverlay.style.display = "block"
     tutorialOverlay.classList.add("active")
-
     tutorialTooltip.style.display = "block"
     tutorialTooltip.classList.add("active")
-
     tutorialText.innerHTML = step.text
     tutorialStep.textContent = `${stepIndex + 1} / ${tutorialSteps.length}`
-
     tutorialTooltip.className = "tutorial-tooltip active"
-
     if (step.target) {
       const targetElement = document.getElementById(step.target)
       if (targetElement) {
@@ -232,16 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function positionTooltip(targetElement, position) {
     const rect = targetElement.getBoundingClientRect()
     const tooltip = tutorialTooltip
-
     tooltip.style.visibility = "hidden"
     tooltip.style.display = "block"
     const tooltipRect = tooltip.getBoundingClientRect()
     tooltip.style.visibility = "visible"
-
     const padding = 20
     tooltip.style.transform = "none"
-           
-
     switch (position) {
       case "top":
         tooltip.classList.add("arrow-bottom")
@@ -264,10 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tooltip.style.top = rect.top + rect.height / 2 - tooltipRect.height / 2 + "px"
         break
     }
-
     const finalLeft = Number.parseFloat(tooltip.style.left)
     const finalTop = Number.parseFloat(tooltip.style.top)
-
     if (finalLeft < 20) tooltip.style.left = "20px"
     if (finalLeft + tooltipRect.width > window.innerWidth - 20) {
       tooltip.style.left = window.innerWidth - tooltipRect.width - 20 + "px"
@@ -329,4 +318,3 @@ document.addEventListener("DOMContentLoaded", () => {
   renderImages()
   renderTexts()
 })
-
