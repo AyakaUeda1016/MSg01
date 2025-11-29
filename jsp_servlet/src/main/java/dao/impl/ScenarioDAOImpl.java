@@ -2,6 +2,8 @@ package dao.impl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,40 @@ public class ScenarioDAOImpl implements ScenarioDAO{
 	@Override
 	public List<Scenario> findAllScenario(){
 		List<Scenario> list = new ArrayList<>();
-		//以下シナリオのID(id)、シナリオのタイトル(title)、シナリオの説明文(explain)、シナリオのイメージ画像(imagelink)を出す。
+		String sql = "SELECT id, title, description, imagelink FROM scenario;";
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			con = getConnection();
+			ps = con.prepareStatement(sql);
+			rs = ps.executeQuery();
+		   
+			while (rs.next()) {
+				Scenario s = new Scenario();
+				s.setScenarioid(rs.getInt("id"));
+				s.setTitle(rs.getString("title"));
+				s.setDescription(rs.getString("description"));
+				s.setImagelink(rs.getString("imagelink"));
+				list.add(s);
+			}
+		} catch (SQLException e) {
+			 System.err.println(e.getMessage());
+		} finally {
+			 try {
+				 	if (rs != null) {
+				 		rs.close();
+				 	}
+				 	if (ps != null) {
+				 		ps.close();
+				 	}
+				 	if (con != null) {
+				 		con.close();
+				 	}
+			 } catch (SQLException e) {
+				 System.err.println(e.getMessage());
+			 }
+		  }
 		return list;
 	}
 	

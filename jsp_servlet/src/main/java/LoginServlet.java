@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -26,10 +27,26 @@ public class LoginServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
-        // 例：ID=admin、PW=1234 の場合ログイン成功
-        if ("test".equals(id) && "1234".equals(password)) {
-            request.getSession().setAttribute("user", id);
+        
+        /**セッションの開始(セッションを使うときは必ず書く)**/
+		HttpSession session = request.getSession(false);
+		/*
+		 * request.getSession(false);
+		 * セッションが存在していなければnullを返す
+		 * セッションがあるかないか判断するために使用
+		 */
+		if(null == session) {
+			session = request.getSession(true);
+			/*
+			 * request.getSession(true);
+			 * セッションを新しく発行する
+			 */
+		}
+        
+        
+        // 例：ID=test、PW=1234 の場合ログイン成功
+        if ("1".equals(id) && "pass".equals(password)) {
+            session.setAttribute("USERID", id);
 
             // ★ ログイン成功 → home.jsp へ遷移
             request.getRequestDispatcher("home.jsp").forward(request, response);
