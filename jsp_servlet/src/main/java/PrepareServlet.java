@@ -1,6 +1,8 @@
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -8,19 +10,21 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+
+import model.Scenario;
+import model.ScenarioLogic;
 
 /**
- * Servlet implementation class SenalioServlet
+ * Servlet implementation class PrepareServlet
  */
-@WebServlet("/scenario")
-public class ScenarioServlet extends HttpServlet {
+@WebServlet("/prepare")
+public class PrepareServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public ScenarioServlet() {
+    public PrepareServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -32,37 +36,19 @@ public class ScenarioServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		request.setCharacterEncoding("UTF-8");
-		String strNo = request.getParameter("scenarioId");
-		int scenarioid = Integer.parseInt(strNo);
 		String sb = request.getParameter("sb");
+		ScenarioLogic logic = new ScenarioLogic();
+		List<Scenario> list = new ArrayList<>();
 		
-		System.out.println(scenarioid);
-		System.out.println(sb);
-		
-		/**セッションの開始(セッションを使うときは必ず書く)**/
-		HttpSession session = request.getSession(false);
-		/*
-		 * request.getSession(false);
-		 * セッションが存在していなければnullを返す
-		 * セッションがあるかないか判断するために使用
-		 */
-		if(null == session) {
-			session = request.getSession(true);
-			/*
-			 * request.getSession(true);
-			 * セッションを新しく発行する
-			 */
-		}
-		
-		if(sb.equals("decide")) {
-			session.setAttribute("SCENARIOID",scenarioid);
-			RequestDispatcher rd = request.getRequestDispatcher("./prepare.jsp");
+		if("start".equals(sb)) {
+			RequestDispatcher rd = request.getRequestDispatcher("./simulation.jsp");
+			//シミュレーション画面にsession.getAttribute→simulation.jspに別途<script>を使ってjsファイルにユーザーIDとシナリオIDを渡します
 			rd.forward(request, response);
-		}else if(sb.equals("home")) {
-			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
+		}else if("back".equals(sb)) {
+			list = logic.findScenario();
+			RequestDispatcher rd = request.getRequestDispatcher("./scenario.jsp");
 			rd.forward(request, response);
 		}
-		
 	}
 
 	/**
