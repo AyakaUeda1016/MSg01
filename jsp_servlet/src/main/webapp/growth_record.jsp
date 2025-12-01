@@ -1,5 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.util.List"%>
+<%@ page import="model.Scenario"%>
+<% 
+	List<Scenario> list = (List<Scenario>)request.getAttribute("LIST");
+%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -85,106 +90,32 @@
                 <!--成長記録リスト-->
                 <div class="records-container">
                     <div class="record-list">
-                        <!-- Item 1: クリック可能なリンクとして全体を囲む -->
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="self-intro" data-date="2024-10-22">
-                                <div class="record-date">
-                                    <span class="date-text">10/22</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/classroom.png" alt="自己紹介">
-                                </div>
-                                <div class="record-title">
-                                    <h2>自己紹介</h2>
-                                </div>
-                            </div>
-                        </a>
+                        <%if(list != null && !list.isEmpty()){ %>
+                        	<%for(Scenario s : list){ %>
+                        		<a href="growth_record?action=details&recordId=<%=s.getScenarioid() %>&finishdate=<%=s.getFinishdate() %>" class="record-link">
+                        			<div class="record-item" 
+                         				data-category="self-intro" 
+                         				data-date="<%= s.getFinishdate().substring(0,10) %>">
 
-                        <!-- Item 2: クリック可能なリンクとして全体を囲む -->
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="after-school" data-date="2024-10-27">
-                                <div class="record-date">
-                                    <span class="date-text">10/27</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/street.png" alt="放課後">
-                                </div>
-                                <div class="record-title">
-                                    <h2>放課後</h2>
-                                </div>
-                            </div>
-                        </a>
+                        				<div class="record-date">
+                            				<span class="date-text">
+                                				<%= s.getFinishdate().substring(5,10).replace("-", "/") %>
+                            				</span>
+                        				</div>
 
-                        <!-- さらにレコードアイテムを追加 -->
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="club" data-date="2024-10-29">
-                                <div class="record-date">
-                                    <span class="date-text">10/29</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/classroom.png" alt="部活動">
-                                </div>
-                                <div class="record-title">
-                                    <h2>部活動</h2>
-                                </div>
-                            </div>
-                        </a>
+                        				<div class="record-thumbnail">
+                            				<img src="<%= request.getContextPath() + s.getImagelink() %>" alt="<%= s.getTitle() %>">
+                        				</div>
 
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="self-intro" data-date="2024-11-01">
-                                <div class="record-date">
-                                    <span class="date-text">11/01</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/classroom.png" alt="自己紹介">
-                                </div>
-                                <div class="record-title">
-                                    <h2>自己紹介</h2>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="after-school" data-date="2024-11-03">
-                                <div class="record-date">
-                                    <span class="date-text">11/03</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/street.png" alt="放課後">
-                                </div>
-                                <div class="record-title">
-                                    <h2>放課後</h2>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="club" data-date="2024-11-05">
-                                <div class="record-date">
-                                    <span class="date-text">11/05</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/classroom.png" alt="部活動">
-                                </div>
-                                <div class="record-title">
-                                    <h2>部活動</h2>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="growth_record?action=details&recordId=1" class="record-link">
-                            <div class="record-item" data-category="self-intro" data-date="2024-11-07">
-                                <div class="record-date">
-                                    <span class="date-text">11/07</span>
-                                </div>
-                                <div class="record-thumbnail">
-                                    <img src="images/classroom.png" alt="自己紹介">
-                                </div>
-                                <div class="record-title">
-                                    <h2>自己紹介</h2>
-                                </div>
-                            </div>
-                        </a>
+                        				<div class="record-title">
+                            				<h2><%= s.getTitle() %></h2>
+                        				</div>
+                    				</div>
+                        		</a>
+                        	<%} %>
+                        <%}else{ %>
+                        	<p>成長記録がありません。</p>
+                        <%} %>
                     </div>
                 </div>
                 

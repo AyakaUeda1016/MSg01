@@ -1,4 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List"%>
+<%@ page import="model.Scenario"%>
+<% 
+	List<Scenario> list = (List<Scenario>)request.getAttribute("LIST");
+%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -55,7 +60,30 @@
     <a href="./scenario?sb=home"><button class="btn btn-wood" id="backBtn">戻る</button></a>
 
 </div>
-
+<script>
+    window.contextPath = "${pageContext.request.contextPath}";
+</script>
+<script>
+const initialScenarioId = 1; // 最初に中央に表示したいシナリオID
+const basePath = "${pageContext.request.contextPath}";
+const scenes = [
+<%
+  for (int i = 0; i < list.size(); i++) {
+      Scenario s = list.get(i);
+      String img = s.getImagelink()
+              .replace("\\", "\\\\")   // バックスラッシュをエスケープ
+              .replace("\"", "\\\"");  // ダブルクォートをエスケープ
+%>
+  {
+    id: <%= s.getScenarioid() %>,
+    img: basePath + "<%= img %>",
+    title: "<%= s.getTitle().replace("\"", "\\\"") %>",
+    desc: "<%= s.getDescription().replace("\"", "\\\"") %>"
+  }<%= (i < list.size() - 1) ? "," : "" %>
+<% } %>
+];
+console.log(scenes);
+</script>			
 <script src="js/scenario.js"></script>
 </body>
 </html>

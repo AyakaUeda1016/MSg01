@@ -2,7 +2,11 @@ package dao.impl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import dao.FeedBackDAO;
 import model.Feedback;
@@ -37,22 +41,81 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	}
 		
 	@Override
-	public String findResult(Feedback feedback) {
-		String resultdata = null;
-		//result_dataを持ってくる処理を書く
-		return resultdata;
+	public List<String> findResult(Feedback feedback) {
+		List<String> resultdatas = new ArrayList<>();
+		String sql = "SELECT result_data FROM feedback WHERE member_id = ? AND scenario_id = ? ORDER BY finish_date DESC LIMIT 2;";
+		Connection con = null;
+		PreparedStatement prst = null;
+		ResultSet rs = null;
+		try {
+			con = getConnection();
+			prst = con.prepareStatement(sql);
+			prst.setInt(1, feedback.getUserid());
+			prst.setInt(2, feedback.getScenarioid());
+			rs = prst.executeQuery();
+			while(rs.next()) {
+				resultdatas.add(rs.getString("result_data"));
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if(rs != null) {
+					rs.close();
+				}
+				if(prst != null) {
+					prst.close();
+				}
+				if(con != null) {
+					con.close();
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return resultdatas;
 	}
 
 	@Override
 	public String findConversationlog(Feedback feedback) {
 		String conversationdata = null;
-		//会話ログを持ってくる
+		String sql = "SELECT conversation_log FROM feedback WHERE member_id = ? AND scenario_id = ? ORDER BY finish_date DESC LIMIT 1;";
+		Connection con = null;
+		PreparedStatement prst = null;
+		ResultSet rs = null;
+		try {
+			con = getConnection();
+			prst = con.prepareStatement(sql);
+			prst.setInt(1, feedback.getUserid());
+			prst.setInt(2, feedback.getScenarioid());
+			rs = prst.executeQuery();
+			
+			while(rs.next()) {
+				conversationdata = rs.getString("conversation_log");
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if(rs != null) {
+					rs.close();
+				}
+				if(prst != null) {
+					prst.close();
+				}
+				if(con != null) {
+					con.close();
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return conversationdata;
 	}
 
 	@Override
-	public String MakeGraphData(Feedback feedback) {
-		String graphdata = null;
+	public List<String> MakeGraphData(Feedback feedback) {
+		List<String> graphdata = null;
 		// グラフデータに必要なデータをとってきて必要なら生成する。
 		return graphdata;
 	}

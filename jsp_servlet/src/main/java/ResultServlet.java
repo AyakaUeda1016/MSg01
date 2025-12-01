@@ -8,6 +8,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import model.FeedbackLogic;
 
 /**
  * Servlet implementation class ResultServlet
@@ -32,16 +38,64 @@ public class ResultServlet extends HttpServlet {
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		request.setCharacterEncoding("UTF-8");
 		String sb = request.getParameter("sb");
+		String log = null;
 		String returnurl = null;
+		String finishdate = null;
+		FeedbackLogic logic = new FeedbackLogic();
+		ObjectMapper mapper = new ObjectMapper();
 		System.out.println(sb);
 		
+		/**セッションの開始(セッションを使うときは必ず書く)**/
+		HttpSession session = request.getSession(false);
+		/*
+		 * request.getSession(false);
+		 * セッションが存在していなければnullを返す
+		 * セッションがあるかないか判断するために使用
+		 */
+		if(null == session) {
+			session = request.getSession(true);
+			/*
+			 * request.getSession(true);
+			 * セッションを新しく発行する
+			 */
+		}
+		
+		int userid = (Integer)session.getAttribute("USERID");
+		int scenarioid = (Integer)session.getAttribute("SCENARIOID");
+		
 		if(sb.equals("log")) {
+			log = logic.receiveConvasationforResult(userid, scenarioid);
 			returnurl = "result?sb=result";
+			if (log == null || log.isEmpty()) {
+			    log = "[]";
+			}
+			// JSON 文字列を Jackson の JsonNode に変換
+			JsonNode rootNode = mapper.readTree(log);
+
+			// conversations 配列だけを取り出して文字列化
+			JsonNode conversationsNode = rootNode.get("conversations");
+			String conversationsJsonOnlyArray = mapper.writeValueAsString(conversationsNode);
+
+			// JSP に渡す
+			request.setAttribute("CONVERSATION", conversationsJsonOnlyArray);
 			request.setAttribute("RETURNURL", returnurl);
 			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("log_growth")) {
+			log = logic.receiveConvasationforGrowth(userid, scenarioid, finishdate);
 			returnurl = "growth_record?action=details&recordId=1";
+			if (log == null || log.isEmpty()) {
+			    log = "[]";
+			}
+			// JSON 文字列を Jackson の JsonNode に変換
+			JsonNode rootNode = mapper.readTree(log);
+
+			// conversations 配列だけを取り出して文字列化
+			JsonNode conversationsNode = rootNode.get("conversations");
+			String conversationsJsonOnlyArray = mapper.writeValueAsString(conversationsNode);
+
+			// JSP に渡す
+			request.setAttribute("CONVERSATION", conversationsJsonOnlyArray);
 			request.setAttribute("RETURNURL", returnurl);
 			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
 			rd.forward(request, response);
