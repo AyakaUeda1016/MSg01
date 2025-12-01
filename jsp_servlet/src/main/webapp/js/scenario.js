@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const basePath = window.contextPath || ""
-//  const scenes = [
+  // initialScenarioId を元に current を設定
+  let current = scenes.findIndex(s => s.id === initialScenarioId);
+  if (current === -1) current = 0; // 見つからなければ先頭
+//  scenes = [
 //    {
 //      id: 1,
 //      img: basePath + "/images/haru.jpg",
@@ -53,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tooltipArrow = document.getElementById("tooltip-arrow")
   const scenarioIdInput = document.getElementById("scenarioId")
 
-  let current = 1
   let isAnimating = false
   let titleTimer = null
   let descTimer = null
