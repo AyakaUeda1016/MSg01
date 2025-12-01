@@ -1,194 +1,148 @@
-/* Adding base styles for scenario selection screen */
-/* Reset body and html to prevent white borders and scrolling */
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 .decorations,
 .decorations * {
-  pointer-events: none;
+    pointer-events: none;
 }
 
 a {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  font-family: "Murecho", sans-serif;
+html, body {
+    height: 100%;
+    font-family: "Murecho", sans-serif;
+
 }
 
 /* 全体 */
 .bg-mirai {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  background-image: url("../images/mirai.png");
+   width: 100%;
+  min-height: 100vh;
+  background-image: url("../images/room.png");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 0;
+  align-items: center;
+  padding: 2rem 0;
 }
 
 /* 緑パネル */
 .green-panel {
-  position: relative;
   width: 90%;
-  max-width: 1200px;
-  height: 85vh;
-  background-color: transparent;
-  border-radius: 16px;
+  height: 100vh; /* 黒板を画面いっぱいに広げる */
+
+  background-image: url("../images/blackboard.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto; /* 横幅を大きく見せる調整 */
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* パネル中 */
+.panel-inner {
+  width: 80%;          
+  max-width: 1000px;   
+  height: auto;        
+
+  margin: auto;        
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  overflow: hidden;
-  padding: 3rem 2rem 2rem;
+  margin-left: 263px;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
 }
 
-.panel-inner {
-  position: relative;
-  top: 5%;
-  left: 5%;
-}
-
-.blackboard-img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  z-index: 0;
-}
-
-.scenario-select-title,
-.scene-list,
-.scenario-text-box,
-.controller-area {
-  position: relative;
-  z-index: 1;
-}
-
-/* タイトルを黒板の上の方に配置 */
 .scenario-select-title {
-  position: relative;
-  z-index: 1;
-  padding-top: 1rem;
-  padding-bottom: 2rem;
-  color: #ffffff;
-  font-size: 2.4rem;
-  font-weight: bold;
-  text-align: center;
-  margin: 0;
-  margin-right: 35px;
+    color: #ffffff;
+    font-size: 2.4rem;
+    font-weight: bold;
+    text-align: center;
 }
 
 /* イメージ */
-/* 画像リストを黒板の真ん中に配置 */
 .scene-list {
-  position: relative;
-  z-index: 1;
-  width: 85%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 26px;
-  margin: 1rem 0;
-  margin-left: 40px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.5rem;
 }
 
 /* 右、左イメージ*/
 .scene-img {
-  display: block;
-  object-fit: cover;
-  width: 180px;
-  height: 120px;
-  opacity: 0.7;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+    display: block;
+    object-fit: cover;
+    width: 18%;           
+    height: auto;
+    opacity: 0.7;         
+    transition: all 0.3s ease;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
 
 /* 真ん中イメージ */
 #scene-center {
-  width: 260px;
-  height: 175px;
-  opacity: 1;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+    width: 36%;            
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
 }
 
 /* シナリオ説明 */
-/* テキストボックスを画像の下に配置 */
 .scenario-text-box {
-  position: relative;
-  z-index: 1;
-  width: 70%;
-  min-height: 100px;
-  background-color: rgba(0, 0, 0, 0.35);
-  border-radius: 4px;
-  padding: 0.8rem 1.2rem;
-  text-align: center;
-  color: #ffffff;
-  margin: 1rem 0;
-  margin-left: 80px;
+    width: 85%;
+    background-color: #1f8b2f;
+    border-radius: 4px;
+    padding: 0.8rem 1.2rem;
+    text-align: center;
+    color: #ffffff;
+    margin-top: 1.6rem; 
 }
 
 .scenario-title {
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin-bottom: 0.3rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
 }
 
 .scenario-desc {
-  font-size: 1.1rem;
+    font-size: 1.1rem;
 }
 
-/* コントローラーエリアを黒板の下の方に配置 */
+/* 화살표 + 결정버튼 영역 */
 .controller-area {
-  position: relative;
-  z-index: 1;
-  width: 85%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3rem;
-  margin-top: 1.5rem;
-  padding-bottom: 1.5rem;
-  margin-left: 20px;
-  flex-shrink: 0;
+    width: 85%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2.0rem; 
 }
 
 /* 화살표 버튼 */
 .arrow-btn {
-  background: transparent !important;
-  border: none !important;
-  padding: 0;
-  cursor: pointer;
-  box-shadow: none;
-}
-
-.arrow-btn:focus {
-  outline: none;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 }
 
 .arrow-btn img {
-  display: block;
-  width: 70px;
-  height: auto;
+    display: block;
+    width: 70px;
+    height: auto;
 }
 
 .btn {
@@ -204,274 +158,60 @@ body {
   transition: transform 0.06s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
 }
 
+
 /* 決定ボタン*/
 .decide-btn {
-  width: 320px;
-  height: 140px;
-  background-image: url("../images/blackboard eraser.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border: none;
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  font-weight: 500;
-  color: rgb(0, 0, 0);
-  cursor: pointer;
-  box-shadow: none;
+    width: 150px;
+    height: 60px;
+    border: none;
+    cursor: pointer;
+    background-color: #ffb74d; 
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.2s ease;
 }
 
 .decide-btn:hover {
-  filter: brightness(1.05);
+    background-color: #ffa726;
 }
 
-.back-button {
+.btn-wood {
   position: absolute;
-  bottom: 30px;
+  bottom: 60px;
   left: 60px;
-  width: 150px;
-  height: 150px;
-  padding: 0;
-  background: url("../images/eraser.png") center / contain no-repeat;
-  background-size: 100% 100%;
-  border-radius: 0;
-  border: none;
-  z-index: 3;
+  width: 180px;
+  padding: 16px 18px;
   color: #2b1d0f;
   text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 22px;
+  background: url("../images/ki.png") center / cover no-repeat;
+  background-color: #d4a574;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
 }
 
-.back-button:hover,
-.back-button:visited,
-.back-button:active {
-  text-decoration: none;
-}
-
-.back-button:hover {
-  transform: translateY(-4px);
-  filter: brightness(1.05) saturate(1.05);
-}
-
-.back-button::before {
+/* ボタンの光沢効果 */
+.btn-wood::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
 }
 
-.back-button:active {
+.btn-wood:hover {
+  filter: brightness(1.03) saturate(1.02);
+}
+
+.btn-wood:active {
   transform: translateY(2px);
-}
-
-/* ヘルプボタンのスタイルを追加 */
-.help-btn {
-  position: absolute;
-  top: 60px;
-  right: 60px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: #4caf50;
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: bold;
-  border: 3px solid #ffffff;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.help-btn:hover {
-  background-color: #45a049;
-  transform: scale(1.1);
-}
-
-.help-btn:active {
-  transform: scale(0.95);
-}
-
-/* チュートリアルスタイルを成長記録画面のデザインに統一 */
-/* チュートリアル用のオーバーレイ */
-.tutorial-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: none;
-  z-index: 999;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.tutorial-overlay.active {
-  display: block;
-  opacity: 1;
-}
-
-/* チュートリアル用の吹き出し */
-.tutorial-tooltip {
-  position: fixed;
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  max-width: 450px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  z-index: 1001;
-  display: none;
-  opacity: 0;
-  transform: scale(0.9);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.tutorial-tooltip.active {
-  display: block;
-  opacity: 1;
-  transform: scale(1);
-}
-
-.tooltip-content {
-  position: relative;
-}
-
-.tooltip-content p {
-  font-size: 1.05rem;
-  color: #333333;
-  line-height: 1.7;
-  margin: 0 0 1rem 0;
-  /* Adding slight transparency to tutorial text */
-  opacity: 0.85;
-}
-
-.tooltip-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.step-indicator {
-  font-size: 0.9rem;
-  color: #666666;
-  font-weight: 600;
-}
-
-.skip-btn {
-  padding: 0.5rem 1.2rem;
-  background-color: #f44336;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.skip-btn:hover {
-  background-color: #d32f2f;
-  transform: translateY(-1px);
-}
-
-.skip-btn:active {
-  transform: translateY(0);
-}
-
-.tooltip-arrow {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  display: none;
-}
-
-/* 矢印の向き - 上 */
-.tutorial-tooltip.arrow-top .tooltip-arrow {
-  display: block;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 0 12px 12px 12px;
-  border-color: transparent transparent #ffffff transparent;
-}
-
-/* 矢印の向き - 下 */
-.tutorial-tooltip.arrow-bottom .tooltip-arrow {
-  display: block;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 12px 12px 0 12px;
-  border-color: #ffffff transparent transparent transparent;
-}
-
-/* 矢印の向き - 左 */
-.tutorial-tooltip.arrow-left .tooltip-arrow {
-  display: block;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border-width: 12px 12px 12px 0;
-  border-color: transparent #ffffff transparent transparent;
-}
-
-/* 矢印の向き - 右 */
-.tutorial-tooltip.arrow-right .tooltip-arrow {
-  display: block;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border-width: 12px 0 12px 12px;
-  border-color: transparent transparent transparent #ffffff;
-}
-
-/* ハイライトされた要素 */
-.tutorial-highlight {
-  position: relative;
-  z-index: 1000;
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.8);
-  border-radius: 8px;
-  animation: pulse-highlight 2s ease-in-out infinite;
-}
-
-@keyframes pulse-highlight {
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.8);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(76, 175, 80, 1);
-  }
-}
-
-/* 画面中央の吹き出し用スタイル */
-.tutorial-tooltip.center {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 500px;
-}
-
-.tutorial-tooltip.center.active {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-.tutorial-tooltip.center .tooltip-arrow {
-  display: none;
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
 }

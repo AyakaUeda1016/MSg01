@@ -1,4 +1,6 @@
 @charset "UTF-8";
+
+/* ========== 0. リセット ========== */
 * {
   margin: 0;
   padding: 0;
@@ -6,68 +8,90 @@
 }
 
 body {
-  font-family: "Murecho", sans-serif;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  font-family: "Murecho", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  overflow: auto;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ========== 1. 全体コンテナ（教室背景＋黒板） ========== */
 .container {
   position: relative;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
 }
 
-/* 背景画像 */
+/* 背景（教室） */
 .background {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("../images/room.png") center / cover no-repeat;
+  inset: 0;
+  background-image: url("../images/room.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   z-index: 1;
 }
 
-/* 黒板 */
+/* ========== 2. 黒板：元の chalkboard と同じサイズ感 ========== */
+/* ★ 关键：这里就是你想要“和 chalkboard 一样”的部分 */
 .blackboard {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  background: url("../images/blackboard.png") center / contain no-repeat;
-  z-index: 2;
+  width: 90%;
+  height: 100vh; /* 黒板を画面いっぱいに広げる（元コードと同じ） */
+
+  background-image: url("../images/blackboard.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto; /* 横幅を100%にして大きく表示 */
+
+  position: relative;
+  z-index: 2;                  /* ← 背景より前に出す（重要！） */
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 40px;
-  padding: 60px;
-  margin-right: 100px;
+
+  /* 中身を黒板の内側に寄せる（少しゆとり） */
+  padding-top: 14vh;
+  padding-right: 5vw;
+  padding-bottom: 2vh;
+  padding-left: 12vw;
+
+  gap: 2.4rem; /* 行間隔 */
+  color: #fff; /* デフォルト文字色（万一用到文字时） */
 }
 
-/* コントロール行 */
+/* ========== 3. 黒板内部：音量・マイク行 ========== */
+
+/* アイコン＋数字ボタンの1行 */
 .control-row {
   display: flex;
   align-items: center;
-  margin-left: 50px;
+  justify-content: flex-start;
   gap: 20px;
+
   width: 100%;
-  justify-content: center;
+  max-width: 80%;
 }
 
-/* アイコンコンテナ */
+/* アイコン（🔊 / 🎤）の白い四角 */
 .icon-container {
-  width: 80px;
-  height: 80px;
-  background: white;
+  width: 90px;
+  height: 90px;
+  background: #ffffff;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 45px; /* 絵文字を大きく表示 */
+  font-size: 50px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -76,21 +100,21 @@ body {
   line-height: 1;
 }
 
-
 /* 数字ボタングループ */
 .number-buttons {
   display: flex;
+  flex-wrap: nowrap; /* ← 必须：不换行，一排显示 1～10 */
   gap: 10px;
 }
 
 /* 数字ボタン */
 .number-btn {
-  width: 60px;
-  height: 60px;
-  background: white;
+  width: 64px;
+  height: 64px;
+  background: #ffffff;
   border: none;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 23px;
   font-weight: 600;
   font-family: "Murecho", sans-serif;
   color: #333;
@@ -106,14 +130,18 @@ body {
 
 .number-btn.active {
   background: #e07856;
-  color: white;
+  color: #ffffff;
 }
 
-/* アクションボタンコンテナ */
+/* ========== 4. マイクテスト / 準備完了 ボタン ========== */
+
 .action-buttons {
+  width: 100%;
+  max-width: 60%;
   display: flex;
   justify-content: center;
-  width: 100%;
+  align-items: center;
+  gap: 1.6rem;
 }
 
 /* 共通ボタンスタイル */
@@ -127,15 +155,21 @@ body {
   cursor: pointer;
   line-height: 1;
   position: relative;
-  transition: transform 0.06s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease,
+    opacity 0.12s ease;
 }
 
 /* オレンジボタン（マイクテスト） */
 .btn-orange {
-  color: white;
+  color: #ffffff;
   background: url("../images/ki.png") center / cover no-repeat;
   background-color: #e07856;
-  box-shadow: 0 6px 0 rgba(180, 90, 60, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 6px 0 rgba(180, 90, 60, 0.6),
+    0 8px 14px rgba(0, 0, 0, 0.25);
 }
 
 .btn-orange:hover {
@@ -144,7 +178,9 @@ body {
 
 .btn-orange:active {
   transform: translateY(2px);
-  box-shadow: 0 4px 0 rgba(180, 90, 60, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 4px 0 rgba(180, 90, 60, 0.6),
+    0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* ライトオレンジボタン（準備完了） */
@@ -152,7 +188,9 @@ body {
   color: #2b1d0f;
   background: url("../images/ki.png") center / cover no-repeat;
   background-color: #e8b878;
-  box-shadow: 0 6px 0 rgba(200, 150, 90, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 6px 0 rgba(200, 150, 90, 0.6),
+    0 8px 14px rgba(0, 0, 0, 0.25);
 }
 
 .btn-light-orange:hover {
@@ -161,50 +199,68 @@ body {
 
 .btn-light-orange:active {
   transform: translateY(2px);
-  box-shadow: 0 4px 0 rgba(200, 150, 90, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 4px 0 rgba(200, 150, 90, 0.6),
+    0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
-/* 木製ボタン（戻る） */
+/* ========== 5. 木製「戻る」ボタン：画面左下 ========== */
 .btn-wood {
   position: absolute;
-  bottom: 30px;
-  left: 60px;
-  width: 150px;
-  height: 150px;
-  padding: 0;
-  background: url("../images/eraser.png") center / contain no-repeat;
-  background-size: 100% 100%;
-  border-radius: 0;
-  border: none;
-  z-index: 3;
+  bottom: 40px;
+  left: 40px;
+  width: 180px;
+  padding: 16px 18px;
   color: #2b1d0f;
   text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: rgb(0, 255, 255);
+  border-radius: 22px;
+  background: url("../images/ki.png") center / cover no-repeat;
+  background-color: #d4a574;
+  box-shadow:
+    0 6px 0 rgba(120, 80, 40, 0.55),
+    0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
 }
 
-/* ホバー効果を追加 */
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
+}
+
 .btn-wood:hover {
-  filter: brightness(1.1);
-  transform: scale(1.05);
+  filter: brightness(1.03) saturate(1.02);
 }
 
 .btn-wood:active {
-  transform: scale(0.98);
-  filter: brightness(0.95);
+  transform: translateY(2px);
+  box-shadow:
+    0 4px 0 rgba(120, 80, 40, 0.55),
+    0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
-
-/* レスポンシブ対応 */
+/* ========== 6. レスポンシブ（お好みで調整可） ========== */
 @media (max-width: 1024px) {
   .blackboard {
-    width: 90%;
-    height: auto;
-    padding: 40px 20px;
+    width: 95%;
+    padding-top: 10vh;
+    padding-left: 8vw;
+    padding-right: 4vw;
+  }
+
+  .control-row {
+    max-width: 90%;
+  }
+
+  .icon-container {
+    width: 64px;
+    height: 64px;
+    font-size: 36px;
   }
 
   .number-btn {
@@ -213,13 +269,13 @@ body {
     font-size: 16px;
   }
 
-  .icon-container {
-    width: 70px;
-    height: 70px;
+  .btn {
+    padding: 14px 40px;
+    font-size: 18px;
   }
 
-  .control-icon {
-    width: 40px;
-    height: 40px;
+  .btn-wood {
+    bottom: 20px;
+    left: 20px;
   }
 }

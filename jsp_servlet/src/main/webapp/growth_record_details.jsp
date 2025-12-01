@@ -18,11 +18,14 @@ pageEncoding="UTF-8"%>
         <div class="chalkboard">
             <div class="chalkboard-content">
                 <div class="left-section">
+                 <div class="left-header">
                     <h1 class="title">シナリオ　雑談</h1>
                     <h2 class="subtitle">総評~~</h2>
-                    
+                     <h3 class="feedback-title">KAIWA NAVIからのフィードバック</h3>
+                  </div>
+               <div class="left-scroll">
                 <div class="feedback-section">
-                    <h3 class="feedback-title">KAIWA NAVIからのフィードバック</h3>
+                   
 
                     <div class="feedback-item">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -67,18 +70,24 @@ pageEncoding="UTF-8"%>
                     </div>
                 </div>
             </div>
+           </div>
 
             <div class="right-section">
                 <h2 class="chart-title">評価レーダーチャート</h2>
                 <canvas id="radarChart"></canvas>
+                <div class="radar-bottom-area">
+        		<a href="result?sb=log_growth" class="btn btn-log">
+            	<img src="images/haritsuke.png" alt="ログボタン">
+            	<span>ログ</span>
+        		</a>
+        		<div class="extra-area">
+        		</div>
+        		
             </div>
         </div>
 
         <div class="bottom-buttons">
-            <a href="result?sb=log_growth" class="btn btn-log">
-                <img src="images/blackboard eraser.png" alt="ログボタン">
-                <span>ログ</span>
-            </a>
+            
 
             <a href="growth_record" class="btn btn-finish">
                 <img src="images/eraser.png" alt="戻るボタン">

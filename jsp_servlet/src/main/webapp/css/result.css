@@ -1,102 +1,143 @@
 @charset "UTF-8";
+
+/* ========== 0. リセット ========== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
 body {
-  font-family: "Murecho", sans-serif;
-  overflow: hidden;
+  font-family: "Murecho", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  /* ページ全体をスクロール可能にする */
+  overflow: auto;
 }
 
-.murecho-uniquifier {
-  font-family: "Murecho", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: weight;
-  font-style: normal;
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
+/* ========== 1. 教室背景：画面全体に表示 ========== */
 .classroom {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   background-image: url("../images/room.png");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 2rem 0;
 }
 
-/* Set chalkboard to original image dimensions 1400px x 900px */
+/* ========== 2. 黒板コンテナ：中央配置 + ほぼ全画面に展開 ========== */
 .chalkboard {
-  margin-right: 20px;
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 100vh; /* 黒板を画面いっぱいに広げる */
+
   background-image: url("../images/blackboard.png");
-  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  background-size: 100% auto; /* 横幅を大きく見せる調整 */
+
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
+/* ========== 3. 黒板内部：左右 2 カラムレイアウト ========== */
 .chalkboard-content {
   flex: 1;
   display: flex;
-  padding: 3rem;
-  gap: 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  /* vh / vw にすることで画面縮小時のレイアウト崩れを防止 */
+  padding-top: 14vh;    /* 黒板内部全体を上方向へ寄せる */
+  padding-right: 5vw;
+  padding-bottom: 2vh;
+  padding-left: 12vw;   /* 黒板内部全体を左方向へ寄せる */
+  gap: 3vw;             /* 左右コンテンツの間隔 */
 }
 
+/* ========== 4. 左側：上段（固定）＋下段（スクロール） ========== */
 .left-section {
-  margin-top: 50px;
-  margin-left: 200px;
-  flex: 1;
+  flex: 0 0 55%;
   color: white;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Updated selectors to use class names */
+/* 上段：タイトル3兄弟（スクロール対象外） */
+.left-header {
+  flex: 0 0 auto;
+  margin-bottom: 1.2rem;
+}
+
+/* 下段：フィードバックリスト（スクロール可能） */
+.left-scroll {
+  flex: 1 1 auto;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.5rem; /* スクロールバー分の余白 */
+}
+
+/* ========== 5. タイトル3兄弟 ========== */
 .left-section .title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  margin-left: 2rem;
 }
 
 .left-section .subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  margin-bottom: 1.2rem;
+  margin-left: 2rem;
 }
 
-.left-section .title,
-.left-section .subtitle,
-.left-section .feedback-title,
+.feedback-title {
+  opacity: 1;
+  transform: none;
+  margin-left: 2rem;
+  font-size: 1.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+/* ========== 6. 左側スクロールエリアのスクロールバー装飾 ========== */
+.left-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.left-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+.left-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+.left-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 各フィードバック項目（アニメーション対象） */
 .left-section .feedback-item {
-    opacity: 0;
-    transform: translateX(-24px);
-}
-
-.feedback-section .feedback-title {
-  margin-left: 3rem;
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  font-weight: bold;
+  opacity: 0;                  /* JS で 1 に変更 */
+  transform: translateX(-24px);/* JS で 0 に変更 */
 }
 
 .feedback-item {
-  margin-left: 3rem;
+  margin-left: 1.5rem;
   display: flex;
   align-items: flex-start;
-  margin-bottom: 1.2rem;
   gap: 0.8rem;
+  margin-bottom: 1.2rem;
 }
 
-/* Updated icon styling for SVG icons */
 .feedback-item .icon {
   width: 24px;
   height: 24px;
@@ -105,96 +146,119 @@ body {
 }
 
 .feedback-item p {
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   line-height: 1.6;
 }
 
+/* ========== 7. 右側：レーダーチャート表示エリア ========== */
 .right-section {
   flex: 0 0 45%;
-  margin-right: 40px;
-  margin-top: 80px;      /* 上余白をなくす */
+  max-width: 560px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 0.5rem; /* 少しだけ余白を残す */
+  padding-right: 5vw;
+  margin-left: -40px; /* グラフを左方向へ寄せるための微調整 */
 }
 
 .chart-title {
   color: white;
   font-size: 1.8rem;
   font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 #radarChart {
   width: 100%;
-  max-width: 450px;
-  height: 450px;
+  max-width: 560px;
+  height: auto;
 }
 
+/* ========== 8. 戻るボタン / ログボタン ========== */
+
+/* ログボタン用コンテナの土台（ボタン位置の基点） */
 .bottom-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 2rem;
-  padding: 0 3rem 2.5rem 0;
-  /* 水平方向のレイアウトで、ボタンが横に並ぶ */
-  position: absolute;
-  bottom: 20px;
-  right: 0;
+  position: relative;
   width: 100%;
-  padding-right: 6rem;
+  padding: 0 3.5rem 2rem;
+  margin-top: auto;
 }
 
-.bottom-buttons form {
-  display: flex;
-  gap: 2rem;
-}
-
-/* ボタンのスタイルを修正：画像と文字を縦に並べるフレックスレイアウト */
+/* 全ボタン共通の最小ベース */
 .btn {
-  padding: 0;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.3s;
-  background: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative; /* Added for positioning text over image */
+
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+
+  position: absolute; /* 以降、個別ボタンで位置を指定 */
+  transition: opacity 0.3s;
 }
 
-/* ボタン内の画像サイズをもっと大きく設定 */
 .btn img {
-  height: 120px;
   width: auto;
   object-fit: contain;
 }
 
-/* ボタン内のテキストスタイル */
 .btn span {
-  font-size: 1.2rem;
   font-weight: bold;
   color: white;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow for better readability */
-  pointer-events: none; /* Ensure text doesn't interfere with button clicks */
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  pointer-events: none;
 }
 
 .btn:hover {
   opacity: 0.85;
 }
 
-.btn-log {
-  background-color: transparent;
-  color: white;
+/* 戻るボタン：画面左下に固定 */
+.btn-finish {
+  position: fixed;
+  left: 2rem;
+  bottom: 2rem;
+  z-index: 9999;
 }
 
-.btn-finish {
-  background-color: transparent;
-  color: white;
+.btn-finish img {
+  height: 120px;
+}
+
+.btn-finish span {
+  font-size: 1.2rem;
+}
+
+/* レーダーチャート下のログボタンエリア */
+.radar-bottom-area {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center; /* 中央寄せ */
+  align-items: center;
+  gap: 1.5rem;             /* 将来追加するコンテンツとの間隔 */
+}
+
+/* ログボタン（右側エリア用） */
+.btn-log {
+  position: relative; /* レーダーエリア内でレイアウト */
+  cursor: pointer;
+  margin-left: 325px;
+  margin-top: -60px;
+}
+
+.btn-log img {
+  height: 110px;
+}
+
+.btn-log span {
+  font-size: 1.1rem;
 }
