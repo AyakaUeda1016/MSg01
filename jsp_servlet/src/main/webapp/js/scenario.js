@@ -1,39 +1,39 @@
 document.addEventListener("DOMContentLoaded", () => {
   const basePath = window.contextPath || ""
-  const scenes = [
-    {
-      id: 1,
-      img: basePath + "/images/haru.jpg",
-      title: "シナリオ1",
-      desc: "みんなの前で自己紹介をやってみよう！",
-    },
-    {
-      id: 2,
-      img: basePath + "/images/kyo.jpg",
-      title: "シナリオ2",
-      desc: "先生に相談してみよう！",
-    },
-    {
-      id: 3,
-      img: basePath + "/images/natu.jpg",
-      title: "シナリオ3",
-      desc: "友達と放課後の予定を決めてみよう！",
-    },
-    // <CHANGE> シナリオ4を追加
-    {
-      id: 4,
-      img: basePath + "/images/room.png",
-      title: "シナリオ4",
-      desc: "部活動の見学に行ってみよう！",
-    },
-    // <CHANGE> シナリオ5を追加
-    {
-      id: 5,
-      img: basePath + "/images/sky.png",
-      title: "シナリオ5",
-      desc: "クラスメイトと冬の思い出を作ろう！",
-    },
-  ]
+//  const scenes = [
+//    {
+//      id: 1,
+//      img: basePath + "/images/haru.jpg",
+//      title: "シナリオ1",
+//      desc: "みんなの前で自己紹介をやってみよう！",
+//    },
+//    {
+//      id: 2,
+//      img: basePath + "/images/kyo.jpg",
+//      title: "シナリオ2",
+//      desc: "先生に相談してみよう！",
+//    },
+//    {
+//      id: 3,
+//      img: basePath + "/images/natu.jpg",
+//      title: "シナリオ3",
+//      desc: "友達と放課後の予定を決めてみよう！",
+//    },
+//    // <CHANGE> シナリオ4を追加
+//    {
+//      id: 4,
+//      img: basePath + "/images/room.png",
+//      title: "シナリオ4",
+//      desc: "部活動の見学に行ってみよう！",
+//    },
+//    // <CHANGE> シナリオ5を追加
+//    {
+//      id: 5,
+//      img: basePath + "/images/sky.png",
+//      title: "シナリオ5",
+//      desc: "クラスメイトと冬の思い出を作ろう！",
+//    },
+//  ]
 
   // ... existing code ...
 
