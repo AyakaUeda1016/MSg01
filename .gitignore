@@ -10,8 +10,12 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Package Files - ignore output jars but NOT library jars
+# Ignore all JAR except those under lib/
 *.jar
+!jsp_servlet/src/main/webapp/WEB-INF/lib/*.jar
+
+# Package Files #
 *.war
 *.nar
 *.ear
