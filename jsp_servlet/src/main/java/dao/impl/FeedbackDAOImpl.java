@@ -60,7 +60,7 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	@Override
 	public String findConversationlogforgrowthrecord(Feedback feedback) {
 		String conversationdata = null;
-		String sql = "SELECT convasation_log FROM feedback WHERE member_id = ? AND scenario_id = ? AND finish_date = ?;";
+		String sql = "SELECT conversation_log FROM feedback WHERE member_id = ? AND scenario_id = ? AND finish_date = ?;";
 		Connection con = null;
 	    PreparedStatement prst = null;
 	    ResultSet rs = null;
@@ -73,7 +73,7 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	        rs = prst.executeQuery();
 
 	        if (rs.next()) {
-	        	conversationdata = rs.getString("convasation_log");
+	        	conversationdata = rs.getString("conversation_log");
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
