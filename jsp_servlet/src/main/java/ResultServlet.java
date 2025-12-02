@@ -85,7 +85,7 @@ public class ResultServlet extends HttpServlet {
 		}else if(sb.equals("log_growth")) {
 			finishdate = (String)session.getAttribute("FINISHDATE");
 			log = logic.receiveConvasationforGrowth(userid, scenarioid, finishdate);
-			returnurl = "growth_record?action=details&recordId=1";
+			returnurl = "growth_record?action=details&recordId=" + scenarioid + "&finishdate=" + finishdate;
 			if (log == null || log.isEmpty()) {
 			    log = "[]";
 			}

@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"%>
-
+<%
+	String result = (String)request.getAttribute("RESULT");
+%>
 <!DOCTYPE html>
 
 <html lang="ja">
@@ -99,11 +101,9 @@ pageEncoding="UTF-8"%>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<%-- 本番ではサーブレットから JSON を渡す予定。今は JS 内のテスト用 JSON を使う
 <script>
-  const feedbackData = JSON.parse('<%= resultJsonString %>');
+  const feedbackData = JSON.parse(`<%= result %>`);
 </script>/*DBをservletから読み取りの処理*/
---%>
 
 <script src="js/growth_record_details.js"></script>
 

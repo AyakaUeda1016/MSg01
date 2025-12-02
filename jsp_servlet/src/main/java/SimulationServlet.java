@@ -1,7 +1,6 @@
 
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -61,7 +60,7 @@ public class SimulationServlet extends HttpServlet {
 			scenarioid = (Integer)session.getAttribute("SCENARIOID");
 		}
 		
-		List<String> result = logic.receiveResultforResult(userid, scenarioid);
+		String result = logic.receiveResultforResult(userid, scenarioid);
 		
 		request.setAttribute("RESULT", result);
 		RequestDispatcher rd = request.getRequestDispatcher("./result.jsp");

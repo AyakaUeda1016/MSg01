@@ -1,38 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[v0] DOMContentLoaded - Starting radar chart initialization");
 
-  /* =========================================================
-   *  フィードバック JSON（テスト用）
-   *  ※ あとでサーブレットから渡される想定
-   * ========================================================= */
-  const feedbackData = {
-    timestamp: "2025-11-19T11:22:33",
-    scores: {
-      self_understanding: {
-        score: 72,
-        comment: "自分の感情をある程度言語化できています。"
-      },
-      speaking: {
-        score: 90,
-        comment: "はっきりした話し方で会話の流れも自然です。"
-      },
-      comprehension: {
-        score: 88,
-        comment: "文脈理解が良好で、相手の意図を理解した発言が多かったです。"
-      },
-      emotion_control: {
-        score: 75,
-        comment: "落ち着いた発話が多く、会話の安定感がありました。"
-      },
-      empathy: {
-        score: 67,
-        comment: "相手に配慮した返答が見られましたが、もう少し寄り添える余地があります。"
-      }
-    },
-    total_score: 77,
-    overall_comment:
-      "全体的に落ち着いており、会話理解も高いレベルで維持できていました。。"
-  };
+//  /* =========================================================
+//   *  フィードバック JSON（テスト用）
+//   *  ※ あとでサーブレットから渡される想定
+//   * ========================================================= */
+//  const feedbackData = {
+//    timestamp: "2025-11-19T11:22:33",
+//    scores: {
+//      self_understanding: {
+//        score: 72,
+//        comment: "自分の感情をある程度言語化できています。"
+//      },
+//      speaking: {
+//        score: 90,
+//        comment: "はっきりした話し方で会話の流れも自然です。"
+//      },
+//      comprehension: {
+//        score: 88,
+//        comment: "文脈理解が良好で、相手の意図を理解した発言が多かったです。"
+//      },
+//      emotion_control: {
+//        score: 75,
+//        comment: "落ち着いた発話が多く、会話の安定感がありました。"
+//      },
+//      empathy: {
+//        score: 67,
+//        comment: "相手に配慮した返答が見られましたが、もう少し寄り添える余地があります。"
+//      }
+//    },
+//    total_score: 77,
+//    overall_comment:
+//      "全体的に落ち着いており、会話理解も高いレベルで維持できていました。。"
+//  };
 
   /* =========================================================
    *  右側：Chart.js レーダーチャート描画
