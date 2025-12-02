@@ -1,7 +1,5 @@
 package model;
 
-import java.util.List;
-
 import dao.FeedBackDAO;
 import dao.impl.FeedbackDAOImpl;
 
@@ -48,8 +46,8 @@ public class FeedbackLogic {
 		}
 	}
 	
-	public List<String>receiveResultforResult(int userid,int scenarioid){
-		List<String> results = null;
+	public String receiveResultforResult(int userid,int scenarioid){
+		String results = null;
 		Feedback feedback = new Feedback(userid,scenarioid);
 		try {
 			results = feedbackDAO.findResult(feedback);

@@ -19,6 +19,11 @@ public class Feedback {
 		this.finishdate = finishdate;
 	}
 	
+	public Feedback(int userid, int scenarioid) {
+		this.userid = userid;
+		this.scenarioid = scenarioid;
+	}
+	
 	//以下アクセサメソッド。
 	public int getUserid() {
 		return userid;

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
     String ctx = request.getContextPath();
-    String conversationsJson = "[{\"turn\":1,\"user\":\"そうだね・・・・・\",\"ai\":\"おはよー！今日はね、・・・・・・\"},{\"turn\":2,\"user\":\"・・・・・・\",\"ai\":\"・・・・・・\"}]";
+    String conversationsJson = (String)request.getAttribute("CONVERSATION");
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -35,6 +35,12 @@
 
 <!-- JSONデータを動的に会話ログに変換するスクリプト -->
 <script>
+	<%-- null対策 --%>
+	<%
+    	if (conversationsJson == null || conversationsJson.isEmpty()) {
+        	conversationsJson = "[]";
+    	}
+	%>
     window.conversationsData = <%= conversationsJson %>;
 </script>
 <script src="js/log.js"></script>
