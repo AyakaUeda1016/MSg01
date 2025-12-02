@@ -1,5 +1,7 @@
 package dao;
 
+import java.util.List;
+
 import model.Feedback;
 
 public interface FeedBackDAO {
@@ -17,7 +19,7 @@ public interface FeedBackDAO {
 	String findConversationlog(Feedback feedback);
 	
 	//グラフ画面生成用のデータ(result_data)を持ってくる 担当：上田
-	String MakeGraphData(Feedback feedback);
+	List<String> MakeGraphData(Feedback feedback);
 	
 	//当日ランク展示用のデータを持ってくる(result_data) 担当：上田(後日)
 	String MakeRankData(Feedback feedback);

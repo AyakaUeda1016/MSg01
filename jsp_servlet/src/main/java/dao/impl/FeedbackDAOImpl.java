@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import dao.FeedBackDAO;
@@ -28,7 +27,32 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	@Override
 	public String findResultforgrowthrecord(Feedback feedback) {
 		String resultdata = null;
-		//成長記録詳細用の結果データを持ってくる処理を書く
+		String sql = "SELECT result_data FROM feedback WHERE member_id = ? AND scenario_id = ? AND finish_date = ?;";
+	    Connection con = null;
+	    PreparedStatement prst = null;
+	    ResultSet rs = null;
+	    try {
+	    	con = getConnection();
+	        prst = con.prepareStatement(sql);
+	        prst.setInt(1, feedback.getUserid());
+	        prst.setInt(2, feedback.getScenarioid());
+	        prst.setString(3, feedback.getFinishdate());
+	        rs = prst.executeQuery();
+
+	        if (rs.next()) {
+	        	resultdata = rs.getString("result_data");
+	        }
+	     } catch (SQLException e) {
+	        e.printStackTrace();
+	     } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (prst != null) prst.close();
+	            if (con != null) con.close();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	     }
 		return resultdata;
 	}
 
@@ -36,13 +60,38 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	@Override
 	public String findConversationlogforgrowthrecord(Feedback feedback) {
 		String conversationdata = null;
-		//成長記録詳細用の結果データを持ってくる処理を書く
-		return null;
+		String sql = "SELECT convasation_log FROM feedback WHERE member_id = ? AND scenario_id = ? AND finish_date = ?;";
+		Connection con = null;
+	    PreparedStatement prst = null;
+	    ResultSet rs = null;
+	    try {
+	    	con = getConnection();
+	        prst = con.prepareStatement(sql);
+	        prst.setInt(1, feedback.getUserid());
+	        prst.setInt(2, feedback.getScenarioid());
+	        prst.setString(3, feedback.getFinishdate());
+	        rs = prst.executeQuery();
+
+	        if (rs.next()) {
+	        	conversationdata = rs.getString("convasation_log");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        try {
+	        	if (rs != null) rs.close();
+	            if (prst != null) prst.close();
+	            if (con != null) con.close();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	     }
+		return conversationdata;
 	}
 		
 	@Override
-	public List<String> findResult(Feedback feedback) {
-		List<String> resultdatas = new ArrayList<>();
+	public String findResult(Feedback feedback) {
+		String resultdata = null;
 		String sql = "SELECT result_data FROM feedback WHERE member_id = ? AND scenario_id = ? ORDER BY finish_date DESC LIMIT 2;";
 		Connection con = null;
 		PreparedStatement prst = null;
@@ -54,7 +103,7 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 			prst.setInt(2, feedback.getScenarioid());
 			rs = prst.executeQuery();
 			while(rs.next()) {
-				resultdatas.add(rs.getString("result_data"));
+				resultdata = rs.getString("result_data");
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
@@ -73,7 +122,7 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 				e.printStackTrace();
 			}
 		}
-		return resultdatas;
+		return resultdata;
 	}
 
 	@Override
