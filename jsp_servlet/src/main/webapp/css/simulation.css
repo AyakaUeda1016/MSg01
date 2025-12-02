@@ -259,32 +259,10 @@ a {
 }
 
 /* ---------------------------------------------- */
-/* 🟦 ユーザーメッセージ                          */
+/* 🟦 ユーザーメッセージ（非表示に変更）          */
 /* ---------------------------------------------- */
 .user-message-box {
-  position: absolute;
-  bottom: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 85%;
-  max-width: 1200px;
-  background: #1f2d3a;
-  border: 6px solid #2c3e50;
-  border-radius: 4px;
-  padding: 20px 30px;
-  min-height: 90px;
-  z-index: 19;
-  display: none;
-}
-
-.user-name {
-  font-size: 17px;
-  color: #cce4ff;
-}
-
-.user-content {
-  font-size: 22px;
-  color: #ffffff;
+  display: none !important;
 }
 
 /* ---------------------------------------------- */
