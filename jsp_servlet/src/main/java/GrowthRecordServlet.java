@@ -52,4 +52,3 @@ public class GrowthRecordServlet extends HttpServlet {
         request.getRequestDispatcher("growth_record.jsp").forward(request, response);
     }
 }
-
