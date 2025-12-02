@@ -39,6 +39,7 @@ public class ResultServlet extends HttpServlet {
 		request.setCharacterEncoding("UTF-8");
 		String sb = request.getParameter("sb");
 		String log = null;
+		//List<String> loglist = null;
 		String returnurl = null;
 		String finishdate = null;
 		FeedbackLogic logic = new FeedbackLogic();
@@ -82,6 +83,7 @@ public class ResultServlet extends HttpServlet {
 			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("log_growth")) {
+			finishdate = (String)session.getAttribute("FINISHDATE");
 			log = logic.receiveConvasationforGrowth(userid, scenarioid, finishdate);
 			returnurl = "growth_record?action=details&recordId=1";
 			if (log == null || log.isEmpty()) {
@@ -100,9 +102,12 @@ public class ResultServlet extends HttpServlet {
 			RequestDispatcher rd = request.getRequestDispatcher("./log.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("result")) {
+			log = logic.receiveResultforResult(userid, scenarioid);
+			request.setAttribute("RESULT", log);
 			RequestDispatcher rd = request.getRequestDispatcher("./result.jsp");
 			rd.forward(request, response);
 		}else if(sb.equals("home")) {
+			session.removeAttribute("SCENARIOID");
 			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
 			rd.forward(request, response);
 		}

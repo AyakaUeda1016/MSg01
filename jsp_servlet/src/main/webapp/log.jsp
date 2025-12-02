@@ -2,6 +2,7 @@
 <%
     String ctx = request.getContextPath();
     String conversationsJson = (String)request.getAttribute("CONVERSATION");
+    String url = (String)request.getAttribute("RETURNURL");
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -27,7 +28,7 @@
             <!-- ここに会話ログが動的に挿入されます -->
         </section>
 
-        <a href="result?sb=result" class="back-button">
+        <a href="<%=url %>" class="back-button">
             <button class="btn btn-wood">戻る</button>
         </a>
     </main>

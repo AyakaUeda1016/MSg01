@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"%>
-
-
+<%
+	String result = (String)request.getAttribute("RESULT");
+%>
 <!DOCTYPE html>
 
 <html lang="ja">
@@ -77,7 +78,7 @@ pageEncoding="UTF-8"%>
                 <h2 class="chart-title">評価レーダーチャート</h2>
                 <canvas id="radarChart"></canvas>
                 <div class="radar-bottom-area">
-        		<a href="result?sb=log_growth" class="btn btn-log">
+        		<a href="result?sb=log" class="btn btn-log">
             	<img src="images/haritsuke.png" alt="ログボタン">
             	<span>ログ</span>
         		</a>
@@ -102,11 +103,11 @@ pageEncoding="UTF-8"%>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<%-- 本番ではサーブレットから JSON を渡す予定。今は JS 内のテスト用 JSON を使う
+
 <script>
-  const feedbackData = JSON.parse('<%= resultJsonString %>');
-</script>/*DBをservletから読み取りの処理*/
---%>
+  const feedbackData = JSON.parse(`<%= result %>`);
+</script>
+
 
 <script src="js/result.js"></script>
 
