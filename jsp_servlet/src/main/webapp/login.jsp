@@ -22,12 +22,12 @@
     <form id="loginForm" action="${pageContext.request.contextPath}/login" method="post" class="form">
       <label class="field">
         <span class="label">id:</span>
-        <input type="text" name="id" required />
+        <input type="text" name="id" value="1" required />
       </label>
 
       <label class="field">
         <span class="label">password:</span>
-        <input type="password" name="password" required />
+        <input type="password" name="password" value="pass" required />
       </label>
       
       <div class="fixed-buttons">
