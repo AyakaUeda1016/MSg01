@@ -1,249 +1,321 @@
 //------------------------------------------------------
-// WebM録音 → Flask API → Whisper/GPT/VoiceVox の処理
+// WebM録音 → Whisperプレビュー → 固定応答 + VoiceVox音声
 //------------------------------------------------------
 
+// 🔵 ローディング表示
+function showVoicevoxLoading() {
+  const overlay = document.getElementById("voicevoxOverlay");
+  if (overlay) overlay.style.display = "flex";
+}
+function hideVoicevoxLoading() {
+  const overlay = document.getElementById("voicevoxOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+function setLoadingMessage(text) {
+  const elem = document.querySelector("#voicevoxOverlay .loading-text");
+  if (elem) elem.textContent = text;
+}
+
+//------------------------------------------------------
+// グローバル状態
+//------------------------------------------------------
 let mediaRecorder = null;
 let audioChunks = [];
-let MAX_TURNS = 10;
+let MAX_TURNS = 6;
 
-let lastAudioBlob = null;          // プレビュー後に本番送信するため保存
-let pendingResult = null;          // プレビュー結果保存
+let lastAudioBlob = null;
+let pendingResult = null;
+let conversationHistory = [];
 
-// DOM 要素
+let skillScores = {
+  selfUnderstanding: 0,
+  readingWriting: 0,
+  comprehension: 0,
+  emotionJudgment: 0,
+  empathy: 0,
+};
+
+// DOM
 const turnElement = document.getElementById("turn");
 const maxTurnsElement = document.getElementById("max_turns");
-
-const transcriptElement = document.getElementById("transcript");  // 使うが表示しない
-const userMessageBox = document.getElementById("userMessageBox"); // 完全非表示
-
 const replyElement = document.getElementById("reply");
 
 const totalScoreElement = document.getElementById("totalScore");
 const rankBadgeElement = document.getElementById("rankBadge");
 
-const selfUnderstandingBar = document.getElementById("selfUnderstandingBar");
+const selfUnderstandingMeter = document.getElementById("selfUnderstandingMeter");
 const selfUnderstandingScore = document.getElementById("selfUnderstandingScore");
-const speakingBar = document.getElementById("speakingBar");
-const speakingScore = document.getElementById("speakingScore");
-const comprehensionBar = document.getElementById("comprehensionBar");
+const readingWritingMeter = document.getElementById("readingWritingMeter");
+const readingWritingScore = document.getElementById("readingWritingScore");
+const comprehensionMeter = document.getElementById("comprehensionMeter");
 const comprehensionScore = document.getElementById("comprehensionScore");
-const emotionControlBar = document.getElementById("emotionControlBar");
-const emotionControlScore = document.getElementById("emotionControlScore");
-const empathyBar = document.getElementById("empathyBar");
+const emotionJudgmentMeter = document.getElementById("emotionJudgmentMeter");
+const emotionJudgmentScore = document.getElementById("emotionJudgmentScore");
+const empathyMeter = document.getElementById("empathyMeter");
 const empathyScore = document.getElementById("empathyScore");
 
 const transcriptionConfirmation = document.getElementById("transcriptionConfirmation");
 const confirmedText = document.getElementById("confirmedText");
+const userMessageBox = document.getElementById("userMessageBox");
+
+const characterContainer = document.getElementById("characterContainer");
+
+const resultForm = document.getElementById("resultForm");
+const resultDataInput = document.getElementById("resultData");
+const conversationLogInput = document.getElementById("conversationLog");
+const memberIdInput = document.getElementById("memberId");
+const scenarioIdInput = document.getElementById("scenarioId");
+
+let currentScenarioId = 1;
+let currentCharacter = null;
 
 //======================================================
-// 録音開始
+// 固定応答（6ターン）
 //======================================================
-async function startRecording() {
-  console.log("[REC] 録音開始");
+const fixedReplies = [
+  "うん、いいよ！よろしくね。",
+  "私の名前は橘 陽葵（ひまり）だよ。",
+  "私の趣味は写真撮影かな。綺麗な景色を見ると落ち着くから、それをいつでも見返せるよう写真に収めていく内に趣味になったんだ。",
+  "好きな食べ物はね～う～んグミかな。特にハリボーのグミが好きなんだ。",
+  "私が所属してる部活は写真部だよ。写真を撮るのが好きだからね。",
+  "それであってるよ！それじゃあまた休み時間とかに話そうね。またね！"
+];
 
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  audioChunks = [];
-  mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-  mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-  mediaRecorder.start();
+//======================================================
+// キャラ画像設定
+//======================================================
+const characterConfig = {
+  1: {
+    emotions: {
+      default: "girl_standard.png",
+      happy: "girl_happy.png",
+      smile: "girl_happy.png",
+      neutral: "girl_standard.png",
+      sad: "girl_sad.png",
+      worried: "girl_sad.png",
+      angry: "girl_angry.png",
+    },
+  },
+};
+
+//======================================================
+// 表情推定（固定）
+//======================================================
+const fixedEmotions = [
+  "neutral",
+  "smile",
+  "neutral",
+  "neutral",
+  "smile",
+  "happy",
+];
+
+function updateCharacterImage(emotion) {
+  if (!currentCharacter) return;
+
+  const file = currentCharacter.emotions[emotion] || currentCharacter.emotions.default;
+  const img = characterContainer.querySelector(".character-image");
+
+  if (img) {
+    img.src = `${window.contextPath}/images/${file}`;
+  }
 }
 
 //======================================================
-// 録音停止 → WhisperプレビューAPI
+// 録音UI
 //======================================================
-async function stopRecording() {
-  if (!mediaRecorder) return;
+function setRecordingEnabled(enabled) {
+  const startBtn = document.querySelector(".record-btn.start");
+  const stopBtn = document.querySelector(".record-btn.stop");
+  if (startBtn) startBtn.disabled = !enabled;
+  if (stopBtn) stopBtn.disabled = !enabled;
+}
+function updateRecordingStatus(isRec) {
+  const startBtn = document.querySelector(".record-btn.start");
+  if (startBtn) startBtn.textContent = isRec ? "🎙️録音中…" : "🎙️録音開始";
+}
 
-  console.log("[REC] 録音停止");
-  mediaRecorder.stop();
+//======================================================
+// 録音処理
+//======================================================
+async function startRecording() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioChunks = [];
+  mediaRecorder = new MediaRecorder(stream);
 
+  mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
   mediaRecorder.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
     lastAudioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
     const preview = await sendPreviewToFlask(lastAudioBlob);
-    console.log("[PREVIEW RESPONSE]", preview);
-
-    if (preview && preview.transcript) {
-      showTranscriptionConfirmation(preview);
-    }
+    if (preview) showTranscriptionConfirmation(preview);
   };
+
+  mediaRecorder.start();
+  updateRecordingStatus(true);
+}
+function stopRecording() {
+  if (mediaRecorder?.state === "recording") {
+    mediaRecorder.stop();
+    updateRecordingStatus(false);
+  }
 }
 
 //======================================================
-// WhisperプレビューAPI
+// プレビュー：Whisper
 //======================================================
 async function sendPreviewToFlask(blob) {
-  const formData = new FormData();
-  formData.append("file", blob, "audio.webm");
+  showVoicevoxLoading();
+  setLoadingMessage("音声を分析中...");
 
-  const res = await fetch("http://127.0.0.1:5000/api/transcribe_preview", {
-    method: "POST",
-    body: formData,
-  });
+  const fd = new FormData();
+  fd.append("file", blob, "audio.webm");
 
-  if (!res.ok) {
-    console.error("[PREVIEW ERROR]", await res.text());
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/transcribe_preview", {
+      method: "POST",
+      body: fd,
+    });
+    hideVoicevoxLoading();
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    hideVoicevoxLoading();
     return null;
   }
-  return await res.json();
 }
 
 //======================================================
-// 本番 conversation API
+// 固定応答生成
 //======================================================
-async function sendAudioToFlask(blob) {
-  const formData = new FormData();
-  formData.append("file", blob, "audio.webm");
+let localTurn = 0;
 
-  const response = await fetch("http://127.0.0.1:5000/api/conversation", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    console.error("[API ERROR]", await response.text());
-    return null;
-  }
-
-  return await response.json();
-}
-
-//======================================================
-// スコアランク
-//======================================================
-function getRankFromScore(score) {
-  if (score >= 40) return { rank: "S", color: "#ffd700" };
-  if (score >= 30) return { rank: "A", color: "#c0c0c0" };
-  if (score >= 20) return { rank: "B", color: "#cd7f32" };
-  return { rank: "C", color: "#8b8b8b" };
-}
-
-//======================================================
-// スコア計算
-//======================================================
-function calculateSkillScores(features) {
-  const selfUnderstanding = (features.arousal >= 0.7) ? 10 : 5;
-  const speaking = (features.pitch_variability >= 0.7) ? 10 : 5;
-  const comprehension = (features.valence >= 0.6) ? 10 : 5;
-  const emotionControl = (features.voice_stability >= 0.6) ? 10 : 5;
-  const empathy = (features.warmth >= 0.5) ? 10 : 5;
+function buildLocalResult(userText) {
+  localTurn = Math.min(localTurn + 1, MAX_TURNS);
+  const reply = fixedReplies[localTurn - 1] || "ありがとう！";
 
   return {
-    self_understanding: selfUnderstanding,
-    speaking: speaking,
-    comprehension: comprehension,
-    emotion_control: emotionControl,
-    empathy: empathy,
-    total_score: selfUnderstanding + speaking + comprehension + emotionControl + empathy
+    transcript: userText,
+    reply,
+    emotion: { label: fixedEmotions[localTurn - 1] || "neutral" },
+    turn: localTurn,
+    active: localTurn < MAX_TURNS,
+    timestamp: new Date().toISOString(),
   };
 }
 
 //======================================================
-// スコア反映
+// 🔊 VoiceVox 音声生成 リクエスト
 //======================================================
-function updateScoreMeter(scores) {
-  if (!scores) return;
-
-  const toPercent = (v) => (v / 10) * 100; // 10が最大スコアと仮定
-
-  selfUnderstandingBar.style.width = toPercent(scores.self_understanding) + "%";
-  speakingBar.style.width = toPercent(scores.speaking) + "%";
-  comprehensionBar.style.width = toPercent(scores.comprehension) + "%";
-  emotionControlBar.style.width = toPercent(scores.emotion_control) + "%";
-  empathyBar.style.width = toPercent(scores.empathy) + "%";
-
-  selfUnderstandingScore.textContent = Math.round(scores.self_understanding);
-  speakingScore.textContent = Math.round(scores.speaking);
-  comprehensionScore.textContent = Math.round(scores.comprehension);
-  emotionControlScore.textContent = Math.round(scores.emotion_control);
-  empathyScore.textContent = Math.round(scores.empathy);
-
-  totalScoreElement.textContent = Math.round(scores.total_score);
-
-  const rankInfo = getRankFromScore(scores.total_score);
-  rankBadgeElement.textContent = rankInfo.rank;
-  rankBadgeElement.style.background = rankInfo.color;
-}
-
-//======================================================
-// 画面更新（ユーザー発話は非表示）
-//======================================================
-async function updateDisplayFromFlask(result) {
-  if (!result) return;
-
-  // 自分の発話は UI に一切表示しない
-  transcriptElement.textContent = "";
-  userMessageBox.style.display = "none";
-
-  // AI の返答だけ表示
-  replyElement.textContent = result.reply;
-
-  // ターン
-  turnElement.textContent = result.turn;
-
-  // スコア計算（音声特徴量からスコアを計算）
-  const scores = calculateSkillScores(result.emotion);
-
-  // スコアの反映
-  updateScoreMeter(scores);
-
-  // VoiceVox 再生
-  if (result.voice_audio_url) {
-    const audioUrl = "http://127.0.0.1:5000" + result.voice_audio_url;
-    new Audio(audioUrl).play();
+async function requestVoicevoxForText(text) {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
   }
 }
 
 //======================================================
-// プレビュー画面表示
+// UI更新
 //======================================================
-function showTranscriptionConfirmation(preview) {
-  pendingResult = preview;
-  confirmedText.textContent = preview.transcript;
-  transcriptionConfirmation.style.display = "flex";
+function updateDisplayFromFlask(result) {
+  replyElement.textContent = result.reply;
+  turnElement.textContent = result.turn;
+
+  const emotion = result.emotion?.label || "neutral";
+  updateCharacterImage(emotion);
+
+  conversationHistory.push(result);
+
+  if (result.voice_audio_url) playAudio(result.voice_audio_url);
+
+  if (!result.active) {
+    setRecordingEnabled(false);
+    setTimeout(() => {
+      fetch("http://127.0.0.1:5000/api/reset", { method: "POST" });
+      saveConversationResult();
+    }, 1000);
+  }
 }
 
 //======================================================
-// OK → 本番送信
+// 音声再生
+//======================================================
+function playAudio(url) {
+  const finalUrl = url.startsWith("http")
+    ? url
+    : `http://127.0.0.1:5000${url}`;
+  new Audio(finalUrl).play();
+}
+
+//======================================================
+// プレビュー確認後
 //======================================================
 async function confirmTranscription() {
   transcriptionConfirmation.style.display = "none";
 
-  if (!lastAudioBlob) return;
+  showVoicevoxLoading();
+  setLoadingMessage("返信生成中...");
 
-  const result = await sendAudioToFlask(lastAudioBlob);
+  const result = buildLocalResult(confirmedText.value);
+
+  if (result.reply) {
+    const ttsRes = await requestVoicevoxForText(result.reply);
+    if (ttsRes) {
+      result.voice_audio_url = ttsRes.voice_audio_url;
+    }
+  }
+
+  hideVoicevoxLoading();
   updateDisplayFromFlask(result);
-
-  pendingResult = null;
 }
 
 //======================================================
-// NG → 再録音
+// 結果保存
 //======================================================
-function retryRecording() {
-  transcriptionConfirmation.style.display = "none";
-  pendingResult = null;
-  lastAudioBlob = null;
+function saveConversationResult() {
+  const resultData = {
+    total_score: 10,
+    skill_scores: skillScores,
+    final_turn: conversationHistory.length,
+    member_id: memberIdInput?.value || 1,
+    scenario_id: scenarioIdInput?.value || currentScenarioId,
+  };
+  resultDataInput.value = JSON.stringify(resultData);
+  conversationLogInput.value = JSON.stringify(conversationHistory);
 
-  startRecording();
+  resultForm.submit();
 }
 
 //======================================================
-// シナリオ情報取得
+// 初期化
 //======================================================
 document.addEventListener("DOMContentLoaded", () => {
+  setRecordingEnabled(true);
+  userMessageBox.style.display = "none";
+
   fetch("http://127.0.0.1:5000/api/current_scenario")
-    .then((res) => res.json())
-    .then((data) => {
-      MAX_TURNS = data.max_turns;
+    .then(res => res.json())
+    .then(data => {
+      MAX_TURNS = 6;
       maxTurnsElement.textContent = MAX_TURNS;
+      currentCharacter = characterConfig[1];
+      updateCharacterImage("default");
     });
 });
 
+//======================================================
+// 公開
 //======================================================
 window.chatInterface = {
   startRecording,
   stopRecording,
   confirmTranscription,
-  retryRecording,
 };
