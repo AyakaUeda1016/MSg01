@@ -92,7 +92,7 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	@Override
 	public String findResult(Feedback feedback) {
 		String resultdata = null;
-		String sql = "SELECT result_data FROM feedback WHERE member_id = ? AND scenario_id = ? ORDER BY finish_date DESC LIMIT 2;";
+		String sql = "SELECT result_data FROM feedback WHERE member_id = ? AND scenario_id = ? ORDER BY finish_date DESC LIMIT 1;";
 		Connection con = null;
 		PreparedStatement prst = null;
 		ResultSet rs = null;
