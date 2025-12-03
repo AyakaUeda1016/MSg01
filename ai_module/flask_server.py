@@ -1,3 +1,4 @@
+本番用
 # -*- coding: utf-8 -*-
 """
 AI会話トレーニング用 Flask 統合サーバ
@@ -41,6 +42,57 @@ from whisper_emotion.opensmile_test3 import (
 )
 from whisper_emotion.evaluate_feedback import evaluate_conversation
 
+# =====================================================================
+# 🎯 openSMILE 指標 → 5スキル(1〜10点)に変換
+# =====================================================================
+
+def _scale_to_1_10(value, low, high, default=5.0):
+    """
+    value を [low, high] の範囲で正規化して 1〜10 にマッピング
+    想定範囲外や None の場合は default を返す
+    """
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+    if low == high:
+        return float(default)
+
+    # 範囲にクリップ
+    v = max(low, min(high, v))
+    # [low, high] → [0,1] → [1,10]
+    norm = (v - low) / (high - low)
+    return 1.0 + norm * 9.0
+
+
+def calc_skill_scores(indices: dict) -> dict:
+    """
+    openSMILE の指標(indices)から 5つのスキルスコア(1〜10点)を算出
+
+    - 自己理解:        arousal（0〜1 想定）
+    - 読写力:          pitch_variability（0〜1 想定）
+    - 理解力:          valence（-1〜1 想定）
+    - 感情判断:        voice_stability（0〜1 想定）
+    - 思いやり:        warmth（0〜1 想定）
+    """
+    if indices is None:
+        indices = {}
+
+    self_understanding = _scale_to_1_10(indices.get("arousal"), 0.0, 1.0, default=5.0)
+    reading_writing    = _scale_to_1_10(indices.get("pitch_variability"), 0.0, 1.0, default=5.0)
+    comprehension      = _scale_to_1_10(indices.get("valence"), -1.0, 1.0, default=5.0)
+    emotion_judgment   = _scale_to_1_10(indices.get("voice_stability"), 0.0, 1.0, default=5.0)
+    empathy            = _scale_to_1_10(indices.get("warmth"), 0.0, 1.0, default=5.0)
+
+    # 小数1桁に丸める（UI で 6.5 など表示しやすく）
+    return {
+        "self_understanding": round(self_understanding, 1),
+        "reading_writing":    round(reading_writing, 1),
+        "comprehension":      round(comprehension, 1),
+        "emotion_judgment":   round(emotion_judgment, 1),
+        "empathy":            round(empathy, 1),
+    }
 
 
 # ============================================================
@@ -222,49 +274,61 @@ def init_models():
 # 🧠 GPT 判定・応答生成関連
 # =====================================================================
 
-def check_appropriateness(message, context, scene, start_message) -> int:
+def check_appropriateness(message, context, scene, start_message) -> bool:
     """
-    発言がシナリオと関連しているかどうかを判定する。
-    1 = 関連する発言
-    0 = 無関係な発言
+    発言がシナリオと関連しているかどうかを判定する（true / false）
+    GPTは必ず {"related": true} または {"related": false} のJSONで返す。
     """
-
     prompt = f"""
-あなたは会話の適切性を判定するチェッカーです。
+あなたは「会話の適切性を判定するAI」です。
 
-以下の基準で必ず「1」または「0」のどちらかだけを返してください。
+以下の基準で、必ず **JSON 形式のみ** を返してください。
 
-- 1 = シーン設定や会話の流れと意味的に関連している発言
-- 0 = シーン設定や会話の流れと意味的に関連していない発言（無関係・脱線・文脈無視）
+【定義】
+- true = シーン設定や会話の流れと意味的に関連している発言
+- false = シーン設定や会話の流れと意味的に関連していない発言（脱線・文脈無視）
 
-【出力ルール】
-- 数字のみを返してください（1 または 0 の1文字だけ）。
-- 理由や説明、他の文字は一切書かないでください。
+【出力形式（絶対に厳守）】
+{{"related": true}}
+または
+{{"related": false}}
 
+文章・理由・説明・余計な文字は一切書かないこと。
+
+-------------------------------------
 【シーン】
 {scene}
 
 【導入メッセージ】
 {start_message}
 
-【これまでの会話履歴】
+【会話履歴】
 {context}
 
 【今回の発言】
 {message}
+-------------------------------------
 """
 
     start = time.time()
     res = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="o3-mini",  # 判定は o3-mini の方が安定
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=5,
+        max_completion_tokens=20,
     )
     log_time(start, "GPT適切性判定(check_appropriateness)")
 
     content = res.choices[0].message.content.strip()
-    # 想定外の返答が来た場合は「関連する発言」とみなして 1
-    return 1 if content == "1" else 0
+
+    # JSON を解析
+    try:
+        data = json.loads(content)
+        return bool(data.get("related", True))
+    except Exception:
+        # 想定外形式 → 安全策として "true" にして会話継続
+        print("[APPROPRIATENESS ERROR] JSON解析失敗:", content)
+        return True
+
 
 
 def generate_reply(message, context):
@@ -303,7 +367,7 @@ def generate_reply(message, context):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        max_tokens=150,
+        max_completion_tokens=150,
     )
     log_time(start, "GPT応答生成(generate_reply)")
 
@@ -321,6 +385,7 @@ conversation_state = {
     "active": True,
     "session_data": None,
     "session_file": None,
+    "evaluated": False,
 }
 
 
@@ -480,30 +545,31 @@ def conversation_api():
         wav_path = convert_webm_to_wav(webm_path)
         os.remove(webm_path)
 
-        # 4. Whisper 文字起こし
+        # 4. Whisper文字起こし or 手入力
         step = time.time()
-        transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
-        log_time(step, "conversation: Whisper文字起こし")
 
-        # 無音対策
-        if not transcript or not transcript.strip():
-            os.remove(wav_path)
-            return Response(
-                json.dumps({"error": "無音でした"}, ensure_ascii=False),
-                status=400,
-                content_type="application/json",
-            )
+        manual = request.form.get("manual_transcript")
+        if manual and manual.strip():
+            transcript = manual.strip()
+            print("[MANUAL TRANSCRIPT] ユーザー編集済みテキストを使用")
+            meta = {}
+        else:
+            transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
+            print("[WHISPER] Whisperで文字起こし")
+
 
         # 5. openSMILE（25 LLD + 7 指標 + pause/voicing）
         step = time.time()
         feat_dict, indices = analyze_with_opensmile_file(wav_path, smile=SMILE)
         log_time(step, "conversation: openSMILE特徴量抽出")
         os.remove(wav_path)
+        # 5.5 openSMILE 指標から 5スキル(1〜10点)を算出
+        skill_scores = calc_skill_scores(indices)
 
         # 6. GPT：会話の適切性判定（1=関連する, 0=無関係）
         step = time.time()
         context = "\n".join(conversation_state["history"][-30:])
-        judgment = check_appropriateness(
+        is_related = check_appropriateness(
             transcript,
             context,
             SCENARIO["scene"],
@@ -513,7 +579,7 @@ def conversation_api():
 
         # 7. GPT：応答生成 or 無関係メッセージ処理
         step = time.time()
-        if judgment == 0:  # 無関係な発言
+        if not is_related:  # 無関係な発言（False）
             conversation_state["inappropriate"] += 1
             reply = "⚠️ 無関係な発言です。もう一度お願いします。"
 
@@ -521,7 +587,7 @@ def conversation_api():
                 conversation_state["active"] = False
                 reply += " 🚫 無関係な発言が多すぎたため終了します。"
         else:
-            # 関連する発言（1）の場合のみ会話として進める
+            # 関連する発言（True）の場合のみ会話として進める
             reply = generate_reply(transcript, context)  # 内部で時間ログ済み
 
             conversation_state["history"].append(f"あなた: {transcript}")
@@ -536,14 +602,32 @@ def conversation_api():
 
         # 8. VoiceVox 音声生成
         step = time.time()
-        voice_file_path = generate_voicevox_audio(reply)
+
+        # 🔸 読み上げ用テキスト抽出
+        tts_text = reply
+
+        # 無関係メッセージは読み上げない
+        if "無関係な発言" in tts_text:
+            tts_text = ""
+
+        # 終了メッセージ（最大ターンなど）も読み上げない
+        tts_text = tts_text.replace("🎯 最大ターンに達したため終了します。", "")
+        tts_text = tts_text.replace("🚫 無関係な発言が多すぎたため終了します。", "")
+
+        # 🔸 音声生成（None の場合も必ず処理する）
+        voice_file_path = generate_voicevox_audio(tts_text)
+
+        # 🔹 常に voice_audio_url を定義する（None でもOK）
+        if voice_file_path:
+            voice_audio_url = f"/api/voice_audio?path={voice_file_path}"
+        else:
+            voice_audio_url = None
+
         log_time(step, "conversation: VoiceVox音声生成")
-        voice_audio_url = (
-            f"/api/voice_audio?path={voice_file_path}" if voice_file_path else None
-        )
+
 
         # ラベルも一応付けておくとフロント側で扱いやすい
-        appropriateness_label = "関連する発言" if judgment == 1 else "無関係な発言"
+        appropriateness_label = "関連する発言" if is_related else "無関係な発言"
 
         # 9. 返却JSON 構築
         step = time.time()
@@ -552,13 +636,14 @@ def conversation_api():
             "reply": reply,
             "emotion": indices,
             "audio_features": feat_dict,
-            "appropriateness": judgment,           # 1 or 0
+            "appropriateness": is_related,
             "appropriateness_label": appropriateness_label,  # 文字ラベル
             "turn": conversation_state["turn"],
             "inappropriate_count": conversation_state["inappropriate"],
             "active": conversation_state["active"],
             "timestamp": datetime.now().isoformat(),
             "voice_audio_url": voice_audio_url,
+            "skill_scores": skill_scores, # ★ 追加: Python 側で計算した 5スキル(1〜10点)
         }
         log_time(step, "conversation: JSON構築")
 
@@ -576,7 +661,7 @@ def conversation_api():
         log_time(step, "conversation: セッションデータ追加")
 
         # 11. 各ターンの簡易 turn_xx.json 保存（関連する発言のみ）
-        if judgment == 1:
+        if is_related:
             step = time.time()
             session_dir = Path("logs") / conversation_state["session_file"].stem
             session_dir.mkdir(exist_ok=True)
@@ -606,8 +691,12 @@ def conversation_api():
 
             result["turn_json_url"] = f"/logs/{session_dir.name}/turn_{turn_no:02d}.json"
 
-                # 12. 会話終了時：session_full.json + 評価
-        if not conversation_state["active"]:
+        # 12. 会話終了時：session_full.json + 評価
+        if not conversation_state["active"] and not conversation_state.get("evaluated", False):
+
+            # ★二重実行防止フラグ
+            conversation_state["evaluated"] = True
+
             step = time.time()
             session["end_time"] = datetime.now().isoformat()
 
@@ -654,7 +743,6 @@ def conversation_api():
 
             # === DB保存: feedbackテーブルにINSERT ===
             try:
-                # 1. 評価JSON（result_score_feedback_xxx.json）読み込み
                 result_data_json = "{}"
                 try:
                     with open(eval_file, "r", encoding="utf-8") as ef:
@@ -662,10 +750,8 @@ def conversation_api():
                 except Exception as read_err:
                     print("[EVAL READ ERROR]", read_err)
 
-                # 2. conversation_log を JSON テキスト化
                 conversation_log_json = json.dumps(text_only, ensure_ascii=False)
 
-                # 3. DBへINSERT
                 conn = get_db_connection()
                 with conn:
                     with conn.cursor() as cur:
@@ -682,11 +768,11 @@ def conversation_api():
                         cur.execute(
                             sql,
                             (
-                                1,                               # member_id 固定
-                                CURRENT_SCENARIO_ID,            # 使用シナリオID
-                                datetime.now(),                 # finish_date
-                                result_data_json,               # 評価json
-                                conversation_log_json           # 会話ログjson
+                                1,
+                                CURRENT_SCENARIO_ID,
+                                datetime.now(),
+                                result_data_json,
+                                conversation_log_json
                             )
                         )
                     conn.commit()
@@ -695,6 +781,7 @@ def conversation_api():
 
             except Exception as db_err:
                 print("[DB ERROR]", db_err)
+
 
         # 全体時間
         log_time(total_start, "🔚 /api/conversation 全体処理時間")
@@ -794,6 +881,8 @@ def reset_conversation():
     conversation_state["turn"] = 0
     conversation_state["inappropriate"] = 0
     conversation_state["active"] = True
+    conversation_state["evaluated"] = False
+
 
     init_new_session()
     log_time(start, "/api/reset 全体処理時間")
