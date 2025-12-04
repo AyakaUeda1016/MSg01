@@ -74,7 +74,7 @@ public class ResultServlet extends HttpServlet {
 			JsonNode rootNode = mapper.readTree(log);
 
 			// conversations 配列だけを取り出して文字列化
-			JsonNode conversationsNode = rootNode.get("conversations");
+			JsonNode conversationsNode = rootNode.get("turns");
 			String conversationsJsonOnlyArray = mapper.writeValueAsString(conversationsNode);
 
 			// JSP に渡す
@@ -93,7 +93,7 @@ public class ResultServlet extends HttpServlet {
 			JsonNode rootNode = mapper.readTree(log);
 
 			// conversations 配列だけを取り出して文字列化
-			JsonNode conversationsNode = rootNode.get("conversations");
+			JsonNode conversationsNode = rootNode.get("turns");
 			String conversationsJsonOnlyArray = mapper.writeValueAsString(conversationsNode);
 
 			// JSP に渡す
