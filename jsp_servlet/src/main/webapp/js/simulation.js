@@ -16,6 +16,18 @@ function setLoadingMessage(text) {
   if (elem) elem.textContent = text;
 }
 
+//======================================================
+// VoiceVox用：現在再生中の音声を停止可能に
+//======================================================
+let currentAudios = [];
+function stopAllAudio() {
+  currentAudios.forEach(a => {
+    a.pause();
+    a.currentTime = 0;
+  });
+  currentAudios = [];
+}
+
 //------------------------------------------------------
 // グローバル状態
 //------------------------------------------------------
@@ -35,6 +47,10 @@ let skillScores = {
   emotionJudgment: 0.0,
   empathy: 0.0,
 };
+
+// ★ 会話終了後のクリック待ち用フラグ
+let isConversationFinished = false;
+let finishClickHandler = null;
 
 // DOM 要素
 const turnElement = document.getElementById("turn");
@@ -71,7 +87,7 @@ let currentScenarioId = 1;
 let currentCharacter = null;
 
 //======================================================
-// キャラクター設定（必要ならDB化可能）
+// キャラクター設定
 //======================================================
 const characterConfig = {
   1: {
@@ -114,7 +130,7 @@ const characterConfig = {
 };
 
 //======================================================
-// 表情推定：openSMILE emotion_features ベース
+// 表情推定（openSMILE）
 //======================================================
 function estimateEmotionFromOpenSmile(values) {
   if (!values) return "neutral";
@@ -124,7 +140,6 @@ function estimateEmotionFromOpenSmile(values) {
   const p = values.pitch_variability ?? 0.5;
   const s = values.voice_stability ?? 0.5;
 
-  // ---- 優先順位で判定 ----
   if (v > 0.65 && a > 0.55) return "happy";
   if (v < 0.35 && a < 0.45) return "sad";
   if (p > 0.70 && a > 0.50) return "angry";
@@ -144,7 +159,6 @@ function updateCharacterImage(emotion) {
   const img = characterContainer.querySelector(".character-image");
 
   if (img) {
-    // JSP 側で contextPath をグローバルに埋め込んでいる前提
     img.src = `${window.contextPath}/images/${fileName}`;
   }
 }
@@ -169,6 +183,9 @@ function updateRecordingStatus(recording) {
 // 録音処理
 //======================================================
 async function startRecording() {
+  // 🔥 録音を始める前に、再生中の音声を止める
+  stopAllAudio();
+
   try {
     console.log("録音開始ボタン反応OK");
     if (mediaRecorder && mediaRecorder.state === "recording") {
@@ -217,7 +234,7 @@ async function stopRecording() {
 }
 
 //======================================================
-// プレビューAPI（Whisper文字起こし）
+// Whisper プレビュー
 //======================================================
 async function sendPreviewToFlask(blob) {
   console.log("Flaskへプレビュー送信");
@@ -324,11 +341,14 @@ function calculateSkillScoresAdvanced(result) {
 }
 
 //======================================================
-// UI更新（🔥ここが毎ターンの要）
+// 表示更新（会話結果反映）
 //======================================================
 function updateDisplayFromFlask(result) {
   if (!result) return;
   console.log("[RESULT] from Flask:", result);
+
+  // 再生中音声は一旦停止
+  stopAllAudio();
 
   // AIの返答テキスト
   if (replyElement) {
@@ -347,32 +367,40 @@ function updateDisplayFromFlask(result) {
   let scores = result.skill_scores || calculateSkillScoresAdvanced(result);
   updateSkillScoresDisplay(scores);
 
-  // 感情に応じた表情更新
-  const emotionKey = estimateEmotionFromOpenSmile(result.emotion);
+  // 終了状態に応じた表情
+  let emotionKey;
+  let finishType = null;
+
+  if (result.active === false) {
+    if (result.turn >= MAX_TURNS) finishType = "clear";
+    else finishType = "fail";
+  }
+
+  if (finishType === "clear") {
+    emotionKey = "happy";
+  } else if (finishType === "fail") {
+    emotionKey = "worried";
+  } else {
+    emotionKey = estimateEmotionFromOpenSmile(result.emotion);
+  }
+
   updateCharacterImage(emotionKey);
 
-  // VoiceVox 音声再生（ある場合）
-  if (result.voice_audio_url) {
-    console.log("[VOICEVOX] Playing generated audio...");
-    setLoadingMessage("音声を準備中...");
-    showVoicevoxLoading();
-    playAudio(result.voice_audio_url);
-    // 簡易的に一定時間後にローディングを消す
-    setTimeout(() => {
-      hideVoicevoxLoading();
-    }, 1500);
+  // VoiceVox 音声再生（配列 or 単体URL の両方対応）
+  if (result.voice_audio_urls?.length > 0) {
+    playAudioSequential(result.voice_audio_urls);
+  } else if (result.voice_audio_url) {
+    playAudioSequential([result.voice_audio_url]);
   }
 
   // 会話終了条件
-  if (result.turn >= MAX_TURNS || result.active === false) {
+  if ((result.turn >= MAX_TURNS || result.active === false) && !isConversationFinished) {
     console.log("[SESSION] conversation finished, disabling recording...");
+    isConversationFinished = true;
     setRecordingEnabled(false);
 
-    setTimeout(() => {
-      console.log("[SESSION] resetting Flask session...");
-      fetch("http://127.0.0.1:5000/api/reset", { method: "POST" });
-      saveConversationResult();
-    }, 1000);
+    // クリック待ちで次画面へ
+    enableFinishOnClick();
   }
 }
 
@@ -425,22 +453,34 @@ function updateTotalScore() {
 }
 
 //======================================================
-// 音声再生
+// 音声 再生（順次再生＋停止対応）
 //======================================================
-function playAudio(url) {
-  const finalUrl = url.startsWith("http")
-    ? url
-    : `http://127.0.0.1:5000${url}`;
+async function playAudioSequential(urls) {
+  stopAllAudio();
+  for (const url of urls) {
+    const finalUrl = url.startsWith("http") ? url : `http://127.0.0.1:5000${url}`;
+    console.log("[AUDIO] play:", finalUrl);
 
-  console.log("[AUDIO] play:", finalUrl);
-  const audio = new Audio(finalUrl);
-  audio.play().catch(err => {
-    console.error("[AUDIO] play error:", err);
-  });
+    const audio = new Audio(finalUrl);
+    currentAudios.push(audio);
+
+    try {
+      await audio.play();
+    } catch (err) {
+      console.warn("[AUDIO] play error:", err);
+      continue;
+    }
+
+    await new Promise(resolve => {
+      audio.onended = () => {
+        resolve();
+      };
+    });
+  }
 }
 
 //======================================================
-// プレビュー確認画面
+// プレビュー確認 UI
 //======================================================
 function showTranscriptionConfirmation(preview) {
   pendingResult = preview;
@@ -449,11 +489,13 @@ function showTranscriptionConfirmation(preview) {
 }
 
 //======================================================
-// 確認 → 本番送信
+// 確認 → 会話本番
 //======================================================
 async function confirmTranscription() {
   transcriptionConfirmation.style.display = "none";
   console.log("[CONFIRM] Sending final audio to Flask...");
+
+  stopAllAudio();
   showVoicevoxLoading();
   setLoadingMessage("AI応答を生成中...");
 
@@ -469,8 +511,26 @@ async function confirmTranscription() {
 }
 
 //======================================================
-// 結果保存（JSPへPOST）
+// 会話終了後 → 結果保存
 //======================================================
+function enableFinishOnClick() {
+  if (finishClickHandler) return;
+
+  finishClickHandler = function handleFinishClick() {
+    document.removeEventListener("click", handleFinishClick);
+    finishClickHandler = null;
+
+    // Flask 側セッションリセット（失敗しても無視）
+    fetch("http://127.0.0.1:5000/api/reset", { method: "POST" })
+      .catch(() => {})
+      .finally(() => {
+        saveConversationResult();
+      });
+  };
+
+  document.addEventListener("click", finishClickHandler);
+}
+
 async function saveConversationResult() {
   console.log("[SAVE] saving conversation result to JSP form...");
   const resultData = {
@@ -488,45 +548,54 @@ async function saveConversationResult() {
 }
 
 //======================================================
+// 🔥開始セリフ（テキストのみ・音声なし）
+//======================================================
+async function showStartMessageAndSpeak(message) {
+  if (!message) return;
+
+  // 最初はテキスト表示だけ（音声再生なし）
+  replyElement.textContent = message;
+  updateCharacterImage("happy");
+}
+
+//======================================================
 // 初期化
+//======================================================
+//======================================================
+// 初期化（男子生徒固定版）
 //======================================================
 document.addEventListener("DOMContentLoaded", () => {
   console.log("JS初期ロード成功");
   showVoicevoxLoading();
   setRecordingEnabled(true);
 
-  // ユーザーメッセージボックスは非表示（仕様）
+  isConversationFinished = false;
+  finishClickHandler = null;
+
   if (userMessageBox) {
     userMessageBox.style.display = "none";
   }
 
-  // シナリオ取得
+  // ★シナリオ取得はターン数だけ使用
   fetch("http://127.0.0.1:5000/api/current_scenario")
-    .then(res => {
-      if (!res.ok) {
-        console.error("[INIT] scenario fetch not ok:", res.status);
-      }
-      return res.json();
-    })
-    .then(data => {
+    .then(res => res.json())
+    .then(async data => {
       console.log("Flaskからシナリオ情報取得成功", data);
-      currentScenarioId = data.scenario_id || 1;
       MAX_TURNS = data.max_turns || 6;
 
-      if (maxTurnsElement) {
-        maxTurnsElement.textContent = MAX_TURNS;
-      }
+      if (maxTurnsElement) maxTurnsElement.textContent = MAX_TURNS;
 
-      currentCharacter = characterConfig[currentScenarioId] || characterConfig[1];
+      // ★男子生徒キャラに固定
+      currentCharacter = characterConfig[1];
       updateCharacterImage("default");
+
+      // 🔥開始セリフ：テキスト表示のみ（音声なし）
+      await showStartMessageAndSpeak(data.start_message);
     })
-    .catch(err => {
-      console.error("[INIT] scenario fetch error:", err);
-    })
-    .finally(() => {
-      hideVoicevoxLoading();
-    });
+    .catch(err => console.error("[INIT] scenario fetch error:", err))
+    .finally(() => hideVoicevoxLoading());
 });
+
 
 //======================================================
 // グローバル公開
