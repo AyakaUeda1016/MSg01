@@ -148,7 +148,7 @@
                 <p class="confirm-hint">画面のどこでもクリックで送信できます</p>
             </div>
         </div>
-	
+
         <!-- 結果保存用の隠しフォーム（新機能） -->
         <form id="resultForm" action="${pageContext.request.contextPath}/simulation" method="post" style="display: none;">
             <input type="hidden" name="action" value="save_result">

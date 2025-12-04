@@ -1,4 +1,3 @@
-前ver
 # -*- coding: utf-8 -*-
 """
 evaluate_feedback.py（数値 + 講評）
