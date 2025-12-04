@@ -284,7 +284,7 @@ document.getElementById("navLeftArrow").onclick = () => {
   const board = document.querySelector(".blackboard-container");
   board.classList.add("slide-out-right");
   setTimeout(() => {
-    window.location.href = "growth_record.jsp";
+    window.location.href = "growth_record";
   }, 500)
 }
  

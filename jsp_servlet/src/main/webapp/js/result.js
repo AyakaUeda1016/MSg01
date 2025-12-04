@@ -167,8 +167,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // ★ total_score を extra-area に追加
 const extraArea = document.querySelector(".extra-area");
 if (extraArea && feedbackData.total_score != null) {
-  extraArea.innerHTML = `
-    <p class="total-score-text">総合スコア：${feedbackData.total_score}点</p>
+	const totalScoreNormalized = feedbackData.total_score / 100;
+  	const totalscore = 50 * totalScoreNormalized;
+  	let rank = "";
+  	if (totalscore >= 40) {
+    	rank = "S";
+  	} else if (totalscore >= 30) {
+    	rank = "A";
+  	} else if (totalscore >= 10) {
+    	rank = "B";
+  	} else {
+    	rank = "C";
+  	}
+  	extraArea.innerHTML = `
+    <p class="total-score-text">
+      ランク：${rank}
+    </p>
   `;
 }
 

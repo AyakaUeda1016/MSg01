@@ -26,9 +26,14 @@ CREATE TABLE scenario(
     imagelink VARCHAR(300), 
     scene TEXT, 
     start_message TEXT, 
+    finish_message_on_clear TEXT,
+    finish_message_on_fail TEXT,
     max_turns INT, 
     character_role  TEXT, 
-    reply_style TEXT
+    reply_style TEXT,
+    character_id INT,
+    FOREIGN KEY(character_id)
+    REFERENCES character(id)
 );
 
 
@@ -54,10 +59,30 @@ CREATE TABLE feedback(
 );
 
 /* シナリオデータ挿入※内容は仮 */
-INSERT INTO scenario(title,description,imagelink,scene,start_message,max_turns,character_role,reply_style) VALUES('シナリオ1','みんなの前で自己紹介をやってみよう！','/images/haru.jpg','新学期、クラスの全員の前で自己紹介をする','それでは自己紹介してください。',1,'クラスの同級生','明るく元気な口調');
-INSERT INTO scenario(title,description,imagelink,scene,start_message,max_turns,character_role,reply_style) VALUES('シナリオ2','先生に相談してみよう！','/images/kyo.jpg','放課後、教室で先生に悩み相談をする。','浮かない顔をしていますね。どうしましたか?',3,'担任の先生','優しく落ち着いた口調');
-INSERT INTO scenario(title,description,imagelink,scene,start_message,max_turns,character_role,reply_style) VALUES('シナリオ3','友達と放課後の予定を決めてみよう！','/images/natu.jpg','放課後、友達とこの後の予定について話をする。','今日の放課後暇？どっか行こう!',5,'クラスの同級生','明るく元気な口調');
-INSERT INTO scenario(title,description,imagelink,scene,start_message,max_turns,character_role,reply_style) VALUES('シナリオ4','部活動の見学に行ってみよう!','/images/room.png','放課後、サッカー部の見学に行く','サッカー部の見学一緒に行こうよ',5,'クラスの同級生','明るく元気な口調');
+INSERT INTO scenario (
+    title, description, imagelink, scene, start_message,
+    finish_message_on_clear, finish_message_on_fail,
+    max_turns, character_role, reply_style, character_id
+) VALUES
+(
+    '放課後の帰り道',
+    '先輩と一緒に帰る会話シナリオ',
+    '/images/haru.jpg',
+    '部活終わりの夕暮れ、先輩と歩いて帰る場面。',
+    '今日の練習どうだった？',
+    '今日はよく頑張ったね。また一緒に帰ろう。',
+    '今日はうまくいかなかったね。でもまた明日頑張ろう。',
+    8,
+    '優しい先輩として振る舞う',
+    '柔らかく穏やかな口調で話す',
+    14
+);
 
 /*テスト会員データ挿入*/
 INSERT INTO member(name,birthday,sex,password,ftime_select,ftime_simulation) VALUES('はるたろう','2008-11-27','M',pass,0,0);
+
+/*使用キャラデータ挿入*/
+INSERT INTO character(id,name,info) VALUES(14,'たちばなひまり','キャラの特徴を入れる');
+INSERT INTO character(id,name,info) VALUES(52,'たかはしれん','キャラの特徴を入れる');
+INSERT INTO character(id,name,info) VALUES(27,'きりたになお','キャラの特徴を入れる');
+INSERT INTO character(id,name,info) VALUES(48,'かなちゃん','キャラの特徴を入れる');
