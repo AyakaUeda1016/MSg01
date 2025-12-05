@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%
+	int scenarioid = (Integer)session.getAttribute("SCENARIOID");
+%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -163,7 +166,7 @@
     <script>
         window.contextPath = "${pageContext.request.contextPath}";
         // 必要ならサーブレット側で window.scenarioId を埋める形にしてもOK
-        // window.scenarioId = 1;
+        window.scenarioId = <%=scenarioid %>;
     </script>
     <script src="${pageContext.request.contextPath}/js/simulation.js"></script>
 </body>
