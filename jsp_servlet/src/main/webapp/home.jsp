@@ -12,6 +12,12 @@
 
 <body>
     <!-- Added header with Lv, username, and time -->
+    <video autoplay loop muted playsinline id="bg-video"
+      <!--  style="position:fixed;top:0;left:0;width:100%;height:100%;
+              object-fit:cover;z-index:-1;pointer-events:none;"> -->
+    <source src="images/classroom-bg.mp4" type="video/mp4">
+	</video>
+
     <header class="header">
         <div class="header-center">ユーザー名</div>
         <div class="header-right">18:00</div>
