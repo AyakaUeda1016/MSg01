@@ -61,7 +61,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  margin-left: 263px;
+  margin-left: 228px;
   padding-top: 1.5rem;
   padding-bottom: 1rem;
 }
@@ -127,8 +127,17 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3rem;
+    gap: 1.5rem;
     margin-top: 2.0rem; 
+}
+
+/* 矢印ボタンをさらに少しだけ中央寄せ */
+.arrow-left {
+    margin-right: -10px;
+}
+
+.arrow-right {
+    margin-left: -10px;
 }
 
 /* 화살표 버튼 */
@@ -215,3 +224,9 @@ html, body {
   transform: translateY(2px);
   box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
+
+/* ===== 黒板の中央に完全に合わせる位置補正（デザイン不変更） ===== */
+/*.panel-inner {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}*/
