@@ -134,16 +134,43 @@ body {
 }
 
 .character {
+    position: relative;
     width: 380px;
     height: auto;
     cursor: pointer;
     transition: transform 0.2s ease;
     margin-top: 45px;
+    animation: floatUpDown 3s ease-in-out infinite;
+/*	animation: spinFast 0.1s linear infinite;*/
+}
+/*	@keyframes spinFast {*/
+/*    from {*/
+/*        transform: rotate(0deg);*/
+/*    }*/
+/*    to {*/
+/*        transform: rotate(360deg);    */
+/*    }*/
+/*}*/
+@keyframes floatUpDown {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
 }
 
 .character:hover {
     transform: scale(1.03);
 }
+	#bg-video {
+      position: fixed;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 50%;
+    object-fit: cover;
+    z-index: 9999;
+    ; 
+}
+
 
 /* Note area fixed to the right edge of the screen */
 .note-area {
@@ -186,7 +213,7 @@ body {
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 20px;
     width: 420px;
     z-index: 5;
     align-items: flex-start;
@@ -198,10 +225,12 @@ body {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+    
+    perspective: 800px;
 }
 
 .menu-button {
-    margin-top: 80px;
+    margin-top: 20px;
     margin-left: 30px;
     position: relative;
     background: none;
@@ -229,6 +258,13 @@ body {
     transform: translateX(3px);
 }
 
+/* 鼠标放到按钮上时，让便签右下角稍微翘起来 */
+.menu-button:hover .sticky-note {
+    transform: rotateX(12deg) translateY(-4px);
+    box-shadow: 0 10px 16px rgba(0, 0, 0, 0.18);
+}
+
+
 .sticky-note {
     position: absolute;
     top: 0;
@@ -237,6 +273,12 @@ body {
     height: 100px;
     object-fit: contain;
     pointer-events: none;
+    
+     /* ▼ 新增：动画 & 旋转基点 */
+    transform-origin: left bottom;              /* 以右下角为旋转中心，像角翘起来 */
+    transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .button-text {
@@ -352,3 +394,5 @@ body {
         font-size: 17px;
     }
 }
+
+

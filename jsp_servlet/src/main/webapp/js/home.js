@@ -11,13 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
         "一緒に成長していきましょう！",
         "素晴らしい！その調子です！",
     ]
+    const characterSprites = [
+        "images/kaiwanavi-chara.png",  
+        "images/kana_smile.png", 
+        "images/kana_smile2.png", 
+    ]
 
     let currentMessageIndex = 0
     let characterMessageTimer = null
     let currentHoveredButton = null // ホバー中のボタンを追跡する変数を追加
     let speechBubbleHideTimeout = null
     let speechBubbleShowTimeout = null
+    let revertTimer = null;
 
+	//ここからは立ち絵の切り替えの処理
+
+    let currentSpriteIndex = 0
+    
+    
     // Initialize descriptions (so they exist without clicking)
     document.querySelectorAll(".description").forEach((desc) => {
         const buttonKey = desc.getAttribute("data-button")
@@ -188,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     if (character && speechBubble) {
-        character.addEventListener("click", () => {
+        character.addEventListener("click", (event) => {
             currentMessageIndex = (currentMessageIndex + 1) % messages.length
 
             // Clear any existing timer
@@ -215,8 +226,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 200)
                 characterMessageTimer = null
             }, 5000)
-        })
-    }
+            //ここからは立ち絵の切り替えの処理
+            currentSpriteIndex = (currentSpriteIndex + 1) % characterSprites.length
+            character.src = characterSprites[currentSpriteIndex]
+            
+            if (revertTimer) {
+    			clearTimeout(revertTimer);  // 如果之前有定时器就清掉（防止连点冲突）
+			}
+
+			revertTimer = setTimeout(() => {
+    			character.src = characterSprites[0];  // 恢复到默认立绘
+    		currentSpriteIndex = 0;               // 如果你想重置循环，也可以保留
+			}, 5000);
+        	})
+    		}
 
     // Update time in header
     function updateTime() {
@@ -232,3 +255,40 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTime()
     setInterval(updateTime, 60000) // Update every minute
 })
+
+//	// ===============================
+//	// クリックで消しゴムSE再生
+//	// ===============================
+//	const eraser = document.querySelector(".eraser");
+//
+//	// 音声オブジェクト（HTMLを一切変更しない）
+//	const eraserSE = new Audio("sounds/eraser.mp3");
+//	eraserSE.volume = 0.7; // 音量調整（0.0~1.0）
+//	eraserSE.preload = "auto";
+//
+//	// ブラウザの自動再生制限対策：
+//	// ユーザーがページを一度クリックしたら音声再生が許可される
+//	document.addEventListener(
+//    "click",
+//    () => {
+//        eraserSE.play().catch(() => {});
+//        eraserSE.pause();
+//        eraserSE.currentTime = 0;
+//    },
+//    { once: true }
+//);
+//
+//	// 実際のクリックで再生
+//	if (eraser) {
+//    	eraser.addEventListener("click", (event) => {
+//        event.stopPropagation(); // 背景クリックとして扱われないように
+//        eraserSE.currentTime = 0;
+//        eraserSE.play();
+//   	 });
+//	}
+//
+
+
+
+
+  
