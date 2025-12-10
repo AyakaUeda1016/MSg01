@@ -22,6 +22,6 @@ public interface FeedBackDAO {
 	List<String> MakeGraphData(Feedback feedback);
 	
 	//当日ランク展示用のデータを持ってくる(result_data) 担当：上田(後日)
-	String MakeRankData(Feedback feedback);
+	List<Feedback> MakeRankData();
 	
 }
