@@ -15,7 +15,7 @@ CREATE TABLE member(
 /*会員テーブル※当日展示用*/
 CREATE TABLE member_MS(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(64)
+    name VARCHAR(6)
 );
 
 /* シナリオテーブル */
