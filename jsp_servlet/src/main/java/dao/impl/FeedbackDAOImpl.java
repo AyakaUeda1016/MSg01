@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import dao.FeedBackDAO;
@@ -170,9 +172,39 @@ public class FeedbackDAOImpl implements FeedBackDAO{
 	}
 
 	@Override
-	public String MakeRankData(Feedback feedback) {
-		// TODO 自動生成されたメソッド・スタブ
-		return null;
+	public List<Feedback> MakeRankData() {
+		List<Feedback> rankdata = new ArrayList<>();
+		String sql = "";
+		Connection con = null;
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			con = getConnection();
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()) {
+				Feedback fb = new Feedback();
+				fb.setUsername(rs.getString(""));
+				rankdata.add(fb);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if(rs != null) {
+					rs.close();
+				}
+				if(st != null) {
+					st.close();
+				}
+				if(con != null) {
+					con.close();
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return rankdata;
 	}
 
 }

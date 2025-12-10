@@ -3,6 +3,7 @@ package model;
 public class Feedback {
 	private int userid; //ユーザーID
 	private int scenarioid; //シナリオID
+	private String username;//ユーザー名
 	private String finishdate; //終了日
 	private String resultdata; //シミュレーション結果データJSON
 	private String convasationlog;//会話ログの結果データJSON
@@ -54,5 +55,12 @@ public class Feedback {
 	}
 	public void setConvasationlog(String convasationlog) {
 		this.convasationlog = convasationlog;
+	}
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 }

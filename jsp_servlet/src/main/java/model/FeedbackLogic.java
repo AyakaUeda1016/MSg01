@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 import dao.FeedBackDAO;
 import dao.impl.FeedbackDAOImpl;
 
@@ -57,5 +59,16 @@ public class FeedbackLogic {
 			return results;
 		}
 		
+	}
+	
+	public List<Feedback> getRankdata(){
+		List<Feedback> list = null;
+		try {
+			list = feedbackDAO.MakeRankData();
+			return list;
+		}catch(Exception e) {
+			e.printStackTrace();
+			return list;
+		}
 	}
 }
