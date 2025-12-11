@@ -293,6 +293,30 @@ a {
   color: #fff;
 }
 
+/* AIメッセージの長文スクロール対応 */
+.message-content {
+  max-height: 180px;      /* ← ボックスの高さ（調整可能） */
+  overflow-y: auto;       /* ← 高さを超えたらスクロール */
+  padding-right: 10px;    /* ← スクロールバーとの隙間 */
+  line-height: 1.6;
+  scrollbar-width: thin;  /* Firefox向け */
+}
+
+/* Chrome / Edge / Safari 用スクロールバー細くする */
+.message-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.message-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+
 /* ---------------------------------------------- */
 /* 🎙 録音ボタン                                */
 /* ---------------------------------------------- */
@@ -476,7 +500,74 @@ a {
   align-items: center;
 }
 
+/* ==================================================
+   🎤 声メーター用 強調スタイル（追加分）
+================================================== */
 
+/* 数値を少し大きくして視認性UP */
+.skill-score {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
 
+/* 声量：少し派手に（一番目立たせる） */
+.skill-item:nth-child(1) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #4fc3f7 0%,
+    #29b6f6 40%,
+    #ffeb3b 100%
+  );
+  box-shadow: 0 0 14px rgba(255, 235, 59, 0.7);
+}
 
+/* 抑揚：動きが分かりやすい色 */
+.skill-item:nth-child(2) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #ab47bc 0%,
+    #7e57c2 60%,
+    #ffca28 100%
+  );
+}
 
+/* 安定度：落ち着いた色 */
+.skill-item:nth-child(3) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #66bb6a 0%,
+    #43a047 100%
+  );
+}
+
+/* スムーズさ：沈黙が少ないほど伸びる感覚 */
+.skill-item:nth-child(4) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #ffa726 0%,
+    #ff7043 100%
+  );
+}
+
+/* 発話率：安定した青系 */
+.skill-item:nth-child(5) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #42a5f5 0%,
+    #1e88e5 100%
+  );
+}
+
+/* 変化があった瞬間に「ピクッ」と反応 */
+.skill-bar {
+  transition:
+    width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+}
+
+/* 高い値の時は光る（体感用） */
+.skill-bar[style*="width: 8"],
+.skill-bar[style*="width: 9"],
+.skill-bar[style*="width: 100"] {
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.8);
+}

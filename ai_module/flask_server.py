@@ -230,51 +230,27 @@ def load_scenario_by_id(scenario_id: int):
     with conn:
         with conn.cursor() as cur:
             sql = """
-                SELECT
-                    character_role,
-                    max_turns,
-                    scene,
-                    start_message,
-                    reply_style
+                SELECT *
                 FROM scenario
                 WHERE id = %s
+                LIMIT 1
             """
             cur.execute(sql, (scenario_id,))
             row = cur.fetchone()
 
-    return {
-        "character_role": row["character_role"],
-        "max_turns": int(row["max_turns"]),
-        "scene": row["scene"],
-        "start_message": row["start_message"],
-        "reply_style": row["reply_style"],
-    }
-
-
-def load_current_scenario_from_db():
-    start = time.time()
-    conn = get_db_connection()
-    with conn:
-        with conn.cursor() as cur:
-            sql = """
-                SELECT *
-                FROM scenario
-                WHERE is_active = 1
-                LIMIT 1
-            """
-            cur.execute(sql)
-            row = cur.fetchone()
-
     if not row:
-        raise Exception("is_active=1 のシナリオが見つかりません")
+        raise Exception(f"指定されたシナリオIDが存在しません: {scenario_id}")
 
     global CURRENT_SCENARIO_ID
     global CHARACTER_ROLE, MAX_TURNS, SCENARIO, REPLY_STYLE
+    global CHARACTER_SPEAKER_ID
 
     CURRENT_SCENARIO_ID = row["id"]
     CHARACTER_ROLE = row["character_role"]
     MAX_TURNS = int(row["max_turns"])
     REPLY_STYLE = row["reply_style"]
+    CHARACTER_SPEAKER_ID = int(row["character_id"])
+
     SCENARIO = {
         "scene": row["scene"],
         "start_message": row["start_message"],
@@ -282,8 +258,11 @@ def load_current_scenario_from_db():
         "finish_message_on_fail": row.get("finish_message_on_fail"),
     }
 
-    print(f"[CONFIG] 使用シナリオID: {row['id']}, title: {row['title']}")
-    log_time(start, "DBシナリオ読み込み(load_current_scenario_from_db)")
+    print(f"[CONFIG] シナリオID {scenario_id} を読み込みました: {row['title']}")
+    return row
+
+
+
 
 
 # =====================================================================
@@ -436,7 +415,6 @@ conversation_state = {
 def init_new_session():
     """新しい会話セッションを開始"""
     start = time.time()
-    load_current_scenario_from_db()
 
     # ログディレクトリを確実に作成
     logs_dir = Path("logs")
@@ -460,8 +438,6 @@ def init_new_session():
     log_time(start, "init_new_session")
 
 
-# モジュール読み込み時に1回だけ初期化
-init_new_session()
 
 
 # =====================================================================
@@ -672,7 +648,8 @@ def conversation_api():
         voice_urls: list[str] = []
         # 無関係メッセージの警告文は読み上げない
         if tts_text and "無関係な発言" not in tts_text:
-            files = generate_voicevox_audio_multi(tts_text)
+            files = generate_voicevox_audio_multi(tts_text, speaker_id=CHARACTER_SPEAKER_ID)
+
             for f in files:
                 voice_urls.append(f"/api/voice_audio?path={f}")
 
@@ -908,27 +885,25 @@ def set_scenario():
             content_type="application/json",
         )
 
-    # 全て is_active=0 にしてから、選ばれたシナリオを1にする
-    conn = get_db_connection()
-    with conn:
-        with conn.cursor() as cur:
-            cur.execute("UPDATE scenario SET is_active = 0")
-            cur.execute(
-                "UPDATE scenario SET is_active = 1 WHERE id = %s", (scenario_id,)
-            )
-        conn.commit()
-
-    # Flask の内部変数を更新
-    load_current_scenario_from_db()
-    init_new_session()
+    # ★ is_active は使用せず、ただ指定 ID をロードするだけ
+    try:
+        load_scenario_by_id(scenario_id)
+        init_new_session()
+    except Exception as e:
+        return Response(
+            json.dumps({"error": str(e)}, ensure_ascii=False),
+            status=400,
+            content_type="application/json",
+        )
 
     log_time(start, "/api/set_scenario 全体処理時間")
 
     return Response(
-        json.dumps({"message": "シナリオを切り替えました"}, ensure_ascii=False),
+        json.dumps({"message": f"シナリオ {scenario_id} を読み込みました"}, ensure_ascii=False),
         status=200,
         content_type="application/json",
     )
+
 
 
 # =====================================================================

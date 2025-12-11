@@ -15,6 +15,24 @@ function setLoadingMessage(text) {
   const elem = document.querySelector("#voicevoxOverlay .loading-text");
   if (elem) elem.textContent = text;
 }
+function retryRecording() {
+  console.log("[RETRY] 録音をやり直します");
+
+  // 前回のプレビューをクリア
+  confirmedText.value = "";
+  document.getElementById("transcript").textContent = "...";
+
+  // 確認画面を閉じる
+  transcriptionConfirmation.style.display = "none";
+
+  // 録音データのリセット
+  audioChunks = [];
+  lastAudioBlob = null;
+  pendingResult = null;
+
+  console.log("[RETRY] 状態リセット完了（再録可能）");
+}
+
 
 //======================================================
 // VoiceVox用：現在再生中の音声を停止可能に
@@ -29,6 +47,13 @@ function stopAllAudio() {
 }
 
 //------------------------------------------------------
+// ★追加：BGM 定義
+//------------------------------------------------------
+let bgmAudio = new Audio(`${window.contextPath}/bgm/小春道.mp3`);
+bgmAudio.loop = true;
+bgmAudio.volume = 0.7;
+
+//------------------------------------------------------
 // グローバル状態
 //------------------------------------------------------
 let mediaRecorder = null;
@@ -39,18 +64,21 @@ let lastAudioBlob = null;
 let pendingResult = null;
 let conversationHistory = [];
 
-// スキルスコア（0〜10）
+// ★ 5つの「声メーター」（0〜100）
 let skillScores = {
-  selfUnderstanding: 0.0,
-  readingWriting: 0.0,
-  comprehension: 0.0,
-  emotionJudgment: 0.0,
-  empathy: 0.0,
+  selfUnderstanding: 0.0,  // 声量
+  readingWriting: 0.0,     // 声の抑揚
+  comprehension: 0.0,      // 声の安定度
+  emotionJudgment: 0.0,    // 話のスムーズさ（沈黙の少なさ）
+  empathy: 0.0,            // 発話率
 };
 
 // ★ 会話終了後のクリック待ち用フラグ
 let isConversationFinished = false;
 let finishClickHandler = null;
+
+// ★ 追加：現在の録音ストリーム（Chrome対策）
+let currentStream = null;
 
 // DOM 要素
 const turnElement = document.getElementById("turn");
@@ -86,12 +114,6 @@ const scenarioIdInput = document.getElementById("scenarioId");
 let currentScenarioId = 1;
 let currentCharacter = null;
 
-//BGM制御用
-let bgmAudio = new Audio(`${window.contextPath}/bgm/小春道.mp3`);
-bgmAudio.loop = true;
-bgmAudio.volume = 0.7;   // 通常音量
-bgmAudio.play();
-
 //======================================================
 // キャラクター設定
 //======================================================
@@ -101,11 +123,7 @@ const characterConfig = {
     emotions: {
       default: "boy_standard.png",
       happy: "boy_smile.png",
-      smile: "boy_smile.png",
-      neutral: "boy_standard2.png",
       sad: "boy_tired.png",
-      tired: "boy_tired.png",
-      worried: "boy_concerns.png",
       angry: "boy_angry.png",
     },
   },
@@ -114,45 +132,129 @@ const characterConfig = {
     emotions: {
       default: "Teacher_standard.png",
       happy: "Teacher_smile.png",
-      smile: "Teacher_smile.png",
-      neutral: "Teacher_peace.png",
       sad: "Teacher_standard.png",
-      worried: "Teacher_standard.png",
       angry: "Teacher_angry.png",
     },
   },
   3: {
     name: "女子生徒",
     emotions: {
-      default: "girl_standard.png",
-      happy: "girl_happy.png",
-      smile: "girl_happy.png",
-      neutral: "girl_standard.png",
-      sad: "girl_sad.png",
-      worried: "girl_sad.png",
-      angry: "girl_angry.png",
+      default: "JK_standard.png",
+      happy: "JK_smile3.png",
+      sad: "JK_angry.png",
+      angry: "JK_angry.png",
+    },
+  },
+  4: {
+    name: "カナちゃん",
+    emotions: {
+      default: "kana2_standard.png",
+      happy: "kana2_happy.png",
+      sad: "kana2_sad.png",
+      angry: "kana2_angry.png",
     },
   },
 };
 
 //======================================================
-// 表情推定（openSMILE）
+// ★追加：シナリオID → キャラID の割り当て
 //======================================================
+const scenarioCharacterMap = {
+  1: 1, // シナリオ1 → 男子生徒
+  2: 2, // シナリオ2 → 先生
+  3: 3, // シナリオ3 → 女子生徒
+  4: 4, // シナリオ4 → カナチャン
+};
+
+//======================================================
+// ★追加：BGM 音量調整
+//======================================================
+function lowerBgmVolume() {
+  if (bgmAudio) bgmAudio.volume = 0.3;
+}
+function restoreBgmVolume() {
+  if (bgmAudio) bgmAudio.volume = 0.7;
+}
+
+//======================================================
+// ★ 4カテゴリ版：default / happy / sad / angry
+//    （スコア方式 + バッファ）
+//======================================================
+
+let emotionHistory = [];
+
 function estimateEmotionFromOpenSmile(values) {
-  if (!values) return "neutral";
+  if (!values) return smoothEmotion("default");
 
   const v = values.valence ?? 0.5;
   const a = values.arousal ?? 0.5;
-  const p = values.pitch_variability ?? 0.5;
-  const s = values.voice_stability ?? 0.5;
 
-  if (v > 0.65 && a > 0.55) return "happy";
-  if (v < 0.35 && a < 0.45) return "sad";
-  if (p > 0.70 && a > 0.50) return "angry";
-  if (s < 0.45 || (v < 0.5 && a < 0.5)) return "worried";
+  // --------------------------
+  // スコア初期化
+  // --------------------------
+  let scores = {
+    happy: 0,
+    sad: 0,
+    angry: 0,
+    default: 0
+  };
 
-  return "neutral";
+  // --------------------------
+  // happy（前向き or 元気系）
+  // --------------------------
+  if (v > 0.50) scores.happy += 2;
+  if (a > 0.70 && v > 0.40) scores.happy += 1;
+
+  // --------------------------
+  // sad（ネガティブ + 低活性）
+  // --------------------------
+  if (v < 0.30) scores.sad += 1;
+  if (a < 0.40) scores.sad += 1;
+
+  // --------------------------
+  // angry（興奮 + ネガティブ）
+  // pitch_variability は使用しない
+  // --------------------------
+  if (a > 0.80 && v < 0.30) scores.angry += 2;
+  if (a > 0.85 && v < 0.35) scores.angry += 1;
+
+  // --------------------------
+  // default（大半の会話はここ）
+  // --------------------------
+  if (a > 0.45 && a < 0.80 && v > 0.30 && v < 0.55) {
+    scores.default += 3;
+  }
+
+  // 怒りは最低2点必要
+  if (scores.angry < 2) scores.angry = 0;
+
+  // --------------------------
+  // 最もスコアが高いカテゴリを選択
+  // --------------------------
+  const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+  const detected = best[1] === 0 ? "default" : best[0];
+
+  return smoothEmotion(detected);
 }
+
+//======================================================
+// ★ バッファ平滑化（過去3回の多数決）
+//======================================================
+function smoothEmotion(newEmotion) {
+  emotionHistory.push(newEmotion);
+
+  if (emotionHistory.length > 3) {
+    emotionHistory.shift();
+  }
+
+  const counts = emotionHistory.reduce((acc, e) => {
+    acc[e] = (acc[e] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+}
+
 
 //======================================================
 // キャラ画像更新
@@ -186,10 +288,9 @@ function updateRecordingStatus(recording) {
 }
 
 //======================================================
-// 録音処理
+// 録音処理（BGMを先に下げてから録音開始）
 //======================================================
 async function startRecording() {
-  // 🔥 録音を始める前に、再生中の音声を止める
   stopAllAudio();
 
   try {
@@ -199,7 +300,19 @@ async function startRecording() {
       return;
     }
 
+    // 録音前にBGMをミュート
+    if (bgmAudio) bgmAudio.volume = 0.3;
+    await new Promise(r => setTimeout(r, 300));   // 0.3秒待つ
+
+    // 前回のストリームを完全停止
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+      currentStream = null;
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    currentStream = stream;
+
     audioChunks = [];
     mediaRecorder = new MediaRecorder(stream);
 
@@ -209,10 +322,14 @@ async function startRecording() {
 
     mediaRecorder.onstop = async () => {
       console.log("音声データ処理へ移行");
-      stream.getTracks().forEach((t) => t.stop());
-      lastAudioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-      // 🔵 プレビュー用：Whisper 文字起こし
+      // 念のためここでも停止
+      stream.getTracks().forEach((t) => t.stop());
+      currentStream = null;
+
+      lastAudioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      console.log("[DEBUG] lastAudioBlob size:", lastAudioBlob.size);
+
       const preview = await sendPreviewToFlask(lastAudioBlob);
       if (preview) {
         console.log("[PREVIEW] received:", preview);
@@ -220,28 +337,37 @@ async function startRecording() {
       } else {
         console.warn("[PREVIEW] failed to get preview");
       }
-      // 🔼 録音処理が完全に終わったので BGM を元に戻す
-      restoreBgmVolume();
+
+      restoreBgmVolume();   // 録音終了 → BGM を戻す
     };
 
-	// 🔽 録音開始したので BGM を小さくする
-    lowerBgmVolume();
     mediaRecorder.start();
     updateRecordingStatus(true);
     console.log("録音開始");
+
   } catch (err) {
     console.error("[REC] startRecording error:", err);
   }
 }
 
+//======================================================
+// 録音停止
+//======================================================
 async function stopRecording() {
   console.log("録音停止");
-  if (mediaRecorder?.state === "recording") {
-    mediaRecorder.stop();
-    updateRecordingStatus(false);
-    console.log("[REC] mediaRecorder stopped");
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    try {
+      mediaRecorder.stop();
+      console.log("[REC] mediaRecorder stopped");
+    } catch (err) {
+      console.error("[REC] stopRecording error:", err);
+    }
+  } else {
+    console.log("[REC] not recording, ignore stop");
   }
+  updateRecordingStatus(false);
 }
+
 
 //======================================================
 // Whisper プレビュー
@@ -275,7 +401,7 @@ async function sendPreviewToFlask(blob) {
 }
 
 //======================================================
-// 本番API（会話処理 / GPT + openSMILE + VoiceVox）
+// 本番API
 //======================================================
 async function sendAudioToFlask(blob, text) {
   console.log("[CONV] Sending audio to conversation API...");
@@ -301,83 +427,69 @@ async function sendAudioToFlask(blob, text) {
 }
 
 //======================================================
-// 緊張度計算（0〜100）
+// 0〜1 正規化
 //======================================================
-function calculateTensionLevel(emotion, turn) {
-  const v = emotion.valence ?? 0.5;
-  const p = emotion.pitch_variability ?? 0.5;
-  const s = emotion.voice_stability ?? 0.5;
-
-  const base =
-    (1 - v) * 0.4 +
-    p * 0.3 +
-    (1 - s) * 0.3;
-
-  return Math.min(100, Math.floor((base + turn * 0.05) * 100));
+function to01(value, defaultVal = 0.5) {
+  const num = Number(value);
+  if (Number.isNaN(num)) return defaultVal;
+  return Math.min(1, Math.max(0, num));
 }
 
 //======================================================
-// スキルスコア計算（Python側で無い場合の補完）
+// 声特徴 5項目（0〜100）
 //======================================================
-function normalize10(v) {
-  return Math.max(0, Math.min(10, Number(v.toFixed(1))));
-}
+function calculateVoiceFeatureScores(emotionRaw) {
+  const emotion = emotionRaw || {};
 
-function calculateSkillScoresAdvanced(result) {
-  const emotion = result.emotion || {};
-  const transcript = result.transcript || "";
-  const turn = result.turn || 0;
-  const isRelated = result.is_related ? 1 : 0;
+  const arousal = to01(emotion.arousal, 0.5);
+  const dominance = to01(emotion.dominance, 0.5);
+  const loudVar = to01(emotion.loudness_variability, 0.5);
+  const pitchVar = to01(emotion.pitch_variability, 0.5);
+  const stability = to01(emotion.voice_stability, 0.5);
+  const pauseRatio = to01(emotion.pause_ratio, 0.3);
+  const voicingRatio = to01(emotion.voicing_ratio, 0.7);
 
-  const valence = emotion.valence ?? 0.5;
-  const arousal = emotion.arousal ?? 0.5;
-  const pitch = emotion.pitch_variability ?? 0.5;
-  const stability = emotion.voice_stability ?? 0.5;
-
-  const tension = calculateTensionLevel(emotion, turn);
-  const tf = 1.0 - tension / 200;
-
-  const empathyCount = ["ありがとう", "大丈夫", "すごい", "よかった"].filter(w =>
-    transcript.includes(w)
-  ).length;
+  const loudnessScore = Math.round((dominance * 0.6 + loudVar * 0.4) * 100);
+  const pitchScore = Math.round(pitchVar * 100);
+  const stabilityScore = Math.round(stability * 100);
+  const smoothnessScore = Math.round((1 - pauseRatio) * 100);
+  const voicingScore = Math.round(voicingRatio * 100);
 
   return {
-    self_understanding: normalize10(valence * 5 + turn * 0.3),
-    reading_writing: normalize10(transcript.length / 20 + turn * 0.4),
-    comprehension: normalize10(isRelated * 8 + stability * 2),
-    emotion_judgment: normalize10(arousal * 4 + pitch * 4 + (1 - tf) * 2),
-    empathy: normalize10(valence * 6 + empathyCount * 2 + turn * 0.5),
+    voice_loudness: loudnessScore,
+    voice_pitch: pitchScore,
+    voice_stability: stabilityScore,
+    voice_smoothness: smoothnessScore,
+    voice_voicing: voicingScore,
   };
 }
 
-//======================================================
-// 表示更新（会話結果反映）
+///======================================================
+// 表示更新（4カテゴリ版）
 //======================================================
 function updateDisplayFromFlask(result) {
   if (!result) return;
   console.log("[RESULT] from Flask:", result);
 
-  // 再生中音声は一旦停止
   stopAllAudio();
 
-  // AIの返答テキスト
+  // AI返信を表示
   if (replyElement) {
     replyElement.textContent = result.reply || "";
   }
 
-  // ターン表示
+  // ターン数更新
   if (turnElement) {
     turnElement.textContent = result.turn;
   }
 
-  // 会話ログ蓄積
   conversationHistory.push(result);
 
-  // スキルスコア（Python側が出していなければJS側で推定）
-  let scores = result.skill_scores || calculateSkillScoresAdvanced(result);
-  updateSkillScoresDisplay(scores);
+  // 声スコア更新
+  const voiceScores = calculateVoiceFeatureScores(result.emotion);
+  updateSkillScoresDisplay(voiceScores);
 
-  // 終了状態に応じた表情
+  // 会話終了判定
   let emotionKey;
   let finishType = null;
 
@@ -386,89 +498,94 @@ function updateDisplayFromFlask(result) {
     else finishType = "fail";
   }
 
+  // CLEAR → happy
   if (finishType === "clear") {
     emotionKey = "happy";
+
+  // FAIL → sad（worried は4カテゴリから削除）
   } else if (finishType === "fail") {
-    emotionKey = "worried";
+    emotionKey = "sad";
+
+  // 通常時 → openSMILEの推定（4カテゴリ版）
   } else {
     emotionKey = estimateEmotionFromOpenSmile(result.emotion);
   }
 
+  // キャラ画像反映
   updateCharacterImage(emotionKey);
 
-  // VoiceVox 音声再生（配列 or 単体URL の両方対応）
+  // 音声再生
   if (result.voice_audio_urls?.length > 0) {
     playAudioSequential(result.voice_audio_urls);
   } else if (result.voice_audio_url) {
     playAudioSequential([result.voice_audio_url]);
   }
 
-  // 会話終了条件
+  // セッション終了時に録音を無効化
   if ((result.turn >= MAX_TURNS || result.active === false) && !isConversationFinished) {
     console.log("[SESSION] conversation finished, disabling recording...");
     isConversationFinished = true;
     setRecordingEnabled(false);
-
-    // クリック待ちで次画面へ
     enableFinishOnClick();
   }
 }
 
 //======================================================
-// メーター表示
+// メーター更新
 //======================================================
-function updateSkillScoresDisplay(scores) {
+function updateSkillScoresDisplay(voiceScores) {
   skillScores = {
-    selfUnderstanding: Math.round(scores.self_understanding),
-    readingWriting: Math.round(scores.reading_writing),
-    comprehension: Math.round(scores.comprehension),
-    emotionJudgment: Math.round(scores.emotion_judgment),
-    empathy: Math.round(scores.empathy),
+    selfUnderstanding: voiceScores.voice_loudness ?? 0,
+    readingWriting: voiceScores.voice_pitch ?? 0,
+    comprehension: voiceScores.voice_stability ?? 0,
+    emotionJudgment: voiceScores.voice_smoothness ?? 0,
+    empathy: voiceScores.voice_voicing ?? 0,
   };
 
-  selfUnderstandingMeter.style.width = `${skillScores.selfUnderstanding * 10}%`;
-  selfUnderstandingScore.textContent = skillScores.selfUnderstanding;
+  selfUnderstandingMeter.style.width = `${skillScores.selfUnderstanding}%`;
+  selfUnderstandingScore.textContent = Math.round(skillScores.selfUnderstanding);
 
-  readingWritingMeter.style.width = `${skillScores.readingWriting * 10}%`;
-  readingWritingScore.textContent = skillScores.readingWriting;
+  readingWritingMeter.style.width = `${skillScores.readingWriting}%`;
+  readingWritingScore.textContent = Math.round(skillScores.readingWriting);
 
-  comprehensionMeter.style.width = `${skillScores.comprehension * 10}%`;
-  comprehensionScore.textContent = skillScores.comprehension;
+  comprehensionMeter.style.width = `${skillScores.comprehension}%`;
+  comprehensionScore.textContent = Math.round(skillScores.comprehension);
 
-  emotionJudgmentMeter.style.width = `${skillScores.emotionJudgment * 10}%`;
-  emotionJudgmentScore.textContent = skillScores.emotionJudgment;
+  emotionJudgmentMeter.style.width = `${skillScores.emotionJudgment}%`;
+  emotionJudgmentScore.textContent = Math.round(skillScores.emotionJudgment);
 
-  empathyMeter.style.width = `${skillScores.empathy * 10}%`;
-  empathyScore.textContent = skillScores.empathy;
+  empathyMeter.style.width = `${skillScores.empathy}%`;
+  empathyScore.textContent = Math.round(skillScores.empathy);
 
   updateTotalScore();
 }
 
 //======================================================
-// 総合スコア・ランク
+// 総合スコア
 //======================================================
 function updateTotalScore() {
   const sum = Object.values(skillScores).reduce((a, b) => a + b, 0);
-  const avg = sum / 5;  // 0〜10 の範囲
+  const avg100 = sum / 5;
+  const pts = (avg100 / 10).toFixed(1);
 
-  const pts = avg.toFixed(1); // 10点満点方式
   totalScoreElement.textContent = pts;
 
+  const avg10 = avg100 / 10;
   const rank =
-    avg >= 8 ? "S" :
-    avg >= 6 ? "A" :
-    avg >= 4 ? "B" : "C";
+    avg10 >= 8 ? "S" :
+    avg10 >= 6 ? "A" :
+    avg10 >= 4 ? "B" : "C";
 
   rankBadgeElement.textContent = rank;
 }
 
 //======================================================
-// 音声 再生（順次再生＋停止対応）
+// 音声再生（順次再生）
 //======================================================
 async function playAudioSequential(urls) {
   stopAllAudio();
-  // 🔽 AI が話すので BGM を小さくする
-  lowerBgmVolume();
+  lowerBgmVolume();     // AI再生 → BGM を下げる
+
   for (const url of urls) {
     const finalUrl = url.startsWith("http") ? url : `http://127.0.0.1:5000${url}`;
     console.log("[AUDIO] play:", finalUrl);
@@ -484,33 +601,15 @@ async function playAudioSequential(urls) {
     }
 
     await new Promise(resolve => {
-      audio.onended = () => {
-        resolve();
-      };
+      audio.onended = () => resolve();
     });
   }
-  // 🔼 AI の音声が終わったので BGM 音量を戻す
-  restoreBgmVolume();
-}
 
-
-//==============================================
-//BGM音量調整
-//==============================================
-function lowerBgmVolume() {
-  if (bgmAudio) {
-    bgmAudio.volume = 0.3; // ここは好みで調整
-  }
-}
-
-function restoreBgmVolume() {
-  if (bgmAudio) {
-    bgmAudio.volume = 0.7;
-  }
+  restoreBgmVolume();   // AI終了 → BGM を戻す
 }
 
 //======================================================
-// プレビュー確認 UI
+// プレビューUI
 //======================================================
 function showTranscriptionConfirmation(preview) {
   pendingResult = preview;
@@ -533,15 +632,12 @@ async function confirmTranscription() {
 
   hideVoicevoxLoading();
 
-  if (result) {
-    updateDisplayFromFlask(result);
-  } else {
-    console.error("[CONFIRM] result is null");
-  }
+  if (result) updateDisplayFromFlask(result);
+  else console.error("[CONFIRM] result is null");
 }
 
 //======================================================
-// 会話終了後 → 結果保存
+// 結果保存
 //======================================================
 function enableFinishOnClick() {
   if (finishClickHandler) return;
@@ -550,7 +646,6 @@ function enableFinishOnClick() {
     document.removeEventListener("click", handleFinishClick);
     finishClickHandler = null;
 
-    // Flask 側セッションリセット（失敗しても無視）
     fetch("http://127.0.0.1:5000/api/reset", { method: "POST" })
       .catch(() => {})
       .finally(() => {
@@ -578,12 +673,11 @@ async function saveConversationResult() {
 }
 
 //======================================================
-// 🔥開始セリフ（テキストのみ・音声なし）
+// 開始セリフ（音声なし）
 //======================================================
 async function showStartMessageAndSpeak(message) {
   if (!message) return;
 
-  // 最初はテキスト表示だけ（音声再生なし）
   replyElement.textContent = message;
   updateCharacterImage("happy");
 }
@@ -591,22 +685,19 @@ async function showStartMessageAndSpeak(message) {
 //======================================================
 // 初期化
 //======================================================
-//======================================================
-// 初期化（男子生徒固定版）
-//======================================================
 document.addEventListener("DOMContentLoaded", () => {
   console.log("JS初期ロード成功");
+
+  bgmAudio.play().catch(() => {});     // 初期化時にBGM再生
+
   showVoicevoxLoading();
   setRecordingEnabled(true);
 
   isConversationFinished = false;
   finishClickHandler = null;
 
-  if (userMessageBox) {
-    userMessageBox.style.display = "none";
-  }
+  if (userMessageBox) userMessageBox.style.display = "none";
 
-  // ★シナリオ取得はターン数だけ使用
   fetch("http://127.0.0.1:5000/api/current_scenario")
     .then(res => res.json())
     .then(async data => {
@@ -615,17 +706,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (maxTurnsElement) maxTurnsElement.textContent = MAX_TURNS;
 
-      // ★男子生徒キャラに固定
-      currentCharacter = characterConfig[1];
+      // Flaskからの scenario_id を取得（なければ1）
+      currentScenarioId = data.scenario_id || 1;
+
+      // シナリオIDに対応したキャラIDを取得
+      const charId = scenarioCharacterMap[currentScenarioId] || 1;
+
+      // キャラ反映
+      currentCharacter = characterConfig[charId];
       updateCharacterImage("default");
 
-      // 🔥開始セリフ：テキスト表示のみ（音声なし）
       await showStartMessageAndSpeak(data.start_message);
     })
     .catch(err => console.error("[INIT] scenario fetch error:", err))
     .finally(() => hideVoicevoxLoading());
 });
-
 
 //======================================================
 // グローバル公開
@@ -634,4 +729,5 @@ window.chatInterface = {
   startRecording,
   stopRecording,
   confirmTranscription,
+  retryRecording,
 };
