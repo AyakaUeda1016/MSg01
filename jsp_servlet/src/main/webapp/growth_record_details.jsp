@@ -103,7 +103,7 @@ pageEncoding="UTF-8"%>
 
 <script>
   const feedbackData = JSON.parse(`<%= result %>`);
-</script>/*DBをservletから読み取りの処理*/
+</script>
 
 <script src="js/growth_record_details.js"></script>
 
