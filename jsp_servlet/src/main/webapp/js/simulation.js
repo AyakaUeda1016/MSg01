@@ -86,6 +86,12 @@ const scenarioIdInput = document.getElementById("scenarioId");
 let currentScenarioId = 1;
 let currentCharacter = null;
 
+//BGM制御用
+let bgmAudio = new Audio(`${window.contextPath}/bgm/小春道.mp3`);
+bgmAudio.loop = true;
+bgmAudio.volume = 0.7;   // 通常音量
+bgmAudio.play();
+
 //======================================================
 // キャラクター設定
 //======================================================
@@ -214,8 +220,12 @@ async function startRecording() {
       } else {
         console.warn("[PREVIEW] failed to get preview");
       }
+      // 🔼 録音処理が完全に終わったので BGM を元に戻す
+      restoreBgmVolume();
     };
 
+	// 🔽 録音開始したので BGM を小さくする
+    lowerBgmVolume();
     mediaRecorder.start();
     updateRecordingStatus(true);
     console.log("録音開始");
@@ -457,6 +467,8 @@ function updateTotalScore() {
 //======================================================
 async function playAudioSequential(urls) {
   stopAllAudio();
+  // 🔽 AI が話すので BGM を小さくする
+  lowerBgmVolume();
   for (const url of urls) {
     const finalUrl = url.startsWith("http") ? url : `http://127.0.0.1:5000${url}`;
     console.log("[AUDIO] play:", finalUrl);
@@ -476,6 +488,24 @@ async function playAudioSequential(urls) {
         resolve();
       };
     });
+  }
+  // 🔼 AI の音声が終わったので BGM 音量を戻す
+  restoreBgmVolume();
+}
+
+
+//==============================================
+//BGM音量調整
+//==============================================
+function lowerBgmVolume() {
+  if (bgmAudio) {
+    bgmAudio.volume = 0.3; // ここは好みで調整
+  }
+}
+
+function restoreBgmVolume() {
+  if (bgmAudio) {
+    bgmAudio.volume = 0.7;
   }
 }
 
