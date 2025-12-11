@@ -24,32 +24,75 @@
 			</button>
 			<!-- 黒板画像 -->
 			<div class="blackboard">
+			
+			 <div class="eraser-layer">
+        		<img src="images/blackboard eraser.png" class="eraser-img">
+    		 </div>
+    		 <div class="pencil-layer">
+        		<img src="images/pen.png" class="pencil-img">
+    		 </div>
+    		 
 				<!-- タイトル -->
-				<h1 class="title">棒グラフ画面</h1>
+				<h1 class="title"  id="pageTitle">棒グラフ画面</h1>
 				<!-- 凡例 -->
 				<div class="legend">
-					<div class="legend-item">
+					<div class="legend-item" data-category="自己認識">
 						<span class="legend-color" style="background-color: #a855f7;"></span>
 						<span class="legend-text">自己認識</span>
 					</div>
-					<div class="legend-item">
+					<div class="legend-item" data-category="気持ちのコントロール">
 						<span class="legend-color" style="background-color: #ec4899;"></span>
 						<span class="legend-text">気持ちの<br>コントロール
 						</span>
 					</div>
-					<div class="legend-item">
+					<div class="legend-item" data-category="思いやり">
 						<span class="legend-color" style="background-color: #3b82f6;"></span>
 						<span class="legend-text">思いやり</span>
 					</div>
-					<div class="legend-item">
+					<div class="legend-item" data-category="理解力">
 						<span class="legend-color" style="background-color: #10b981;"></span>
 						<span class="legend-text">理解力</span>
 					</div>
-					<div class="legend-item">
+					<div class="legend-item" data-category="話す力">
 						<span class="legend-color" style="background-color: #f97316;"></span>
 						<span class="legend-text">話す力</span>
 					</div>
+					<!-- ▼▼ グラフ切り替えボタン（2個） ▼▼ -->
+				<div class="chart-mode-group">
+    <button class="chart-icon-btn" id="btnBar">
+  <svg width="40" height="40" viewBox="0 0 28 28"
+     fill="none" stroke="white" stroke-width="3"
+     stroke-linecap="round" stroke-linejoin="round"
+     style="filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));">
+  <path d="M3 24 L25 24" />
+  <path d="M7 24 L7 14" />
+  <path d="M13 24 L13 10" />
+  <path d="M19 24 L19 6" />
+</svg>
+
+    </button>
+
+    <button class="chart-icon-btn" id="btnLine">
+<svg width="40" height="40" viewBox="0 0 28 28"
+     fill="none" stroke="white" stroke-width="3"
+     stroke-linecap="round" stroke-linejoin="round"
+     style="filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));">
+  <path d="M3 24 L25 24" />
+  <path d="M5 18 L11 12 L17 15 L23 9" />
+  <circle cx="5"  cy="18" r="2.2" fill="white"/>
+  <circle cx="11" cy="12" r="2.2" fill="white"/>
+  <circle cx="17" cy="15" r="2.2" fill="white"/>
+  <circle cx="23" cy="9"  r="2.2" fill="white"/>
+</svg>
+
+    </button>
+</div>
+
 				</div>
+				
+				
+
+				
 				<!-- グラフエリアと矢印を黒板内部に配置 -->
 				<div class="graph-area-wrapper">
 					<!-- 黒板内の左矢印 -->
@@ -62,7 +105,7 @@
 						<!-- グラフコンテンツ -->
 						<div class="graph-content" id="graphContent">
 							<!-- グラフはJavaScriptで動的に生成されます -->
-							<div style="color: white; font-size: 18px;">読み込み中...</div>
+							  <div style="color: white; font-size: 18px;">読み込み中...</div>
 						</div>
 					</div>
 					<!-- 黒板内の右矢印 -->
@@ -74,6 +117,8 @@
 			</div>
 		</div>
 	</div>
+	 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="js/record_list.js"></script>
+	<script src="js/chalk_animation.js"></script>
 </body>
 </html>
