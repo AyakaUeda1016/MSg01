@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const radarScores = scoreKeys.map((key) => {
       const raw = feedbackData.scores[key]?.score || 0; // 0〜100
-      return Math.round(raw / 10); // 0〜100 → 0〜10 に変換
+      return raw; 
     });
 
     const radarData = {
@@ -167,8 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ★ total_score を extra-area に追加
 const extraArea = document.querySelector(".extra-area");
 if (extraArea && feedbackData.total_score != null) {
-  const totalScoreNormalized = feedbackData.total_score / 100;
-  const totalscore = 50 * totalScoreNormalized;
+  const totalscore = feedbackData.total_score;
   let rank = "";
   if (totalscore >= 40) {
     rank = "S";
