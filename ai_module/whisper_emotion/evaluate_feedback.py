@@ -4,9 +4,10 @@ evaluate_feedback.py（数値 + 講評）
 
 評価内容：
 【1】gpt-4o-mini → 5項目スコア（0〜100）
-【2】gpt-4o-mini → 各スコアごとの講評コメント
-【3】Python側で平均値 → total_score に設定
-【4】全体の総評（overall_comment）も自動生成
+【2】gpt-4o-mini → 各スコアごとの講評コメント（各1文）
+【3】Python側で 10段階評価（100点満点を10等分）
+【4】total_score は 10段階スコアの合計点（最大50）
+【5】全体の総評（overall_comment）も1文で生成
 """
 
 import json
@@ -16,7 +17,7 @@ from openai import OpenAI
 # ---------------------------------------------------------
 # APIキー設定（環境変数推奨）
 # ---------------------------------------------------------
-client = OpenAI(api_key="")  # ★ここを必ず変更！
+client = OpenAI(api_key="")  # ★必ず設定！
 
 
 # ---------------------------------------------------------
@@ -42,7 +43,7 @@ def build_conversation_summary(data: dict) -> str:
 
 
 # ---------------------------------------------------------
-# AI 評価プロンプト作成
+# AI 評価プロンプト作成（1文コメント強制・具体根拠必須）
 # ---------------------------------------------------------
 def build_score_prompt(data: dict) -> str:
     conv = build_conversation_summary(data)
@@ -50,34 +51,60 @@ def build_score_prompt(data: dict) -> str:
     feats = [c.get("audio_features", {}) for c in data.get("conversations", [])]
 
     prompt = f"""
-あなたは「コミュニケーション能力の専門評価者」です。
+あなたは「コミュニケーション能力を専門的に分析する評価者」です。
+テンプレ的・一般的な講評は禁止されています。
 
-以下の5つの観点について、
-スコア（0〜100）と短い講評文（comment）を書き、
-最後に overall_comment を1〜3文で書きなさい。
+【最重要ルール】
+・各 comment は必ず1文のみ
+・overall_comment も必ず1文のみ
+・各コメントは次のいずれかを必ず根拠として含める
+  - emotion_history の変化
+  - audio_features（声量・抑揚・安定性など）
+・抽象表現（例：「良かった」「自然だった」「安定していた」）は禁止
+・同じ言い回しを複数項目で使わない
 
-⚠ JSONだけ返す
-⚠ 説明文禁止、構造変更禁止
+【出力形式（厳守）】
+⚠ JSONのみ
+⚠ 構造変更禁止
 
-{{
-  "scores": {{
-    "self_understanding": {{ "score": 0, "comment": "" }},
-    "speaking": {{ "score": 0, "comment": "" }},
-    "comprehension": {{ "score": 0, "comment": "" }},
-    "emotion_control": {{ "score": 0, "comment": "" }},
-    "empathy": {{ "score": 0, "comment": "" }}
-  }},
+{
+  "scores": {
+    "self_understanding": { "score": 0, "comment": "" },
+    "speaking": { "score": 0, "comment": "" },
+    "comprehension": { "score": 0, "comment": "" },
+    "emotion_control": { "score": 0, "comment": "" },
+    "empathy": { "score": 0, "comment": "" }
+  },
   "overall_comment": ""
-}}
+}
 
-# 会話ログ
+【評価観点】
+
+■ self_understanding  
+→ 自分の考えや感情を言語化できていた具体場面を1文で述べる
+
+■ speaking  
+→ audio_features を根拠に、話し方の伝わりやすさを1文で述べる
+
+■ comprehension  
+→ 相手の発言を踏まえた返答ができていた／できていなかった点を1文で述べる
+
+■ emotion_control  
+→ emotion_history の変化が会話に与えた影響を1文で述べる
+
+■ empathy  
+→ 相手への配慮が見られた、または不足していた具体例を1文で述べる
+
+【会話ログ】
 {conv}
 
-# emotion_history
+【emotion_history】
 {emo}
 
-# audio_features
+【audio_features】
 {feats}
+
+この情報のみを使って評価してください。
 """
     return prompt
 
@@ -126,6 +153,32 @@ def extract_json_obj(text: str):
 
 
 # ---------------------------------------------------------
+# 100点 → 10段階評価変換
+# ---------------------------------------------------------
+def score_to_10scale(score_100: int) -> int:
+    if score_100 <= 10:
+        return 1
+    elif score_100 <= 20:
+        return 2
+    elif score_100 <= 30:
+        return 3
+    elif score_100 <= 40:
+        return 4
+    elif score_100 <= 50:
+        return 5
+    elif score_100 <= 60:
+        return 6
+    elif score_100 <= 70:
+        return 7
+    elif score_100 <= 80:
+        return 8
+    elif score_100 <= 90:
+        return 9
+    else:
+        return 10
+
+
+# ---------------------------------------------------------
 # メイン処理
 # ---------------------------------------------------------
 def evaluate_conversation(json_path: Path):
@@ -139,12 +192,17 @@ def evaluate_conversation(json_path: Path):
     raw = call_chat_model(prompt, timestamp)
     result = extract_json_obj(raw)
 
-    # ★平均値計算
     scores = result["scores"]
-    avg = sum(v["score"] for v in scores.values()) / len(scores)
-    total_score = round(avg)
 
-    # ★timestamp最上位 & total_score追加
+    # ★ 10段階評価に変換 & 合計点計算
+    total_score = 0
+    for v in scores.values():
+        original = v["score"]
+        converted = score_to_10scale(original)
+        v["score"] = converted
+        total_score += converted
+
+    # ★ 最終JSON
     final_json = {
         "timestamp": timestamp,
         "scores": scores,
@@ -152,7 +210,7 @@ def evaluate_conversation(json_path: Path):
         "overall_comment": result["overall_comment"]
     }
 
-    # ★保存ファイル名の : → - に変換
+    # ★ 保存ファイル名の : → -
     safe_name = timestamp.replace(":", "-").replace("T", "_")
     out_path = Path("logs") / f"result_score_feedback_{safe_name}.json"
 
