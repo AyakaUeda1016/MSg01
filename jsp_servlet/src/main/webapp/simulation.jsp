@@ -1,8 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%
-	int scenarioid = (Integer)session.getAttribute("SCENARIOID");
-%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -62,7 +59,7 @@
             <!-- 5つのスキルバー（新ラベル＆ID） -->
             <div class="skill-bars">
                 <div class="skill-item">
-                    <div class="skill-label">自己理解</div>
+                    <div class="skill-label">声量</div>
                     <div class="skill-bar-container">
                         <div class="skill-bar" id="selfUnderstandingMeter" style="width: 0%"></div>
                         <div class="skill-score" id="selfUnderstandingScore">0.0</div>
@@ -70,7 +67,7 @@
                 </div>
 
                 <div class="skill-item">
-                    <div class="skill-label">読写力</div>
+                    <div class="skill-label">声の抑揚</div>
                     <div class="skill-bar-container">
                         <div class="skill-bar" id="readingWritingMeter" style="width: 0%"></div>
                         <div class="skill-score" id="readingWritingScore">0.0</div>
@@ -78,7 +75,7 @@
                 </div>
 
                 <div class="skill-item">
-                    <div class="skill-label">理解力</div>
+                    <div class="skill-label">声の安定度</div>
                     <div class="skill-bar-container">
                         <div class="skill-bar" id="comprehensionMeter" style="width: 0%"></div>
                         <div class="skill-score" id="comprehensionScore">0.0</div>
@@ -86,7 +83,7 @@
                 </div>
 
                 <div class="skill-item">
-                    <div class="skill-label">感情判断</div>
+                    <div class="skill-label">スムーズ度</div>
                     <div class="skill-bar-container">
                         <div class="skill-bar" id="emotionJudgmentMeter" style="width: 0%"></div>
                         <div class="skill-score" id="emotionJudgmentScore">0.0</div>
@@ -94,7 +91,7 @@
                 </div>
 
                 <div class="skill-item">
-                    <div class="skill-label">思いやり</div>
+                    <div class="skill-label">発話率</div>
                     <div class="skill-bar-container">
                         <div class="skill-bar" id="empathyMeter" style="width: 0%"></div>
                         <div class="skill-score" id="empathyScore">0.0</div>
@@ -110,18 +107,18 @@
             </button>
         </a>
 
-        <!-- キャラクター画像（表情差分対応用に id を付与） -->
+        <!-- キャラクター画像 -->
         <div class="character-container" id="characterContainer">
             <img src="${pageContext.request.contextPath}/images/kaiwanavi-chara.png" alt="AIキャラ" class="character-image">
         </div>
 
-        <!-- 🟦 ユーザー発話（UI上はCSSで非表示） -->
+        <!-- 🟦 ユーザー発話 -->
         <div class="user-message-box" id="userMessageBox">
             <div class="user-name">あなた</div>
             <div class="user-content" id="transcript">...</div>
         </div>
 
-        <!-- 🟩 AI 応答（大本の木枠メッセージ） -->
+        <!-- 🟩 AI 応答 -->
         <div class="message-box">
             <div class="speaker-name" id="speakerName">AI</div>
             <div class="message-content" id="reply">
@@ -137,11 +134,10 @@
 
         <!-- 音声認識結果の確認画面 -->
         <div class="transcription-confirmation" id="transcriptionConfirmation" style="display: none;">
-            <!-- 画面どこでもクリックで送信（大本の挙動を維持） -->
             <div class="confirmation-overlay" onclick="chatInterface.confirmTranscription()"></div>
             <div class="confirmation-box">
                 <h3>発話内容を確認してください</h3>
-                <textarea class="confirmed-text" id="confirmedText"
+                <textarea class="confirmed-text" id="confirmedText" readonly
                           style="width: 100%; height: 120px; font-size: 18px; padding: 10px;"></textarea>
 
                 <div class="confirmation-actions">
@@ -152,7 +148,7 @@
             </div>
         </div>
 
-        <!-- 結果保存用の隠しフォーム（新機能） -->
+        <!-- 結果保存フォーム -->
         <form id="resultForm" action="${pageContext.request.contextPath}/simulation" method="post" style="display: none;">
             <input type="hidden" name="action" value="save_result">
             <input type="hidden" name="member_id" id="memberId" value="1">
@@ -162,11 +158,8 @@
         </form>
     </div>
 
-    <!-- contextPath を JS に渡す -->
     <script>
         window.contextPath = "${pageContext.request.contextPath}";
-        // 必要ならサーブレット側で window.scenarioId を埋める形にしてもOK
-        window.scenarioId = <%=scenarioid %>;
     </script>
     <script src="${pageContext.request.contextPath}/js/simulation.js"></script>
 </body>

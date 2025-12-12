@@ -230,51 +230,27 @@ def load_scenario_by_id(scenario_id: int):
     with conn:
         with conn.cursor() as cur:
             sql = """
-                SELECT
-                    character_role,
-                    max_turns,
-                    scene,
-                    start_message,
-                    reply_style
+                SELECT *
                 FROM scenario
                 WHERE id = %s
+                LIMIT 1
             """
             cur.execute(sql, (scenario_id,))
             row = cur.fetchone()
 
-    return {
-        "character_role": row["character_role"],
-        "max_turns": int(row["max_turns"]),
-        "scene": row["scene"],
-        "start_message": row["start_message"],
-        "reply_style": row["reply_style"],
-    }
-
-
-def load_current_scenario_from_db():
-    start = time.time()
-    conn = get_db_connection()
-    with conn:
-        with conn.cursor() as cur:
-            sql = """
-                SELECT *
-                FROM scenario
-                WHERE is_active = 1
-                LIMIT 1
-            """
-            cur.execute(sql)
-            row = cur.fetchone()
-
     if not row:
-        raise Exception("is_active=1 のシナリオが見つかりません")
+        raise Exception(f"指定されたシナリオIDが存在しません: {scenario_id}")
 
     global CURRENT_SCENARIO_ID
     global CHARACTER_ROLE, MAX_TURNS, SCENARIO, REPLY_STYLE
+    global CHARACTER_SPEAKER_ID
 
     CURRENT_SCENARIO_ID = row["id"]
     CHARACTER_ROLE = row["character_role"]
     MAX_TURNS = int(row["max_turns"])
     REPLY_STYLE = row["reply_style"]
+    CHARACTER_SPEAKER_ID = int(row["character_id"])
+
     SCENARIO = {
         "scene": row["scene"],
         "start_message": row["start_message"],
@@ -282,8 +258,11 @@ def load_current_scenario_from_db():
         "finish_message_on_fail": row.get("finish_message_on_fail"),
     }
 
-    print(f"[CONFIG] 使用シナリオID: {row['id']}, title: {row['title']}")
-    log_time(start, "DBシナリオ読み込み(load_current_scenario_from_db)")
+    print(f"[CONFIG] シナリオID {scenario_id} を読み込みました: {row['title']}")
+    return row
+
+
+
 
 
 # =====================================================================
@@ -318,61 +297,66 @@ def init_models():
 # 🧠 GPT 判定・応答生成関連
 # =====================================================================
 
-
 def check_appropriateness(message, context, scene, start_message) -> bool:
     """
-    発言がシナリオと関連しているかどうかを判定する（true / false）
-    GPTは必ず {"related": true} または {"related": false} のJSONで返す。
+    発言がシナリオに関連しているかを判定する
+    True  = 関連する発言
+    False = 無関係な発言
     """
+
     prompt = f"""
-あなたは「会話の適切性を判定するAI」です。
+あなたは会話トレーニング用の判定AIです。
 
-以下の基準で、必ず **JSON 形式のみ** を返してください。
+【判定ルール】
+- 必ず次のどちらか一言だけで答えてください
+- 余計な説明は禁止
 
-【定義】
-- true = シーン設定や会話の流れと意味的に関連している発言
-- false = シーン設定や会話の流れと意味的に関連していない発言（脱線・文脈無視）
+回答:
+「関連する発言」 または 「無関係な発言」
 
-【出力形式（絶対に厳守）】
-{{"related": true}}
-または
-{{"related": false}}
-
-文章・理由・説明・余計な文字は一切書かないこと。
-
--------------------------------------
 【シーン】
 {scene}
 
 【導入メッセージ】
 {start_message}
 
-【会話履歴】
+【これまでの会話】
 {context}
 
 【今回の発言】
 {message}
--------------------------------------
 """
 
-    start = time.time()
-    res = client.chat.completions.create(
-        model="o3-mini",  # 判定は o3-mini の方が安定
-        messages=[{"role": "user", "content": prompt}],
-        max_completion_tokens=20,
-    )
-    log_time(start, "GPT適切性判定(check_appropriateness)")
-
-    content = res.choices[0].message.content.strip()
-
-    # JSON を解析
     try:
-        data = json.loads(content)
-        return bool(data.get("related", True))
-    except Exception:
-        # 想定外形式 → 安全策として "true" にして会話継続
-        print("[APPROPRIATENESS ERROR] JSON解析失敗:", content)
-        return True
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "あなたは判定専用AIです。必ず指定された語句のみで回答してください。"
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            max_completion_tokens=20,  # 超短くてOK
+        )
+
+        raw = (res.choices[0].message.content or "").strip()
+        print("[APPROPRIATENESS RAW]", raw)
+
+        # 判定（多少の揺れにも耐える）
+        if "無関係" in raw:
+            return False
+        else:
+            return True
+
+    except Exception as e:
+        print("[APPROPRIATENESS ERROR] 判定失敗 → 保留扱い:", e)
+        return True  # ★安全側
+
+
 
 
 def generate_reply(message, context):
@@ -436,7 +420,6 @@ conversation_state = {
 def init_new_session():
     """新しい会話セッションを開始"""
     start = time.time()
-    load_current_scenario_from_db()
 
     # ログディレクトリを確実に作成
     logs_dir = Path("logs")
@@ -460,8 +443,6 @@ def init_new_session():
     log_time(start, "init_new_session")
 
 
-# モジュール読み込み時に1回だけ初期化
-init_new_session()
 
 
 # =====================================================================
@@ -569,6 +550,17 @@ def transcribe_preview():
 
 @app.route("/api/conversation", methods=["POST"])
 def conversation_api():
+
+    if CURRENT_SCENARIO_ID is None:
+        return Response(
+            json.dumps(
+                {"error": "シナリオが選択されていません"},
+                ensure_ascii=False
+            ),
+            status=400,
+            content_type="application/json",
+        )
+    
     total_start = time.time()
     try:
         init_models()
@@ -617,7 +609,7 @@ def conversation_api():
 
         # 6. GPT：会話の適切性判定（true = 関連する, false = 無関係）
         step = time.time()
-        context = "\n".join(conversation_state["history"][-30:])
+        context = "\n".join(conversation_state["history"][-6:])
         is_related = check_appropriateness(
             transcript,
             context,
@@ -672,7 +664,8 @@ def conversation_api():
         voice_urls: list[str] = []
         # 無関係メッセージの警告文は読み上げない
         if tts_text and "無関係な発言" not in tts_text:
-            files = generate_voicevox_audio_multi(tts_text)
+            files = generate_voicevox_audio_multi(tts_text, speaker_id=CHARACTER_SPEAKER_ID)
+
             for f in files:
                 voice_urls.append(f"/api/voice_audio?path={f}")
 
@@ -855,6 +848,9 @@ def conversation_api():
 
     except Exception as e:
         import traceback
+        tb = traceback.format_exc()
+        print("[ERROR] /api/conversation exception:", e)
+        print(tb)  # ★これが超重要
 
         return Response(
             json.dumps(
@@ -867,15 +863,35 @@ def conversation_api():
 
 
 # =====================================================================
-# 📘 /api/current_scenario
+# 📘 /api/current_scenario（未選択対応版）
 # =====================================================================
-
 
 @app.route("/api/current_scenario", methods=["GET"])
 def get_current_scenario():
+    # 🔴 まだシナリオが選択されていない場合
+    if CURRENT_SCENARIO_ID is None:
+        return Response(
+            json.dumps(
+                {
+                    "status": "not_selected",
+                    "character_role": None,
+                    "max_turns": None,
+                    "scene": None,
+                    "start_message": None,
+                    "reply_style": "",
+                    "scenario_id": None,
+                },
+                ensure_ascii=False,
+            ),
+            status=200,
+            content_type="application/json",
+        )
+
+    # 🟢 シナリオが選択済みの場合
     return Response(
         json.dumps(
             {
+                "status": "ready",
                 "character_role": CHARACTER_ROLE,
                 "max_turns": MAX_TURNS,
                 "scene": SCENARIO.get("scene"),
@@ -888,6 +904,7 @@ def get_current_scenario():
         status=200,
         content_type="application/json",
     )
+
 
 
 # =====================================================================
@@ -908,27 +925,25 @@ def set_scenario():
             content_type="application/json",
         )
 
-    # 全て is_active=0 にしてから、選ばれたシナリオを1にする
-    conn = get_db_connection()
-    with conn:
-        with conn.cursor() as cur:
-            cur.execute("UPDATE scenario SET is_active = 0")
-            cur.execute(
-                "UPDATE scenario SET is_active = 1 WHERE id = %s", (scenario_id,)
-            )
-        conn.commit()
-
-    # Flask の内部変数を更新
-    load_current_scenario_from_db()
-    init_new_session()
+    # ★ is_active は使用せず、ただ指定 ID をロードするだけ
+    try:
+        load_scenario_by_id(scenario_id)
+        init_new_session()
+    except Exception as e:
+        return Response(
+            json.dumps({"error": str(e)}, ensure_ascii=False),
+            status=400,
+            content_type="application/json",
+        )
 
     log_time(start, "/api/set_scenario 全体処理時間")
 
     return Response(
-        json.dumps({"message": "シナリオを切り替えました"}, ensure_ascii=False),
+        json.dumps({"message": f"シナリオ {scenario_id} を読み込みました"}, ensure_ascii=False),
         status=200,
         content_type="application/json",
     )
+
 
 
 # =====================================================================
@@ -939,13 +954,17 @@ def set_scenario():
 @app.route("/api/reset", methods=["POST"])
 def reset_conversation():
     start = time.time()
+
     conversation_state["history"] = []
     conversation_state["turn"] = 0
     conversation_state["inappropriate"] = 0
     conversation_state["active"] = True
     conversation_state["evaluated"] = False
 
-    init_new_session()
+    # ★ シナリオが選択済みの場合のみセッション初期化
+    if CURRENT_SCENARIO_ID is not None:
+        init_new_session()
+
     log_time(start, "/api/reset 全体処理時間")
 
     return Response(
@@ -953,6 +972,7 @@ def reset_conversation():
         status=200,
         content_type="application/json",
     )
+
 
 
 # =====================================================================

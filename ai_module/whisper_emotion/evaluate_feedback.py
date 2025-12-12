@@ -4,10 +4,10 @@ evaluate_feedback.py（数値 + 講評）
 
 評価内容：
 【1】gpt-4o-mini → 5項目スコア（0〜100）
-【2】gpt-4o-mini → 各スコアごとの講評コメント（各1文）
-【3】Python側で 10段階評価（100点満点を10等分）
-【4】total_score は 10段階スコアの合計点（最大50）
-【5】全体の総評（overall_comment）も1文で生成
+【2】gpt-4o-mini → 各スコアごとの講評コメント
+【3】Python側で 5段階評価（100点満点を5等分）
+【4】total_score は 5段階スコアの合計点（最大25）
+【5】全体の総評（overall_comment）も自動生成
 """
 
 import json
@@ -43,7 +43,7 @@ def build_conversation_summary(data: dict) -> str:
 
 
 # ---------------------------------------------------------
-# AI 評価プロンプト作成（1文コメント強制・具体根拠必須）
+# AI 評価プロンプト作成
 # ---------------------------------------------------------
 def build_score_prompt(data: dict) -> str:
     conv = build_conversation_summary(data)
@@ -51,60 +51,38 @@ def build_score_prompt(data: dict) -> str:
     feats = [c.get("audio_features", {}) for c in data.get("conversations", [])]
 
     prompt = f"""
-あなたは「コミュニケーション能力を専門的に分析する評価者」です。
-テンプレ的・一般的な講評は禁止されています。
+あなたは「コミュニケーション能力の専門評価者」です。
 
-【最重要ルール】
-・各 comment は必ず1文のみ
-・overall_comment も必ず1文のみ
-・各コメントは次のいずれかを必ず根拠として含める
-  - emotion_history の変化
-  - audio_features（声量・抑揚・安定性など）
-・抽象表現（例：「良かった」「自然だった」「安定していた」）は禁止
-・同じ言い回しを複数項目で使わない
+以下の5つの観点について、
+スコア（0〜100）と短い講評文（comment）を書き、
+最後に overall_comment を1〜3文で書きなさい。
+実際の会話内容を反映した具体的なコメントにしてください。
+コメントは、丁寧すぎず、やわらかい自然な日常会話の日本語で書いてください。
+ポジティブで優しい敬語にしてください。
 
-【出力形式（厳守）】
-⚠ JSONのみ
-⚠ 構造変更禁止
 
-{
-  "scores": {
-    "self_understanding": { "score": 0, "comment": "" },
-    "speaking": { "score": 0, "comment": "" },
-    "comprehension": { "score": 0, "comment": "" },
-    "emotion_control": { "score": 0, "comment": "" },
-    "empathy": { "score": 0, "comment": "" }
-  },
+⚠ JSONだけ返す
+⚠ 説明文禁止、構造変更禁止
+
+{{
+  "scores": {{
+    "self_understanding": {{ "score": 0, "comment": "" }},
+    "speaking": {{ "score": 0, "comment": "" }},
+    "comprehension": {{ "score": 0, "comment": "" }},
+    "emotion_control": {{ "score": 0, "comment": "" }},
+    "empathy": {{ "score": 0, "comment": "" }}
+  }},
   "overall_comment": ""
-}
+}}
 
-【評価観点】
-
-■ self_understanding  
-→ 自分の考えや感情を言語化できていた具体場面を1文で述べる
-
-■ speaking  
-→ audio_features を根拠に、話し方の伝わりやすさを1文で述べる
-
-■ comprehension  
-→ 相手の発言を踏まえた返答ができていた／できていなかった点を1文で述べる
-
-■ emotion_control  
-→ emotion_history の変化が会話に与えた影響を1文で述べる
-
-■ empathy  
-→ 相手への配慮が見られた、または不足していた具体例を1文で述べる
-
-【会話ログ】
+# 会話ログ
 {conv}
 
-【emotion_history】
+# emotion_history
 {emo}
 
-【audio_features】
+# audio_features
 {feats}
-
-この情報のみを使って評価してください。
 """
     return prompt
 
@@ -178,6 +156,7 @@ def score_to_10scale(score_100: int) -> int:
         return 10
 
 
+
 # ---------------------------------------------------------
 # メイン処理
 # ---------------------------------------------------------
@@ -194,7 +173,7 @@ def evaluate_conversation(json_path: Path):
 
     scores = result["scores"]
 
-    # ★ 10段階評価に変換 & 合計点計算
+    # ★ 5段階評価に変換 & 合計点計算
     total_score = 0
     for v in scores.values():
         original = v["score"]
@@ -225,5 +204,5 @@ def evaluate_conversation(json_path: Path):
 # テスト実行
 # ---------------------------------------------------------
 if __name__ == "__main__":
-    test_file = Path("C:/Users/81909/Desktop/RP_voice_ai/logs/session_full.json")
+    test_file = Path("C:/Users/81909/Desktop/results/ai_module/logs/session_full.json")
     evaluate_conversation(test_file)
