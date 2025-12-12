@@ -13,7 +13,7 @@ from faster_whisper import WhisperModel
 import tempfile, os 
 
 
-# ============================================================
+# ============================================================  
 #  Whisper 文字起こし
 # ============================================================
 def transcribe_whisper_file(file_path: str, model: WhisperModel = None):

@@ -43,8 +43,11 @@
                     <img src="images/l.png" alt="前へ">
                 </button>
                 
-                <form action="${pageContext.request.contextPath}/scenario" method="get">
+                <form id="scenarioForm"
+                action="${pageContext.request.contextPath}/scenario"
+                 method="get">
                 	<input type="hidden" name="scenarioId"  id="scenarioId" value="1">
+                    <input type="hidden" name="sb" id = sbInput value="decide">
                 	<button type="submit" name="sb"  value="decide" class="decide-btn">決定</button>
                 </form>
 
@@ -57,7 +60,7 @@
     </div>
 
 
-    <a href="./scenario?sb=home"><button class="btn btn-wood" id="backBtn">戻る</button></a>
+    <a href="./scenario?sb=home"><button name="sb" value="home" class="btn btn-wood" id="backBtn">戻る</button></a>
 
 </div>
 <script>
