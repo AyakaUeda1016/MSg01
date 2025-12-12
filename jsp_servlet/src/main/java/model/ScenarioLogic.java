@@ -24,4 +24,15 @@ public class ScenarioLogic {
 		}
 	}
 	
+	public List<Scenario>findAllsimulation(int userid){
+		List<Scenario> list = new ArrayList<>();
+		try {
+			list =scenarioDAO.findAllSimulation(userid);
+			return list;
+		}catch(Exception e) {
+			e.printStackTrace();
+			return list;
+		}
+	}
+	
 }

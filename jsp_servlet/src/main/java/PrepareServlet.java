@@ -46,6 +46,7 @@ public class PrepareServlet extends HttpServlet {
 			rd.forward(request, response);
 		}else if("back".equals(sb)) {
 			list = logic.findScenario();
+			request.setAttribute("LIST", list);
 			RequestDispatcher rd = request.getRequestDispatcher("./scenario.jsp");
 			rd.forward(request, response);
 		}

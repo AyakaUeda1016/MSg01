@@ -11,41 +11,19 @@ public class MemberLogic {
 		this.memberDAO = new MemberDAOImpl();
 	}
 	
-	//入力したID,パスワードが登録されているものと一致しているか確認するビジネスロジック。
-	public boolean LoginCheck(int id,String password) {
-		boolean login = false;
-		try {
-			String dbpassword = memberDAO.findPasswordByID(id);
-			if(password.equals(dbpassword)) {
-				login = true;
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		return login;
-	}
-	
 	//新規会員登録するためのビジネスロジック
-	public int insertMember(String name, String birthday, String sex, String password) {
+	public int insertMember(String name) {
 		int id = 0;
-		Member member = new Member(name,birthday,sex,password);
+		Member member = new Member();
+		member.setName(name);
 		try {
-			id = memberDAO.insertMember(member);
+			id = memberDAO.insertMemberForShow(member);
 			return id;
 		}catch(Exception e) {
 			return id;
 		}
 	}
 	
-	//会員情報を出すためのビジネスロジック。
-	public Member findMember(int id){
-		try {
-			return memberDAO.findMemberByID(id);
-		}catch(Exception e){
-			e.printStackTrace();
-			return new Member();
-		}
-	}
 	
 	
 }

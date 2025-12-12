@@ -19,11 +19,11 @@ public class LoginServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String id = request.getParameter("id");
+        String strid = request.getParameter("id");
         String password = request.getParameter("password");
 
         // ▼ 仮の認証ロジック（必要に応じて DB などに変更）
-        if (id == null || password == null) {
+        if (strid == null || password == null) {
             response.sendRedirect("login.jsp");
             return;
         }
@@ -45,7 +45,8 @@ public class LoginServlet extends HttpServlet {
         
         
         // 例：ID=test、PW=1234 の場合ログイン成功
-        if ("1".equals(id) && "pass".equals(password)) {
+        if ("1".equals(strid) && "pass".equals(password)) {
+        	int id = Integer.parseInt(strid);
             session.setAttribute("USERID", id);
 
             // ★ ログイン成功 → home.jsp へ遷移

@@ -1,0 +1,90 @@
+@charset "UTF-8";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 背景の共通スタイル */
+body {
+    font-family: "Murecho", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+    /* 背景 */
+    background: url("../images/classroom-bg.png") center / cover no-repeat;
+    min-height: 100vh;
+}
+
+/* 黒板の共通スタイル */
+.blackboard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10% 8%;
+    width: 90vw;
+    height: 100vh;
+
+    /* 黒板 */
+    background-image: url("../images/blackboard.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+
+    /* 画面から中央配置 */
+    position: fixed;
+    left: 50vw;
+    top: 50vh;
+    transform: translate(-50%, -50%);
+}
+
+/* 黒板の中を中央配置 */
+.board-container {
+    /*    position: fixed;*/
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* width: 70%;*/
+}
+
+/* ボタンの共通スタイル */
+.back {
+    width: 180px;
+    position: absolute;
+    bottom: 5%;
+    left: 2%;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 16px 60px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn {
+    width: 180px;
+    height: 60px;
+    cursor: pointer;
+    border: none;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* 木製ボタンのスタイル */
+.btn-wood {
+    color: #2b1d0f;
+    text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+    border-radius: 22px;
+    background: url("../images/ki.png") center / cover no-repeat;
+    background-color: #d4a574;
+    box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-wood:hover {
+    filter: brightness(1.1) saturate(1.1);
+}
+
+.btn-wood:active {
+    transform: translateY(2px);
+    box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}

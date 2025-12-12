@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
     String ctx = request.getContextPath();
-    String conversationsJson = "[{\"turn\":1,\"user\":\"そうだね・・・・・\",\"ai\":\"おはよー！今日はね、・・・・・・\"},{\"turn\":2,\"user\":\"・・・・・・\",\"ai\":\"・・・・・・\"}]";
+    String conversationsJson = (String)request.getAttribute("CONVERSATION");
+    String url = (String)request.getAttribute("RETURNURL");
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -12,10 +13,7 @@
 </head>
 <body>
 <div class="page-wrapper">
-    <header class="header">
-        <div class="header-center">ユーザー名</div>
-        <div class="header-right">18:00</div>
-    </header>
+    
 
     <main class="main-area">
         <section class="character-area">
@@ -27,7 +25,7 @@
             <!-- ここに会話ログが動的に挿入されます -->
         </section>
 
-        <a href="result?sb=result" class="back-button">
+        <a href="<%=url %>" class="back-button">
             <button class="btn btn-wood">戻る</button>
         </a>
     </main>
@@ -35,6 +33,12 @@
 
 <!-- JSONデータを動的に会話ログに変換するスクリプト -->
 <script>
+	<%-- null対策 --%>
+	<%
+    	if (conversationsJson == null || conversationsJson.isEmpty()) {
+        	conversationsJson = "[]";
+    	}
+	%>
     window.conversationsData = <%= conversationsJson %>;
 </script>
 <script src="js/log.js"></script>

@@ -19,7 +19,7 @@
 	</video>
 
     <header class="header">
-        <div class="header-center">ユーザー名</div>
+        <div class="header-center">はるたろう</div>
         <div class="header-right">18:00</div>
     </header>
 

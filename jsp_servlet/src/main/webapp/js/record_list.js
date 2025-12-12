@@ -449,10 +449,10 @@ document.getElementById("navLeftArrow").onclick = () => {
   const board = document.querySelector(".blackboard-container");
   board.classList.add("slide-out-right");
   setTimeout(() => {
-    window.location.href = "growth_record.jsp";
-  }, 500);
-};
-
+    window.location.href = "growth_record";
+  }, 500)
+}
+ 
 // ページ読み込み時に初期化
 window.addEventListener("DOMContentLoaded", initialize);
 

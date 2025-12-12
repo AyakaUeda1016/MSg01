@@ -32,8 +32,13 @@ public class ScenarioServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		request.setCharacterEncoding("UTF-8");
-		String strNo = request.getParameter("scenarioId");
-		int scenarioid = Integer.parseInt(strNo);
+		String strNo = null;
+		int scenarioid = 0;
+		if(request.getParameter("scenarioId")!=null) {
+			strNo = request.getParameter("scenarioId");
+			scenarioid = Integer.parseInt(strNo);
+		}
+		
 		String sb = request.getParameter("sb");
 		
 		System.out.println(scenarioid);

@@ -24,7 +24,7 @@ body {
 
 .card {
     width: 100%;
-    max-width: 900px;
+    max-width: 700px;
     background: linear-gradient(135deg, #5b9fff 0%, #8db3ff 100%);
     border-radius: 20px;
     padding: 40px 60px;

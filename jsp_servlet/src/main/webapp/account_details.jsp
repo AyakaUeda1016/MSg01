@@ -58,10 +58,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>性別</label>
+                        <label>クレジット</label>
                         <div class="input-wrapper">
-                            <span class="placeholder-text">男性</span>
-                            <div class="input-line"></div>
+                            <span class="placeholder-text">本アプリの音声は以下の VOICEVOX 音声ライブラリを利用して生成しています。<br>
+・VOICEVOX: 冥鳴ひまり</span>
+                            
                         </div>
                     </div>
                 </div>

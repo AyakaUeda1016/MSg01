@@ -57,7 +57,7 @@ public class ScenarioDAOImpl implements ScenarioDAO{
 				 	if (con != null) {
 				 		con.close();
 				 	}
-			 } catch (SQLException e) {
+			 } catch (Exception e) {
 				 System.err.println(e.getMessage());
 			 }
 		  }
@@ -66,9 +66,50 @@ public class ScenarioDAOImpl implements ScenarioDAO{
 	
 	@Override
 	public List<Scenario> findAllSimulation(int userid){
-		List<Scenario> list = new ArrayList<>();
-		//以下シナリオのID(scenario_id)、終了日(finish_date)、シナリオのイメージ画像(imagelink)を出す処理を書く。
-		return list;
+		 List<Scenario> scenarioList = new ArrayList<>();
+		    // ユーザーが完了したシナリオを取得するクエリ
+		    String sql = "SELECT s.id AS scenario_id, s.title, s.imagelink, f.finish_date " +
+		                 "FROM scenario s " +
+		                 "INNER JOIN feedback f ON s.id = f.scenario_id " +
+		                 "WHERE f.member_id = ? " +
+		                 "ORDER BY f.finish_date DESC";
+		    Connection conn = null;
+		    PreparedStatement pstmt = null;
+		    ResultSet rs = null;
+		    
+		    try  {
+		    	conn = getConnection();
+		    	pstmt = conn.prepareStatement(sql);
+		        pstmt.setInt(1, userid);
+		        rs = pstmt.executeQuery();
+		        while (rs.next()) {
+		        	Scenario scenario = new Scenario();
+		            scenario.setScenarioid(rs.getInt("scenario_id"));
+		            scenario.setTitle(rs.getString("title"));
+		            scenario.setImagelink(rs.getString("imagelink"));
+		            scenario.setFinishdate(rs.getTimestamp("finish_date").toString());
+		            scenario.setStrfinishdate(rs.getString("finish_date").toString());
+		            scenarioList.add(scenario);
+		        }
+		        
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    }finally {
+		    	try {
+				 	if (rs != null) {
+				 		rs.close();
+				 	}
+				 	if (pstmt != null) {
+				 		pstmt.close();
+				 	}
+				 	if (conn != null) {
+				 		conn.close();
+				 	}
+			 } catch (Exception e) {
+				 System.err.println(e.getMessage());
+			 }
+		    }
+		return scenarioList;
 	}
 
 	

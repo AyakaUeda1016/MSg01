@@ -1,39 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
   const basePath = window.contextPath || ""
-  const scenes = [
-    {
-      id: 1,
-      img: basePath + "/images/haru.jpg",
-      title: "シナリオ1",
-      desc: "みんなの前で自己紹介をやってみよう！",
-    },
-    {
-      id: 2,
-      img: basePath + "/images/kyo.jpg",
-      title: "シナリオ2",
-      desc: "先生に相談してみよう！",
-    },
-    {
-      id: 3,
-      img: basePath + "/images/natu.jpg",
-      title: "シナリオ3",
-      desc: "友達と放課後の予定を決めてみよう！",
-    },
-    // <CHANGE> シナリオ4を追加
-    {
-      id: 4,
-      img: basePath + "/images/room.png",
-      title: "シナリオ4",
-      desc: "部活動の見学に行ってみよう！",
-    },
-    // <CHANGE> シナリオ5を追加
-    {
-      id: 5,
-      img: basePath + "/images/sky.png",
-      title: "シナリオ5",
-      desc: "クラスメイトと冬の思い出を作ろう！",
-    },
-  ]
+  // initialScenarioId を元に current を設定
+  let current = scenes.findIndex(s => s.id === initialScenarioId);
+  if (current === -1) current = 0; // 見つからなければ先頭
+//  scenes = [
+//    {
+//      id: 1,
+//      img: basePath + "/images/haru.jpg",
+//      title: "シナリオ1",
+//      desc: "みんなの前で自己紹介をやってみよう！",
+//    },
+//    {
+//      id: 2,
+//      img: basePath + "/images/kyo.jpg",
+//      title: "シナリオ2",
+//      desc: "先生に相談してみよう！",
+//    },
+//    {
+//      id: 3,
+//      img: basePath + "/images/natu.jpg",
+//      title: "シナリオ3",
+//      desc: "友達と放課後の予定を決めてみよう！",
+//    },
+//    // <CHANGE> シナリオ4を追加
+//    {
+//      id: 4,
+//      img: basePath + "/images/room.png",
+//      title: "シナリオ4",
+//      desc: "部活動の見学に行ってみよう！",
+//    },
+//    // <CHANGE> シナリオ5を追加
+//    {
+//      id: 5,
+//      img: basePath + "/images/sky.png",
+//      title: "シナリオ5",
+//      desc: "クラスメイトと冬の思い出を作ろう！",
+//    },
+//  ]
 
   // ... existing code ...
 
@@ -53,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tooltipArrow = document.getElementById("tooltip-arrow")
   const scenarioIdInput = document.getElementById("scenarioId")
 
-  let current = 1
   let isAnimating = false
   let titleTimer = null
   let descTimer = null

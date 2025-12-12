@@ -8,7 +8,7 @@ AI会話トレーニング用 Flask 統合サーバ
 - Whisper による文字起こし
 - openSMILE による音声特徴量抽出（25 LLD + 7 指標 + pause/voicing）
 - GPT による適切性判定 + 応答生成
-- VoiceVox による音声合成
+- VoiceVox による音声合成（長文は自動分割して複数WAV生成）
 - 各ターンログ / セッションログの自動生成
 - DB からシナリオ設定を読み込み（キャラ役割 / 最大ターンなど）
 
@@ -19,16 +19,18 @@ JSP フロントエンドと連携し、音声会話 UI のバックエンドと
 import os
 import gc
 import json
+import time  # ★ 処理時間計測用
 import tempfile
 import subprocess
 from datetime import datetime
 from pathlib import Path
+import re
 
 import numpy as np
 import opensmile
 import soundfile as sf
 import pymysql
-import requests  # ←★ VoiceVox連携用に追加
+import requests  # ← VoiceVox連携用
 from flask import Flask, request, Response
 from flask_cors import CORS
 from openai import OpenAI
@@ -40,13 +42,87 @@ from whisper_emotion.opensmile_test3 import (
 )
 from whisper_emotion.evaluate_feedback import evaluate_conversation
 
+# =====================================================================
+# 🎯 openSMILE 指標 → 5スキル(1〜10点)に変換
+# =====================================================================
+
+
+def _scale_to_1_10(value, low, high, default=5.0):
+    """
+    value を [low, high] の範囲で正規化して 1〜10 にマッピング
+    想定範囲外や None の場合は default を返す
+    """
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+    if low == high:
+        return float(default)
+
+    # 範囲にクリップ
+    v = max(low, min(high, v))
+    # [low, high] → [0,1] → [1,10]
+    norm = (v - low) / (high - low)
+    return 1.0 + norm * 9.0
+
+
+def calc_skill_scores(indices: dict) -> dict:
+    """
+    openSMILE の指標(indices)から 5つのスキルスコア(1〜10点)を算出
+
+    - 自己理解:        arousal（0〜1 想定）
+    - 読写力:          pitch_variability（0〜1 想定）
+    - 理解力:          valence（-1〜1 想定）
+    - 感情判断:        voice_stability（0〜1 想定）
+    - 思いやり:        warmth（0〜1 想定）
+    """
+    if indices is None:
+        indices = {}
+
+    self_understanding = _scale_to_1_10(
+        indices.get("arousal"), 0.0, 1.0, default=5.0
+    )
+    reading_writing = _scale_to_1_10(
+        indices.get("pitch_variability"), 0.0, 1.0, default=5.0
+    )
+    comprehension = _scale_to_1_10(
+        indices.get("valence"), -1.0, 1.0, default=5.0
+    )
+    emotion_judgment = _scale_to_1_10(
+        indices.get("voice_stability"), 0.0, 1.0, default=5.0
+    )
+    empathy = _scale_to_1_10(indices.get("warmth"), 0.0, 1.0, default=5.0)
+
+    # 小数1桁に丸める（UI で 6.5 など表示しやすく）
+    return {
+        "self_understanding": round(self_understanding, 1),
+        "reading_writing": round(reading_writing, 1),
+        "comprehension": round(comprehension, 1),
+        "emotion_judgment": round(emotion_judgment, 1),
+        "empathy": round(empathy, 1),
+    }
+
+
+# ============================================================
+# ⏱ 簡易タイムロガー
+# ============================================================
+
+
+def log_time(start, label: str):
+    """処理開始時刻(start)からの経過秒数をログ出力"""
+    sec = time.time() - start
+    print(f"[TIME] {label}: {sec:.3f} 秒")
+
 
 # ==== Flask初期化 ====
 app = Flask(__name__)
 CORS(app)
 
 # ==== OpenAI設定 ====
-client = OpenAI(api_key="")  # ← 自分のAPIキーを入れてください
+client = OpenAI(
+    api_key=""  # ★実運用時は自分のキーを設定してください
+)
 
 # ==== VoiceVox設定（ローカルEngine前提） ====
 VOICEVOX_URL = "http://127.0.0.1:50021"
@@ -59,6 +135,10 @@ def generate_voicevox_audio(text: str, speaker_id: int = SPEAKER_ID) -> str | No
     失敗時は None を返す
     """
     try:
+        if not text:
+            return None
+
+        start = time.time()
         # audio_query で話速やピッチなどの情報を生成
         query_res = requests.post(
             f"{VOICEVOX_URL}/audio_query",
@@ -67,8 +147,10 @@ def generate_voicevox_audio(text: str, speaker_id: int = SPEAKER_ID) -> str | No
         )
         query_res.raise_for_status()
         audio_query = query_res.json()
+        log_time(start, "VoiceVox audio_query")
 
         # synthesis で実際の音声バイナリを生成
+        synth_start = time.time()
         synth_res = requests.post(
             f"{VOICEVOX_URL}/synthesis",
             params={"speaker": speaker_id},
@@ -76,12 +158,14 @@ def generate_voicevox_audio(text: str, speaker_id: int = SPEAKER_ID) -> str | No
             timeout=30,
         )
         synth_res.raise_for_status()
+        log_time(synth_start, "VoiceVox synthesis")
 
         # 一時ファイルに書き出し
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
         tmp.write(synth_res.content)
         tmp.close()
 
+        log_time(start, "VoiceVoxトータル生成")
         return tmp.name
 
     except Exception as e:
@@ -89,15 +173,43 @@ def generate_voicevox_audio(text: str, speaker_id: int = SPEAKER_ID) -> str | No
         return None
 
 
+def generate_voicevox_audio_multi(text: str, speaker_id: int = SPEAKER_ID) -> list[str]:
+    """
+    長文を文末（。！？）＋120文字単位で分割し、複数WAVを生成してパスのリストを返す
+    """
+    if not text:
+        return []
+
+    # 「。」「！」「？」で一旦区切る（後ろの記号も含める）
+    parts = re.split(r"(?<=[。！？])", text)
+    parts = [p.strip() for p in parts if p.strip()]
+
+    segmented: list[str] = []
+    for part in parts:
+        # さらに120文字ごとに強制分割（安全対策）
+        while len(part) > 120:
+            segmented.append(part[:120])
+            part = part[120:]
+        if part:
+            segmented.append(part)
+
+    files: list[str] = []
+    for seg in segmented:
+        path = generate_voicevox_audio(seg, speaker_id=speaker_id)
+        if path:
+            files.append(path)
+
+    return files
+
+
 # =====================================================================
 # 🟦 DB 読み込み関連
-# シナリオ（キャラクター設定・最大ターン・開始文）を DB から取得する
-# フロントは /api/current_scenario を使用して画面に反映
 # =====================================================================
 
 CHARACTER_ROLE = None
+CURRENT_SCENARIO_ID = None
 MAX_TURNS = None
-MAX_INAPPROPRIATE = 2
+MAX_INAPPROPRIATE = 5
 SCENARIO = {}
 REPLY_STYLE = ""
 
@@ -140,6 +252,7 @@ def load_scenario_by_id(scenario_id: int):
 
 
 def load_current_scenario_from_db():
+    start = time.time()
     conn = get_db_connection()
     with conn:
         with conn.cursor() as cur:
@@ -155,21 +268,26 @@ def load_current_scenario_from_db():
     if not row:
         raise Exception("is_active=1 のシナリオが見つかりません")
 
+    global CURRENT_SCENARIO_ID
     global CHARACTER_ROLE, MAX_TURNS, SCENARIO, REPLY_STYLE
+
+    CURRENT_SCENARIO_ID = row["id"]
     CHARACTER_ROLE = row["character_role"]
     MAX_TURNS = int(row["max_turns"])
     REPLY_STYLE = row["reply_style"]
     SCENARIO = {
         "scene": row["scene"],
         "start_message": row["start_message"],
+        "finish_message_on_clear": row.get("finish_message_on_clear"),
+        "finish_message_on_fail": row.get("finish_message_on_fail"),
     }
 
     print(f"[CONFIG] 使用シナリオID: {row['id']}, title: {row['title']}")
+    log_time(start, "DBシナリオ読み込み(load_current_scenario_from_db)")
 
 
 # =====================================================================
 # 🔥 Whisper / openSMILE の遅延初期化（キャッシュ）
-# 初回アクセス時のみロードし、以降高速化する
 # =====================================================================
 
 WHISPER = None
@@ -181,81 +299,127 @@ def init_models():
     global WHISPER, SMILE
 
     if WHISPER is None:
+        start = time.time()
         print("[INIT] WhisperModel 読み込み中...")
-        #WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
-        WHISPER = WhisperModel("small", device="cuda", compute_type="float16")
+        WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
+        log_time(start, "WhisperModel 初期化")
 
     if SMILE is None:
+        start = time.time()
         print("[INIT] openSMILE 初期化中...")
         SMILE = opensmile.Smile(
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
         )
+        log_time(start, "openSMILE 初期化")
 
 
 # =====================================================================
 # 🧠 GPT 判定・応答生成関連
-# - check_appropriateness: シーンに沿った発話か判定
-# - generate_reply: キャラクターになりきって自然文を生成
 # =====================================================================
 
-def check_appropriateness(message, context, scene, start_message):
+
+def check_appropriateness(message, context, scene, start_message) -> bool:
     """
-    発言がシナリオと関連しているかどうかを判定
-    「関連する発言」 or 「無関係な発言」で返す
+    発言がシナリオと関連しているかどうかを判定する（true / false）
+    GPTは必ず {"related": true} または {"related": false} のJSONで返す。
     """
     prompt = f"""
-シーン: {scene}
-導入会話: {start_message}
+あなたは「会話の適切性を判定するAI」です。
 
-これまでの会話履歴:
+以下の基準で、必ず **JSON 形式のみ** を返してください。
+
+【定義】
+- true = シーン設定や会話の流れと意味的に関連している発言
+- false = シーン設定や会話の流れと意味的に関連していない発言（脱線・文脈無視）
+
+【出力形式（絶対に厳守）】
+{{"related": true}}
+または
+{{"related": false}}
+
+文章・理由・説明・余計な文字は一切書かないこと。
+
+-------------------------------------
+【シーン】
+{scene}
+
+【導入メッセージ】
+{start_message}
+
+【会話履歴】
 {context}
 
-現在の発言:
+【今回の発言】
 {message}
-
-この発言はシーンや会話の流れに対して関連していますか？
-必ず次のどちらか1つで答えてください。
-- 関連する発言
-- 無関係な発言
+-------------------------------------
 """
 
+    start = time.time()
     res = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="o3-mini",  # 判定は o3-mini の方が安定
         messages=[{"role": "user", "content": prompt}],
+        max_completion_tokens=20,
     )
-    return res.choices[0].message.content.strip()
+    log_time(start, "GPT適切性判定(check_appropriateness)")
+
+    content = res.choices[0].message.content.strip()
+
+    # JSON を解析
+    try:
+        data = json.loads(content)
+        return bool(data.get("related", True))
+    except Exception:
+        # 想定外形式 → 安全策として "true" にして会話継続
+        print("[APPROPRIATENESS ERROR] JSON解析失敗:", content)
+        return True
 
 
 def generate_reply(message, context):
     """
-    キャラクターになりきった応答生成
+    キャラクターになりきった応答生成（systemロールに人格設定を固定）
     """
-    prompt = f"""
-あなたは{CHARACTER_ROLE}です。
-{REPLY_STYLE}
 
+    system_prompt = f"""
+あなたは会話トレーニング用のAIキャラクターです。
+以下のキャラクター設定を必ず守って返答してください。
+
+【キャラクター設定】
+- 役割: {CHARACTER_ROLE}
+- 会話スタイル: {REPLY_STYLE}
+
+【ルール】
+- 常にキャラクターになりきって返答する
+- 口調・雰囲気・距離感を維持する
+- 会話履歴を踏まえて自然に返す
+"""
+
+    user_prompt = f"""
 これまでの会話履歴:
 {context}
 
 ユーザーの発言:
 {message}
 
-上記を踏まえて、自然な日本語で1〜2文程度の返答をしてください。
+会話履歴を元に自然に返答をしてください。
 """
 
+    start = time.time()
     res = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=150,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_completion_tokens=150,
     )
+    log_time(start, "GPT応答生成(generate_reply)")
+
     return res.choices[0].message.content.strip()
 
 
 # =====================================================================
 # 🔄 会話状態管理
-# 各ターンの進行状況（turn, inappropriate, 履歴など）を保持する
-# セッション単位でログファイルを生成
 # =====================================================================
 
 conversation_state = {
@@ -265,11 +429,13 @@ conversation_state = {
     "active": True,
     "session_data": None,
     "session_file": None,
+    "evaluated": False,
 }
 
 
 def init_new_session():
     """新しい会話セッションを開始"""
+    start = time.time()
     load_current_scenario_from_db()
 
     # ログディレクトリを確実に作成
@@ -288,6 +454,11 @@ def init_new_session():
         "start_time": datetime.now().isoformat(),
     }
 
+    # history には start_message は入れない（評価ロジックとの整合性のため）
+
+    print(f"[SESSION] 新規セッション開始: {file}")
+    log_time(start, "init_new_session")
+
 
 # モジュール読み込み時に1回だけ初期化
 init_new_session()
@@ -295,14 +466,14 @@ init_new_session()
 
 # =====================================================================
 # 🎧 WebM → WAV 変換
-# ブラウザ録音は webm のため、Whisper 用に 16kHz WAV に変換
-# ffmpeg 必須
 # =====================================================================
+
 
 def convert_webm_to_wav(input_path: str) -> str:
     """
     ffmpeg を使って WebM → モノラル16kHz WAV へ変換
     """
+    start = time.time()
     output_path = tempfile.NamedTemporaryFile(delete=False, suffix=".wav").name
     cmd = [
         "ffmpeg",
@@ -316,52 +487,46 @@ def convert_webm_to_wav(input_path: str) -> str:
         output_path,
     ]
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    log_time(start, "WebM→WAV変換(ffmpeg)")
     return output_path
 
 
 # =====================================================================
-# 🎯 会話API：/api/conversation（フロントの録音ボタンから呼び出される）
-#
-# 全処理フロー：
-# 1. 音声ファイルの受信
-# 2. WebM → WAV 変換
-# 3. Whisper 文字起こし
-# 4. openSMILE で音声特徴量抽出
-# 5. GPT によるシーン適切性判定
-# 6. GPT による応答生成
-# 7. VoiceVox による音声合成（WAV）
-# 8. 結果を JSON で返却
-# 9. ターンログ / セッションログを保存
+# 📝 文字起こしだけ返す API
 # =====================================================================
 
 
-# ================================
-# 文字起こしだけ返す API
-# ================================
 @app.route("/api/transcribe_preview", methods=["POST"])
 def transcribe_preview():
+    total_start = time.time()
     try:
         init_models()
 
+        step = time.time()
         if "file" not in request.files:
             return Response(
                 json.dumps({"error": "音声がありません"}, ensure_ascii=False),
                 status=400,
                 content_type="application/json",
             )
+        log_time(step, "transcribe_preview: 音声チェック")
 
         # WebM -> 一時保存
+        step = time.time()
         audio_file = request.files["file"]
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
             audio_file.save(tmp.name)
             webm_path = tmp.name
+        log_time(step, "transcribe_preview: WebM一時保存")
 
         # WebM → WAV
         wav_path = convert_webm_to_wav(webm_path)
         os.remove(webm_path)
 
         # Whisper 文字起こし
+        step = time.time()
         transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
+        log_time(step, "transcribe_preview: Whisper文字起こし")
         os.remove(wav_path)
 
         if not transcript or not transcript.strip():
@@ -376,6 +541,8 @@ def transcribe_preview():
             "timestamp": datetime.now().isoformat(),
         }
 
+        log_time(total_start, "🔚 /api/transcribe_preview 全体処理時間")
+
         return Response(
             json.dumps(result, ensure_ascii=False),
             status=200,
@@ -384,6 +551,7 @@ def transcribe_preview():
 
     except Exception as e:
         import traceback
+
         return Response(
             json.dumps(
                 {"error": str(e), "traceback": traceback.format_exc()},
@@ -394,119 +562,149 @@ def transcribe_preview():
         )
 
 
-# ================================
-# 送られてきた録音データ（音声ファイル）が存在するかどうかをチェック
-# ================================
+# =====================================================================
+# 🎯 会話API：/api/conversation
+# =====================================================================
+
+
 @app.route("/api/conversation", methods=["POST"])
 def conversation_api():
+    total_start = time.time()
     try:
         init_models()
 
+        # 1. 音声ファイルの存在チェック
+        step = time.time()
         if "file" not in request.files:
             return Response(
                 json.dumps({"error": "音声がありません"}, ensure_ascii=False),
                 status=400,
                 content_type="application/json",
             )
+        log_time(step, "conversation: 音声チェック")
 
-        # ================================
-        # 音声 → webm 一時保存
-        # ================================
+        # 2. 音声 → WebM 一時保存
+        step = time.time()
         audio_file = request.files["file"]
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
             audio_file.save(tmp.name)
             webm_path = tmp.name
+        log_time(step, "conversation: WebM一時保存")
 
-        # ================================
-        # WebM → WAV
-        # ================================
+        # 3. WebM → WAV
         wav_path = convert_webm_to_wav(webm_path)
         os.remove(webm_path)
 
-        # ================================
-        # Whisper 文字起こし
-        # ================================
-        transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
+        # 4. Whisper文字起こし or 手入力
+        step = time.time()
+        manual = request.form.get("manual_transcript")
+        if manual and manual.strip():
+            transcript = manual.strip()
+            print("[MANUAL TRANSCRIPT] ユーザー編集済みテキストを使用")
+            meta = {}
+        else:
+            transcript, meta = transcribe_whisper_file(wav_path, model=WHISPER)
+            print("[WHISPER] Whisperで文字起こし")
 
-        # 無音対策
-        if not transcript or not transcript.strip():
-            os.remove(wav_path)
-            return Response(
-                json.dumps({"error": "無音でした"}, ensure_ascii=False),
-                status=400,
-                content_type="application/json",
-            )
-
-        # ================================
-        # openSMILE（25 LLD + 7指標 + pause/voicing）
-        # ================================
+        # 5. openSMILE（25 LLD + 7 指標 + pause/voicing）
+        step = time.time()
         feat_dict, indices = analyze_with_opensmile_file(wav_path, smile=SMILE)
+        log_time(step, "conversation: openSMILE特徴量抽出")
         os.remove(wav_path)
 
-        # ================================
-        # GPT：会話の適切性判定
-        # ================================
+        # 5.5 openSMILE 指標から 5スキル(1〜10点)を算出
+        skill_scores = calc_skill_scores(indices)
+
+        # 6. GPT：会話の適切性判定（true = 関連する, false = 無関係）
+        step = time.time()
         context = "\n".join(conversation_state["history"][-30:])
-        judgment = check_appropriateness(
+        is_related = check_appropriateness(
             transcript,
             context,
             SCENARIO["scene"],
             SCENARIO["start_message"],
         )
+        # （check_appropriateness 内で時間ログ済）
 
-        # ================================
-        # GPT：応答生成
-        # ================================
-        if judgment == "無関係な発言":
+        # 7. GPT：応答生成 or 無関係メッセージ処理
+        step = time.time()
+        if not is_related:
+            # 無関係発言
             conversation_state["inappropriate"] += 1
-            reply = "⚠️ 無関係な発言です。もう一度お願いします。"
 
+            # 終了条件判定（無関係発言が多すぎる場合 → 失敗終了）
             if conversation_state["inappropriate"] >= MAX_INAPPROPRIATE:
                 conversation_state["active"] = False
-                reply += " 🚫 無関係な発言が多すぎたため終了します。"
-
+                reply = SCENARIO.get("finish_message_on_fail") or "🚫 終了します。"
+            else:
+                reply = "⚠️ 無関係な発言です。もう一度お願いします。"
         else:
-            reply = generate_reply(transcript, context)
+            # 関連する発言（True）の場合のみ会話として進める
+            reply = generate_reply(transcript, context)  # 内部で時間ログ済み
 
             conversation_state["history"].append(f"あなた: {transcript}")
             conversation_state["history"].append(f"AI: {reply}")
             conversation_state["turn"] += 1
 
-            if conversation_state["turn"] >= MAX_TURNS:
+            # ===============================
+            # ★ 終了条件判定
+            # ===============================
+            finish_reason = None
+
+            # 無関係発言の終了（すでに不適切カウントが閾値超えた場合）
+            if conversation_state["inappropriate"] >= MAX_INAPPROPRIATE:
                 conversation_state["active"] = False
-                reply += " 🎯 最大ターンに達したため終了します。"
+                finish_reason = "fail"
+                reply = SCENARIO.get("finish_message_on_fail") or "🚫 終了します。"
 
-        # =====================================================================
-        # 🔊 VoiceVox 音声取得API
-        # generate_voicevox_audio() で生成した一時 WAV をストリーミングで返却
-        # 再生後は自動削除してストレージを節約
-        # フロントの Audio() がこの API を叩く
-        # =====================================================================
+            # 最大ターンの終了
+            elif conversation_state["turn"] >= MAX_TURNS:
+                conversation_state["active"] = False
+                finish_reason = "clear"
+                reply = SCENARIO.get("finish_message_on_clear") or "🎯 終了します。"
 
-        voice_file_path = generate_voicevox_audio(reply)
-        voice_audio_url = (
-            f"/api/voice_audio?path={voice_file_path}" if voice_file_path else None
-        )
+        log_time(step, "conversation: 応答生成・状態更新")
 
-        # ================================
-        # 返却JSON（1回分）
-        # ================================
+        # 8. VoiceVox（複数対応：長文は分割して連続再生）
+        step = time.time()
+        tts_text = reply
+
+        voice_urls: list[str] = []
+        # 無関係メッセージの警告文は読み上げない
+        if tts_text and "無関係な発言" not in tts_text:
+            files = generate_voicevox_audio_multi(tts_text)
+            for f in files:
+                voice_urls.append(f"/api/voice_audio?path={f}")
+
+        log_time(step, "conversation: VoiceVox音声生成")
+
+        # ラベルも一応付けておくとフロント側で扱いやすい
+        appropriateness_label = "関連する発言" if is_related else "無関係な発言"
+
+        # 9. 返却JSON 構築
+        step = time.time()
         result = {
             "transcript": transcript,
             "reply": reply,
             "emotion": indices,
             "audio_features": feat_dict,
-            "appropriateness": judgment,
+            "appropriateness": is_related,
+            "appropriateness_label": appropriateness_label,  # 文字ラベル
             "turn": conversation_state["turn"],
             "inappropriate_count": conversation_state["inappropriate"],
             "active": conversation_state["active"],
             "timestamp": datetime.now().isoformat(),
-            "voice_audio_url": voice_audio_url,  # ←★ 追加
+            # ★ JS用：複数再生用URL
+            "voice_audio_urls": voice_urls,
+            # 旧仕様互換（最初の1個だけ欲しい場合）
+            "voice_audio_url": voice_urls[0] if voice_urls else None,
+            # ★ 追加: Python 側で計算した 5スキル(1〜10点)
+            "skill_scores": skill_scores,
         }
+        log_time(step, "conversation: JSON構築")
 
-        # ================================
-        # セッションに追加
-        # ================================
+        # 10. セッションに追加（メモリ上）
+        step = time.time()
         session = conversation_state["session_data"]
         session["conversations"].append(result)
         session["emotion_history"].append(
@@ -516,11 +714,11 @@ def conversation_api():
                 "timestamp": datetime.now().isoformat(),
             }
         )
+        log_time(step, "conversation: セッションデータ追加")
 
-        # =================================================================
-        # 🟦 各ターンの JSON 保存 → 9 指標のみの簡易版 turn.json を出力
-        # =================================================================
-        if judgment == "関連する発言":
+        # 11. 各ターンの簡易 turn_xx.json 保存（関連する発言のみ）
+        if is_related:
+            step = time.time()
             session_dir = Path("logs") / conversation_state["session_file"].stem
             session_dir.mkdir(exist_ok=True)
 
@@ -530,26 +728,36 @@ def conversation_api():
             turn_data = {
                 "turn": turn_no,
                 "timestamp": result["timestamp"],
-                "arousal": indices["arousal"],  # 覚醒度
-                "valence": indices["valence"],  # ポジ/ネガ
-                "dominance": indices["dominance"],  # 主導性
-                "pitch_variability": indices["pitch_variability"],  # 声の高さの揺れ
-                "loudness_variability": indices["loudness_variability"],  # 音量の揺れ
-                "voice_stability": indices["voice_stability"],  # 声の安定
-                "warmth": indices["warmth"],  # 優しさ・親しみ
-                "pause_ratio": indices["pause_ratio"],  # 無音率
-                "voicing_ratio": indices["voicing_ratio"],  # 有声率
+                "arousal": indices["arousal"],
+                "valence": indices["valence"],
+                "dominance": indices["dominance"],
+                "pitch_variability": indices["pitch_variability"],
+                "loudness_variability": indices["loudness_variability"],
+                "voice_stability": indices["voice_stability"],
+                "warmth": indices["warmth"],
+                "pause_ratio": indices["pause_ratio"],
+                "voicing_ratio": indices["voicing_ratio"],
             }
 
             with open(turn_path, "w", encoding="utf-8") as f:
                 json.dump(turn_data, f, ensure_ascii=False, indent=2)
 
             print(f"[SAVE TURN] {turn_path}")
+            log_time(step, "conversation: turn_xx.json 保存")
 
-        # =================================================================
-        # 🔥 会話終了 → session_full.json 保存 + 評価
-        # =================================================================
-        if not conversation_state["active"]:
+            result["turn_json_url"] = (
+                f"/logs/{session_dir.name}/turn_{turn_no:02d}.json"
+            )
+
+        # 12. 会話終了時：session_full.json + 評価
+        if (
+            not conversation_state["active"]
+            and not conversation_state.get("evaluated", False)
+        ):
+            # ★二重実行防止フラグ
+            conversation_state["evaluated"] = True
+
+            step = time.time()
             session["end_time"] = datetime.now().isoformat()
 
             session_dir = Path("logs") / conversation_state["session_file"].stem
@@ -560,13 +768,84 @@ def conversation_api():
                 json.dump(session, f, ensure_ascii=False, indent=2)
 
             print(f"[SAVED] session_full.json → {summary_path}")
+            log_time(step, "conversation: session_full.json 保存")
+
+            # === conversation_log.json 追加 ===
+            text_only = {"turns": []}
+            hist = conversation_state["history"]
+
+            turn_index = 1
+            for i in range(0, len(hist), 2):
+                user_msg = hist[i].replace("あなた: ", "") if i < len(hist) else ""
+                ai_msg = (
+                    hist[i + 1].replace("AI: ", "")
+                    if i + 1 < len(hist)
+                    else ""
+                )
+
+                text_only["turns"].append(
+                    {"turn": turn_index, "user": user_msg, "ai": ai_msg}
+                )
+                turn_index += 1
+
+            conversation_log_path = session_dir / "conversation_log.json"
+            with open(conversation_log_path, "w", encoding="utf-8") as f:
+                json.dump(text_only, f, ensure_ascii=False, indent=2)
+
+            print(f"[SAVED] conversation_log.json → {conversation_log_path}")
 
             # 評価スクリプト実行
+            eval_start = time.time()
             try:
                 eval_file = evaluate_conversation(summary_path)
                 print(f"[EVAL DONE] {eval_file}")
             except Exception as eval_err:
                 print("[EVAL ERROR]", eval_err)
+            log_time(eval_start, "evaluate_conversation 実行")
+
+            # === DB保存: feedbackテーブルにINSERT ===
+            try:
+                result_data_json = "{}"
+                try:
+                    with open(eval_file, "r", encoding="utf-8") as ef:
+                        result_data_json = ef.read()
+                except Exception as read_err:
+                    print("[EVAL READ ERROR]", read_err)
+
+                conversation_log_json = json.dumps(text_only, ensure_ascii=False)
+
+                conn = get_db_connection()
+                with conn:
+                    with conn.cursor() as cur:
+                        sql = """
+                            INSERT INTO feedback (
+                                member_id,
+                                scenario_id,
+                                finish_date,
+                                result_data,
+                                conversation_log
+                            )
+                            VALUES (%s, %s, %s, %s, %s)
+                        """
+                        cur.execute(
+                            sql,
+                            (
+                                1,
+                                CURRENT_SCENARIO_ID,
+                                datetime.now(),
+                                result_data_json,
+                                conversation_log_json,
+                            ),
+                        )
+                    conn.commit()
+
+                print("[DB] feedback テーブルへ保存完了")
+
+            except Exception as db_err:
+                print("[DB ERROR]", db_err)
+
+        # 全体時間
+        log_time(total_start, "🔚 /api/conversation 全体処理時間")
 
         return Response(
             json.dumps(result, ensure_ascii=False),
@@ -579,21 +858,18 @@ def conversation_api():
 
         return Response(
             json.dumps(
-                {
-                    "error": str(e),
-                    "traceback": traceback.format_exc(),
-                },
+                {"error": str(e), "traceback": traceback.format_exc()},
                 ensure_ascii=False,
             ),
             status=500,
             content_type="application/json",
         )
 
+
 # =====================================================================
-# 📘 /api/set_scenario
-# JSP の管理画面からシナリオを変更するための API
-# is_active=1 のレコードを切り替え、Flask 内部状態も更新
+# 📘 /api/current_scenario
 # =====================================================================
+
 
 @app.route("/api/current_scenario", methods=["GET"])
 def get_current_scenario():
@@ -605,6 +881,7 @@ def get_current_scenario():
                 "scene": SCENARIO.get("scene"),
                 "start_message": SCENARIO.get("start_message"),
                 "reply_style": REPLY_STYLE,
+                "scenario_id": CURRENT_SCENARIO_ID,
             },
             ensure_ascii=False,
         ),
@@ -613,8 +890,14 @@ def get_current_scenario():
     )
 
 
+# =====================================================================
+# 📘 /api/set_scenario
+# =====================================================================
+
+
 @app.route("/api/set_scenario", methods=["POST"])
 def set_scenario():
+    start = time.time()
     data = request.json
     scenario_id = data.get("id")
 
@@ -639,6 +922,8 @@ def set_scenario():
     load_current_scenario_from_db()
     init_new_session()
 
+    log_time(start, "/api/set_scenario 全体処理時間")
+
     return Response(
         json.dumps({"message": "シナリオを切り替えました"}, ensure_ascii=False),
         status=200,
@@ -648,18 +933,20 @@ def set_scenario():
 
 # =====================================================================
 # 🧹 /api/reset
-# 現在の会話のターン・履歴を全てクリアし、新規セッションとして開始
-# フロントの「リセットボタン」から使用想定
 # =====================================================================
+
 
 @app.route("/api/reset", methods=["POST"])
 def reset_conversation():
+    start = time.time()
     conversation_state["history"] = []
     conversation_state["turn"] = 0
     conversation_state["inappropriate"] = 0
     conversation_state["active"] = True
+    conversation_state["evaluated"] = False
 
     init_new_session()
+    log_time(start, "/api/reset 全体処理時間")
 
     return Response(
         json.dumps({"message": "🧹 会話をリセットしました"}, ensure_ascii=False),
@@ -671,12 +958,15 @@ def reset_conversation():
 # =====================================================================
 # 🔊 VoiceVox音声配信API
 # =====================================================================
+
+
 @app.route("/api/voice_audio", methods=["GET"])
 def get_voice_audio():
     """
     generate_voicevox_audio で生成した一時WAVをストリーミング返却
     再生後にファイルは削除
     """
+    total_start = time.time()
     file_path = request.args.get("path")
     if not file_path or not os.path.exists(file_path):
         return Response(
@@ -698,12 +988,12 @@ def get_voice_audio():
         except Exception:
             pass
 
+    log_time(total_start, "/api/voice_audio 全体処理時間")
     return Response(generate(), mimetype="audio/wav")
 
 
 # =====================================================================
 # 🚀 サーバ起動
-# Flask を 5000 番で公開し、フロント（JSP）から fetch でアクセス可能にする
 # =====================================================================
 
 if __name__ == "__main__":
