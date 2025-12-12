@@ -32,7 +32,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("../images/room.png") center / cover no-repeat;
+  background: url("../images/classroom-bg.png") center / cover no-repeat;
   z-index: 1;
 }
  
@@ -118,6 +118,7 @@ body {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   margin-bottom: 30px;
   margin-left: 60px;
+  margin-top: -10px;
 }
  
 /* 凡例 */
@@ -168,9 +169,9 @@ body {
 /* グラフエリア */
 .graph-area {
   flex: 1;
-  height: 100%;
+  height: 500px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   position: relative;
 }
@@ -209,14 +210,7 @@ body {
 .graph-content {
   flex: 1;
   height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 30px;
-  /* Remove bottom padding to align bars at 0 */
-  padding: 20px 0 0 0;
   position: relative;
-  /* margin-leftを削除して余白を調整 */
   margin-left: 100px;
   margin-bottom: 50px;
 }
@@ -343,3 +337,138 @@ body {
   position: absolute;
   bottom: -30px;
 }
+
+.graph-content canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.legend-item.is-hidden .legend-color,
+.legend-item.is-hidden .legend-text {
+  opacity: 0.3;
+}
+
+
+
+.chart-mode-group {
+  margin-top: 20px;
+  margin-left: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;                 /* ★ 两个按钮之间的行距（原建议 18px） */
+}
+
+
+.chart-icon-btn {
+  width: 100px;
+  height: 100px;
+
+  background: rgba(180, 220, 180, 0.18);   /* ★ 淡绿色黑板感半透明 */
+  border: 1px solid rgba(255, 255, 255, 0.25);  /* ★ 粉笔白边框 */
+  border-radius: 10px;
+
+  backdrop-filter: blur(1px);  /* ★ 有粉尘的感觉 */
+  -webkit-backdrop-filter: blur(1px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* hover：亮一点 + 放大一点 */
+.chart-icon-btn:hover {
+  background: rgba(200, 240, 200, 0.28);
+  transform: scale(1.08);
+}
+
+/* active：按下暗一点 */
+.chart-icon-btn:active {
+  background: rgba(150, 200, 150, 0.25);
+  transform: scale(0.95);
+}
+
+
+
+
+
+
+/* 动画用遮罩层：保持不变 */
+.eraser-layer,
+.pencil-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 500;
+  display: none;
+}
+
+/* 🧽 橡皮：从黑板左上角附近出现 */
+.eraser-img {
+  position: absolute;
+  width: 18%;          /* 相对黑板宽度，可自己调 */
+  top: -5%;            /* 黑板外一点点 */
+  left: -10%;
+  transform: rotate(-12deg);
+}
+
+/* ✏ 铅笔：类似设置 */
+.pencil-img {
+  position: absolute;
+  width: 18%;
+  top: -7%;
+  left: -6%;
+  transform: rotate(-18deg);
+}
+
+@keyframes eraser-diagonal {
+  0% {
+    top: -5%;
+    left: -10%;
+    transform: rotate(-15deg);
+  }
+  30% {
+    top: 15%;
+    left: 25%;
+    transform: rotate(-10deg);
+  }
+  60% {
+    top: 40%;
+    left: 55%;
+    transform: rotate(-8deg);
+  }
+  100% {
+    top: 60%;
+    left: 75%;
+    transform: rotate(-5deg);
+  }
+}
+
+@keyframes pencil-diagonal {
+  0% {
+    top: -7%;
+    left: -6%;
+    transform: rotate(-18deg);
+  }
+  25% {
+    top: 18%;
+    left: 22%;
+    transform: rotate(-12deg);
+  }
+  50% {
+    top: 50%;
+    left: 50%;
+    transform: rotate(-8deg);
+  }
+  100% {
+    top: 70%;
+    left: 76%;
+    transform: rotate(-3deg);
+  }
+}
+
