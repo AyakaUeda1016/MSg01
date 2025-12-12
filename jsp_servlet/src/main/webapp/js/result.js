@@ -165,8 +165,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   // ★ total_score を extra-area に追加
-const extraArea = document.querySelector(".extra-area");
-if (extraArea && feedbackData.total_score != null) {
+ // ★スコアに応じてランク付け、画像変更
+const rankimg = document.querySelector(".icon-s");
+const smile = document.querySelector(".icon-smile");
+const line = document.querySelector(".icon-underline");
+const rankimagePath = {
+            S: "images/S.png",
+            A: "images/A.png",
+            B: "images/B.png",
+            C: "images/C.png"
+};
+const smileimagePath = {
+	S: "images/smile2.png",
+	A: "images/smile.png",
+	B: "images/expressionless.png",
+	C: "images/sad.png"
+};
+const lineimagePath = {
+	S: "images/line.png",
+	A: "images/line2.png",
+	B: "images/line2.png",
+	C: "images/line2.png"
+};
+
+if (feedbackData.total_score != null) {
 	const totalscore = feedbackData.total_score;
   	let rank = "";
   	if (totalscore >= 40) {
@@ -178,11 +200,19 @@ if (extraArea && feedbackData.total_score != null) {
   	} else {
     	rank = "C";
   	}
-  	extraArea.innerHTML = `
-    <p class="total-score-text">
-      ランク：${rank}
-    </p>
-  `;
+
+	if (rankimg) {
+		rankimg.src = rankimagePath[rank] || "images/C.png";
+	}
+	
+	if(smile){
+		smile.src = smileimagePath[rank] || "images/sad.png"
+	}
+	
+	if(line){
+		line.src = lineimagePath[rank] || "images/下線2.png"
+	}
+	
 }
 
 
