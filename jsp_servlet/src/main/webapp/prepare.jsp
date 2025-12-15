@@ -13,7 +13,9 @@
 <link rel="stylesheet" href="css/prepare.css">
 </head>
 <body>
-
+<script>
+window.parent.postMessage({ page: "normal" }, "*");
+</script>
 	<section class="blackboard">
 		<div class="board-container">
 			<!-- 音声音量設定 -->

@@ -16,6 +16,9 @@ pageEncoding="UTF-8"%>
 </head>
 
 <body>
+<script>
+window.parent.postMessage({ page: "growth_record" }, "*");
+</script>
     <div class="classroom">
         <!-- 칠판 전체 컨테이너 -->
         <div class="chalkboard">

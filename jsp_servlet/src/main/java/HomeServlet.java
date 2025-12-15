@@ -74,6 +74,9 @@ public class HomeServlet extends HttpServlet {
 		}else if(sb.equals("setting")) {
 			RequestDispatcher rd = request.getRequestDispatcher("./settings.jsp");
 			rd.forward(request, response);
+		}else if(sb.equals("home")) {
+			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
+			rd.forward(request, response);
 		}
 		
 	}
