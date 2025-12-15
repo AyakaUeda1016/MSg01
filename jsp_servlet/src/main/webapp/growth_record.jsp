@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+<script>
+window.parent.postMessage({ page: "growth_record" }, "*");
+</script>
     <!-- チュートリアルモーダルとオーバーレイを追加 -->
     <div id="tutorial-overlay" class="tutorial-overlay"></div>
     <div id="tutorial-tooltip" class="tutorial-tooltip">

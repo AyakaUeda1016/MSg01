@@ -11,6 +11,9 @@
 </head>
 
 <body>
+<script>
+window.parent.postMessage({ page: "normal" }, "*");
+</script>
     <!-- Added header with Lv, username, and time -->
     <video autoplay loop muted playsinline id="bg-video"
       <!--  style="position:fixed;top:0;left:0;width:100%;height:100%;

@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("USERID", id);
 
             // ★ ログイン成功 → home.jsp へ遷移
-            request.getRequestDispatcher("home.jsp").forward(request, response);
+            request.getRequestDispatcher("bgmframe.jsp").forward(request, response);
         } else {
 
             // ★ ログイン失敗 → register.jsp へ遷移（あなたの要望通り）

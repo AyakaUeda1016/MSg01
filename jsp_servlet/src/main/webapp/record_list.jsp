@@ -11,6 +11,9 @@
 <link rel="stylesheet" href="css/record_list.css">
 </head>
 <body>
+<script>
+window.parent.postMessage({ page: "growth_record" }, "*");
+</script>
 	<!-- メイン画面コンテナを追加してスライドアニメーションに対応 -->
 	<div class="screen-wrapper">
 		<!-- 背景画像 -->

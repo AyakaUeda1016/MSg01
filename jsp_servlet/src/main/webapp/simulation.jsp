@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/simulation.css">
 </head>
 <body>
-
+<script>
+window.parent.postMessage({ page: "simulation" }, "*");
+</script>
     <!-- ★ VoiceVox ローディングオーバーレイ ★ -->
     <div id="voicevoxOverlay">
         <div class="loading-wrapper">

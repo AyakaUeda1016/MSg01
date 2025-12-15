@@ -14,6 +14,9 @@
     
 </head>
 <body>
+<script>
+window.parent.postMessage({ page: "normal" }, "*");
+</script>
 <div class="bg-mirai">
 
     <!-- 緑パネル -->

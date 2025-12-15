@@ -47,13 +47,6 @@ function stopAllAudio() {
 }
 
 //------------------------------------------------------
-// ★追加：BGM 定義
-//------------------------------------------------------
-let bgmAudio = new Audio(`${window.contextPath}/bgm/小春道.mp3`);
-bgmAudio.loop = true;
-bgmAudio.volume = 0.7;
-
-//------------------------------------------------------
 // グローバル状態
 //------------------------------------------------------
 let mediaRecorder = null;
@@ -169,11 +162,12 @@ const scenarioCharacterMap = {
 //======================================================
 // ★追加：BGM 音量調整
 //======================================================
-function lowerBgmVolume() {
-  if (bgmAudio) bgmAudio.volume = 0.3;
+function lowerBgm() {
+  window.parent?.lowerBgmForRecording?.();
 }
-function restoreBgmVolume() {
-  if (bgmAudio) bgmAudio.volume = 0.7;
+
+function restoreBgm() {
+  window.parent?.restoreBgmAfterRecording?.();
 }
 
 //======================================================
@@ -292,6 +286,8 @@ function updateRecordingStatus(recording) {
 //======================================================
 async function startRecording() {
   stopAllAudio();
+  lowerBgm();
+  await new Promise(r => setTimeout(r, 200)); 
 
   try {
     console.log("録音開始ボタン反応OK");
@@ -300,17 +296,14 @@ async function startRecording() {
       return;
     }
 
-    // 録音前にBGMをミュート
-    if (bgmAudio) bgmAudio.volume = 0.3;
-    await new Promise(r => setTimeout(r, 300));   // 0.3秒待つ
-
     // 前回のストリームを完全停止
-    if (currentStream) {
-      currentStream.getTracks().forEach(t => t.stop());
-      currentStream = null;
-    }
-
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+     const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
     currentStream = stream;
 
     audioChunks = [];
@@ -338,7 +331,7 @@ async function startRecording() {
         console.warn("[PREVIEW] failed to get preview");
       }
 
-      restoreBgmVolume();   // 録音終了 → BGM を戻す
+       restoreBgm(); // ← 録音後にBGM復帰
     };
 
     mediaRecorder.start();
@@ -584,7 +577,7 @@ function updateTotalScore() {
 //======================================================
 async function playAudioSequential(urls) {
   stopAllAudio();
-  lowerBgmVolume();     // AI再生 → BGM を下げる
+  lowerBgm();     // AI再生 → BGM を下げる
 
   for (const url of urls) {
     const finalUrl = url.startsWith("http") ? url : `http://127.0.0.1:5000${url}`;
@@ -605,7 +598,7 @@ async function playAudioSequential(urls) {
     });
   }
 
-  restoreBgmVolume();   // AI終了 → BGM を戻す
+  restoreBgm();   // AI終了 → BGM を戻す
 }
 
 //======================================================
@@ -688,7 +681,7 @@ async function showStartMessageAndSpeak(message) {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("JS初期ロード成功");
 
-  bgmAudio.play().catch(() => {});     // 初期化時にBGM再生
+  
 
   showVoicevoxLoading();
   setRecordingEnabled(true);
