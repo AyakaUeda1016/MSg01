@@ -93,9 +93,33 @@ body {
   margin-left: 40px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* centerからflex-startに変更してスクロール対応 */
   gap: 26px;
   position: relative;
+  /* 会話ログ部分だけスクロール可能にする */
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 120px); /* ヘッダーとパディングを考慮 */
+  padding-right: 10px; /* スクロールバー用の余白 */
+}
+
+/* スクロールバーのスタイリング */
+.log-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-area::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.log-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
+
+.log-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .log-row {
@@ -162,23 +186,16 @@ body {
 
 .btn-wood {
   position: absolute;
-  bottom: 30px;
+  bottom: 60px;
   left: 60px;
-  width: 150px;
-  height: 150px;
-  padding: 0;
-  background: url("../images/eraser.png") center / contain no-repeat;
-  background-size: 100% 100%;
-  border-radius: 0;
-  border: none;
-  z-index: 3;
+  width: 180px;
+  padding: 16px 18px;
   color: #2b1d0f;
   text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 22px;
+  background: url("../images/button.png") center / cover no-repeat;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
 }
 
 /* ボタンの光沢効果 */
@@ -187,6 +204,8 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
   pointer-events: none;
 }
 
@@ -196,6 +215,7 @@ body {
 
 .btn-wood:active {
   transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 @media (max-width: 900px) {

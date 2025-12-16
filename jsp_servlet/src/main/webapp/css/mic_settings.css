@@ -38,7 +38,7 @@ body {
   transform: translate(-50%, -50%);
   width: 80%;
   height: 80%;
-  background: url("../images/blackboard.png") center / contain no-repeat;
+  background: url("../images/blackboard1212.png") center / contain no-repeat;
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -165,36 +165,35 @@ body {
 /* 戻るボタン（eraser.png） */
 .back-btn {
   position: absolute;
-  bottom: 30px;
+  bottom: 60px;
   left: 60px;
-  width: 150px;
-  height: 150px;
-  padding: 0;
-  background: url("../images/eraser.png") center / contain no-repeat;
-  background-size: 100% 100%;
-  border-radius: 0;
-  border: none;
-  z-index: 5;
-  font-size: 20px;
-  font-weight: 700;
+  width: 180px;
+  padding: 16px 18px;
   color: #2b1d0f;
-  font-family: "Murecho", sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
-  transition: transform 0.1s ease, filter 0.1s ease;
+  border-radius: 22px;
+  background: url("../images/button.png") center / cover no-repeat;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
+
+.back-btn::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
 }
 
 .back-btn:hover {
-  filter: brightness(1.1);
-  transform: scale(1.05);
+    filter: brightness(1.03) saturate(1.02);
 }
 
 .back-btn:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* レスポンシブ対応 */

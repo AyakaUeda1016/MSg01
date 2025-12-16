@@ -74,4 +74,9 @@ function createUserBubble(text) {
 // ページ読み込み時に会話ログを描画
 document.addEventListener("DOMContentLoaded", () => {
   renderConversations(conversationsData)
+
+  const logArea = document.getElementById("logArea")
+  if (logArea) {
+    logArea.scrollTop = logArea.scrollHeight
+  }
 })

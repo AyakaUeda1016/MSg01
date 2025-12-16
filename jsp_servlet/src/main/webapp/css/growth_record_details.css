@@ -23,41 +23,49 @@ a {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 0;
 }
-
 
 .chalkboard {
   position: relative;
   width: 1000px;
-  height: 650px;
-
-  background-image: url("../images/blackboard1212.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-
+  height: 750px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* 黒板画像専用のスタイルを追加 */
+.chalkboard-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../images/blackboard-1.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-size: 120%;
+  transform: scale(1.13);
+}
 
 .chalkboard-content {
   position: relative;
-  width: 86%;
-  height: 78%;
-  margin-top: 7%;
+  width: 1000px;
+  height: 750px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
 }
 
 .left-section {
   position: absolute;
   top: 8%;
-  left: 8%;
+  left: 5%;
   width: 46%;
   height: 78%;
   color: #ffffff;
@@ -65,14 +73,13 @@ a {
   flex-direction: column;
 }
 
-.doodle-graph-left {
-  position: absolute;
-  top: -12%;
-  left: -4%;
-  width: 70px;
-  opacity: 0.8;
-}
-
+/*.doodle-graph-left {*/
+/*  position: absolute;*/
+/*  top: -12%;*/
+/*  left: -4%;*/
+/*  width: 70px;*/
+/*  opacity: 0.8;*/
+/*}*/
 
 .title {
   font-size: 2.1rem;
@@ -81,16 +88,17 @@ a {
 }
 
 .subtitle {
+  color: rgb(255, 255, 128);
   font-size: 1.4rem;
   margin-bottom: 0.8rem;
 }
 
 .feedback-title {
+  color: orange;
   font-size: 1.6rem;
   font-weight: 800;
   margin-bottom: 0.6rem;
 }
-
 
 .left-scroll {
   flex: 1;
@@ -111,14 +119,13 @@ a {
   border-radius: 3px;
 }
 
-
 .feedback-item {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
   margin-bottom: 0.8rem;
 
-  opacity: 0; 
+  opacity: 0;
   transform: translateX(-24px);
 }
 
@@ -133,7 +140,6 @@ a {
   line-height: 1.5;
 }
 
-
 .right-section {
   position: absolute;
   top: 6%;
@@ -142,51 +148,53 @@ a {
   height: 80%;
 }
 
-
 .radar-header {
   position: absolute;
   top: 0;
   right: 4%;
-  width: 230px;
+  width: 500px;
 }
 
-.ki-box {
-  width: 100%;
-  display: block;
-}
+/*.ki-box {*/
+/*  top: 30%;*/
+/*  left: 40%;*/
+/*  width: 100%;*/
+/*  display: block;*/
+/*}*/
 
 .ki-title {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  margin-top: 50px;
+  top: 80%;
+  left: 70%;
   transform: translate(-50%, -50%);
   color: #ffffff;
-  font-size: 1.1rem;
+  font-size: 1.6rem;
   font-weight: 700;
+  white-space: nowrap; /* Added to prevent text from wrapping to two lines */
 }
 
 
 #radarChart {
   position: absolute;
-  top: 22%;
-  left: 10%;
-  width: 280px !important;
-  height: 280px !important;
+  top: 15%;
+  left: 15%;
+  width: 400px !important;
+  height: 400px !important;
 }
-
 
 .doodle-star-top {
   position: absolute;
   top: 12%;
-  right: 16%;
+  right: 36%;
   width: 50px;
   opacity: 0.9;
 }
 
 .doodle-arrow {
   position: absolute;
-  top: 32%;
-  right: 53%;
+  top: 28%;
+  right: 80%;
   width: 80px;
   transform: rotate(10deg);
   opacity: 0.9;
@@ -194,30 +202,31 @@ a {
 
 .doodle-graph-right {
   position: absolute;
-  top: 46%;
-  right: 10%;
+  top: 30%;
+  right: 0%;
   width: 50px;
   opacity: 0.9;
 }
 
-
 .icon-s {
   position: absolute;
-  bottom: 18%;
+  bottom: 0%;
   left: 8%;
+  margin-top: 100px;
   width: 100px;
 }
 
 .icon-underline {
   position: absolute;
-  bottom: 16%;
+  margin-top: 50px;
+  bottom: 0%;
   left: 6%;
   width: 140px;
 }
 
 .icon-star2 {
   position: absolute;
-  bottom: 23%;
+  bottom: 20%;
   left: 24%;
   width: 46px;
 }
@@ -233,11 +242,10 @@ a {
   cursor: pointer;
 }
 
-
 .icon-magnet {
   position: absolute;
   bottom: 9%;
-  right: 22%;
+  right: 35%;
   width: 56px;
 }
 
@@ -287,7 +295,7 @@ a {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
 
@@ -295,22 +303,38 @@ a {
   opacity: 0.9;
 }
 
-
-.btn-finish {
-  position: fixed;
-  left: 2rem;
-  bottom: 2rem;
-  z-index: 9999;
+.btn-wood {
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 180px;
+  padding: 16px 18px;
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+  border-radius: 22px;
+  background: url("../images/button.png") center / cover no-repeat;
+  box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
 }
 
-.btn-finish img {
-  height: 110px;
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
 }
 
-.btn-finish span {
-  font-size: 1.1rem;
+.btn-wood:hover {
+  filter: brightness(1.03) saturate(1.02);
 }
 
+.btn-wood:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
 @media (max-width: 1200px) {
   .chalkboard {
     transform: scale(0.9);

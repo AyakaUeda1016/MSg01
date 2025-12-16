@@ -1,30 +1,30 @@
 @charset "UTF-8";
- 
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
- 
+
 a {
   text-decoration: none;
   color: inherit;
 }
- 
+
 body,
 html {
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
- 
+
 body {
   font-family: "Murecho", sans-serif;
   min-width: 1400px;
   min-height: 800px;
   position: relative;
 }
- 
+
 /* ← 背景はそのまま固定 */
 .background {
   position: fixed;
@@ -35,7 +35,7 @@ body {
   background: url("../images/classroom-bg.png") center / cover no-repeat;
   z-index: 1;
 }
- 
+
 /* 画面全体は動かさない */
 .screen-wrapper {
   width: 100%;
@@ -43,13 +43,13 @@ body {
   position: relative;
   overflow: hidden;
 }
- 
+
 /* ★ 黒板だけ動かす */
 .blackboard-container {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* 中央固定 */
+  transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
   z-index: 2;
@@ -59,17 +59,17 @@ body {
   gap: 40px;
   transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
- 
+
 /* 左へスライドアウト */
 .blackboard-container.slide-out-left {
   transform: translate(calc(-50% - 100vw), -50%);
 }
- 
+
 /* 右へスライドアウト */
 .blackboard-container.slide-out-right {
   transform: translate(calc(-50% + 100vw), -50%);
 }
- 
+
 /* 以下の黒板・矢印・グラフなどはそのまま */
 .nav-arrow-btn {
   position: absolute;
@@ -83,25 +83,24 @@ body {
   z-index: 20;
   opacity: 0.7;
 }
- 
+
 .nav-arrow-btn:hover {
   opacity: 1;
   transform: translateY(-50%) scale(1.1);
 }
- 
+
 .nav-arrow-btn:active {
   transform: translateY(-50%) scale(0.95);
 }
- 
+
 .nav-left-arrow {
   left: 40px;
 }
- 
+
 .blackboard {
   width: 1500px;
   height: 85%;
-  /* background-sizeをcontainから100% 100%に変更して黒板画像を横幅に合わせて拡大 */
-  background: url("../images/blackboard.png") center / 100% 100% no-repeat;
+  background: url("../images/blackboard1212.png") center / 100% 100% no-repeat;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -109,7 +108,7 @@ body {
   padding: 60px 100px 100px 100px;
   flex-shrink: 0;
 }
- 
+
 /* タイトル */
 .title {
   font-size: 42px;
@@ -120,62 +119,63 @@ body {
   margin-left: 60px;
   margin-top: -10px;
 }
- 
+
 /* 凡例 */
 .legend {
   position: absolute;
   left: 220px;
-  top: 50px; /* 130pxから120pxに変更 */
+  top: 50px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  z-index: 5; /* 追加 */
+  z-index: 5;
 }
- 
+
 .legend-item {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
- 
+
 .legend-color {
   width: 16px;
   height: 16px;
   border-radius: 2px;
   box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
- 
+
 .legend-text {
-  font-size: 16px;
+  font-size: 21px;
   font-weight: 600;
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   line-height: 1.3;
 }
- 
+
 /* グラフエリアと矢印のラッパーを追加 */
 .graph-area-wrapper {
   flex: 1;
-  /* margin-left: 3rem; 削除 */
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 30px; /* 20pxから30pxに変更 */
+  gap: 30px;
   position: relative;
-  padding: 0 20px; /* 追加 */
+  padding: 0 20px;
 }
- 
+
 /* グラフエリア */
 .graph-area {
   flex: 1;
-  height: 500px;
+  height: 570px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   position: relative;
 }
- 
+
 /* 矢印ボタン */
 .arrow-btn {
   background: transparent;
@@ -185,27 +185,27 @@ body {
   transition: transform 0.2s ease, opacity 0.2s ease;
   z-index: 10;
   flex-shrink: 0;
-  opacity: 0.8; /* 追加 */
+  opacity: 0.8;
 }
- 
+
 .left-arrow {
   margin-left: 100px;
 }
- 
+
 .arrow-btn:hover {
   transform: scale(1.1);
-  opacity: 1; /* 追加 */
+  opacity: 1;
 }
- 
+
 .arrow-btn:active {
   transform: scale(0.95);
 }
- 
+
 .arrow-btn.hidden {
   opacity: 0;
   pointer-events: none;
 }
- 
+
 /* グラフコンテンツ */
 .graph-content {
   flex: 1;
@@ -214,188 +214,75 @@ body {
   margin-left: 100px;
   margin-bottom: 50px;
 }
- 
-/* 縦軸の目盛り線と数字を追加 */
-.graph-content::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 40px;
-  width: 50px;
-  height: 350px;
-  display: flex;
-  flex-direction: column;
-  pointer-events: none;
-  z-index: 1;
-}
- 
-/* 縦軸の目盛り線と数字を左側に配置 */
-.y-axis-labels {
-  position: absolute;
-  /* Adjust left position to avoid overlap with legend */
-  left: -50px;
-  /* Remove bottom offset to align with 0 */
-  bottom: 0;
-  height: 350px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  pointer-events: none;
-  z-index: 5;
-}
- 
-/* 各目盛りラベル */
-.y-axis-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  height: 0;
-  position: relative;
-}
- 
-/* 目盛りラベルのテキスト */
-.y-axis-label span {
-  position: absolute;
-  right: 10px;
-  transform: translateY(-50%);
-}
- 
-/* 横線を黒板内に収める */
-.y-axis-label::after {
-  content: "";
-  position: absolute;
-  /* Adjust left position to start from axis */
-  left: 45px;
-  /* Reduce width to fit within blackboard */
-  width: 850px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-}
- 
-/* 推移線関連のスタイルを削除 */
-/* 日付グループ */
-.date-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  flex: 1;
-  max-width: 100px;
-  position: relative;
-}
- 
-/* バーコンテナ */
-.bars-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 350px;
-  width: 30px;
-  position: relative;
-  /* Add flex-shrink to prevent container from shrinking */
-  flex-shrink: 0;
-}
- 
-/* バー */
-/* Add position absolute to bars to start from 0 */
-.bar-segment {
-  width: 100%;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
- 
-/* 最初のセグメント（一番下）に角丸を適用 */
-.bar-segment:first-child {
-  border-radius: 0 0 2px 2px;
-}
- 
-/* 最後のセグメント（一番上）に角丸を適用 */
-.bar-segment:last-child {
-  border-radius: 2px 2px 0 0;
-}
- 
-.bar-segment:hover {
-  opacity: 0.8;
-  transform: scaleX(1.1);
-}
- 
-/* 日付ラベル */
-.date-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  /* Position date label below the 0 line */
-  margin-top: 10px;
-  position: absolute;
-  bottom: -30px;
-}
 
 .graph-content canvas {
   width: 100% !important;
   height: 100% !important;
 }
 
+/* Added styling for hidden legend items in bar chart mode */
 .legend-item.is-hidden .legend-color,
 .legend-item.is-hidden .legend-text {
   opacity: 0.3;
 }
 
+/* 折れ線グラフモードで選択されていない項目を薄く表示 */
+.legend-item.is-dimmed .legend-color,
+.legend-item.is-dimmed .legend-text {
+  opacity: 0.4;
+}
 
+/* Added styling for selected legend item in line chart mode */
+.legend-item.is-selected {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* ホバー時の視覚的フィードバック */
+.legend-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+}
 
 .chart-mode-group {
   margin-top: 20px;
   margin-left: 50px;
   display: flex;
   flex-direction: column;
-  gap: 24px;                 /* ★ 两个按钮之间的行距（原建议 18px） */
+  gap: 24px;
 }
-
 
 .chart-icon-btn {
   width: 100px;
   height: 100px;
-
-  background: rgba(180, 220, 180, 0.18);   /* ★ 淡绿色黑板感半透明 */
-  border: 1px solid rgba(255, 255, 255, 0.25);  /* ★ 粉笔白边框 */
+  background: rgba(180, 220, 180, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 10px;
-
-  backdrop-filter: blur(1px);  /* ★ 有粉尘的感觉 */
+  backdrop-filter: blur(1px);
   -webkit-backdrop-filter: blur(1px);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   cursor: pointer;
   transition: 0.2s ease;
 }
 
-/* hover：亮一点 + 放大一点 */
 .chart-icon-btn:hover {
   background: rgba(200, 240, 200, 0.28);
   transform: scale(1.08);
 }
 
-/* active：按下暗一点 */
 .chart-icon-btn:active {
   background: rgba(150, 200, 150, 0.25);
   transform: scale(0.95);
 }
 
-
-
-
-
-
-/* 动画用遮罩层：保持不变 */
+/* 動画用遮罩層：保持不変 */
 .eraser-layer,
 .pencil-layer {
   position: absolute;
@@ -411,8 +298,8 @@ body {
 /* 🧽 橡皮：从黑板左上角附近出现 */
 .eraser-img {
   position: absolute;
-  width: 18%;          /* 相对黑板宽度，可自己调 */
-  top: -5%;            /* 黑板外一点点 */
+  width: 18%;
+  top: -5%;
   left: -10%;
   transform: rotate(-12deg);
 }
@@ -471,4 +358,3 @@ body {
     transform: rotate(-3deg);
   }
 }
-
