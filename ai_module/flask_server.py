@@ -25,6 +25,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 import re
+import random
 
 import numpy as np
 import opensmile
@@ -212,6 +213,7 @@ MAX_TURNS = None
 MAX_INAPPROPRIATE = 5
 SCENARIO = {}
 REPLY_STYLE = ""
+CHARACTER_NAME = None
 
 
 def get_db_connection():
@@ -244,12 +246,29 @@ def load_scenario_by_id(scenario_id: int):
     global CURRENT_SCENARIO_ID
     global CHARACTER_ROLE, MAX_TURNS, SCENARIO, REPLY_STYLE
     global CHARACTER_SPEAKER_ID
+    global REPLY_CONTROL
 
     CURRENT_SCENARIO_ID = row["id"]
     CHARACTER_ROLE = row["character_role"]
     MAX_TURNS = int(row["max_turns"])
     REPLY_STYLE = row["reply_style"]
+    REPLY_CONTROL = extract_reply_control(REPLY_STYLE)
     CHARACTER_SPEAKER_ID = int(row["character_id"])
+
+    # ★ キャラクター名を取得
+    global CHARACTER_NAME
+
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT name FROM characters WHERE id = %s",
+                (CHARACTER_SPEAKER_ID,)
+            )
+            char = cur.fetchone()
+
+    CHARACTER_NAME = char["name"] if char else "AI"
+
 
     SCENARIO = {
         "scene": row["scene"],
@@ -297,23 +316,52 @@ def init_models():
 # 🧠 GPT 判定・応答生成関連
 # =====================================================================
 
-def check_appropriateness(message, context, scene, start_message) -> bool:
+def check_appropriateness(message, context, scene, start_message) -> str:
     """
-    発言がシナリオに関連しているかを判定する
-    True  = 関連する発言
-    False = 無関係な発言
+    return:
+      - "related_good" : 関連しており、会話として自然
+      - "related_bad"  : 関連しているが、口調が強い・拒絶的・攻撃的
+      - "unrelated"    : シナリオと無関係
     """
 
     prompt = f"""
-あなたは会話トレーニング用の判定AIです。
+あなたは会話トレーニング用の「発言分類AI」です。
 
-【判定ルール】
-- 必ず次のどちらか一言だけで答えてください
-- 余計な説明は禁止
+【必須ルール】
+- 必ず次の3つのうち【1語だけ】を返してください
+- 説明・補足・記号は禁止
 
-回答:
-「関連する発言」 または 「無関係な発言」
+【出力語句（厳守）】
+related_good
+related_bad
+unrelated
 
+==================================================
+【判定基準】
+==================================================
+
+■ related_good
+- シナリオや会話の流れに関連している
+- 口調・態度が極端に攻撃的ではない
+- 感情表現・不安・戸惑い・質問・相槌を含んでいてよい
+
+■ related_bad
+- シナリオや話題には関連している
+- しかし以下を含む
+  ・拒絶的（もういい、無理、知らない 等）
+  ・攻撃的（強い否定、投げやり、突き放す言い方）
+  ・不機嫌・苛立ちが強い
+- 会話を「壊す可能性がある」が、話題自体は逸れていない
+
+※ 重要：
+  「態度が悪いだけ」で無関係にしてはいけない
+  迷った場合は必ず related_bad を選ぶ
+
+■ unrelated
+- シナリオと明らかに別の話題
+- 突然関係ない人物・出来事・雑談が始まる場合のみ
+
+==================================================
 【シーン】
 {scene}
 
@@ -325,37 +373,135 @@ def check_appropriateness(message, context, scene, start_message) -> bool:
 
 【今回の発言】
 {message}
+
+【出力（1語のみ）】
 """
 
     try:
         res = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "あなたは判定専用AIです。必ず指定された語句のみで回答してください。"
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "system", "content": "あなたは発言分類専用AIです。"},
+                {"role": "user", "content": prompt},
             ],
-            max_completion_tokens=20,  # 超短くてOK
+            max_completion_tokens=10,
         )
 
-        raw = (res.choices[0].message.content or "").strip()
+        raw = (res.choices[0].message.content or "").strip().lower()
         print("[APPROPRIATENESS RAW]", raw)
 
-        # 判定（多少の揺れにも耐える）
-        if "無関係" in raw:
-            return False
-        else:
-            return True
+        if "related_bad" in raw:
+            return "related_bad"
+        if "related_good" in raw:
+            return "related_good"
+        if "unrelated" in raw:
+            return "unrelated"
+
+        # 想定外 → 安全側
+        return "related_good"
 
     except Exception as e:
-        print("[APPROPRIATENESS ERROR] 判定失敗 → 保留扱い:", e)
-        return True  # ★安全側
+        print("[APPROPRIATENESS ERROR]", e)
+        return "related_good"
 
+
+def decide_emotion_by_gpt(conversation_log: str, latest_user_message: str, indices: dict) -> str:
+    system_prompt = (
+        "あなたは会話中の『雰囲気』を判定するAIです。"
+        "説明や分析は不要です。指定された語句のみを返してください。"
+    )
+
+    user_prompt = f"""
+以下の情報を基に、ユーザーの直近の発話の「雰囲気」を
+次の4つのうちから1つだけ選んでください。
+
+【選択肢】
+- happy : 明るい・楽しそう・前向き
+- sad : 元気がない・自信がなさそう
+- angry : 強い・詰め気味・攻撃的
+- default : 落ち着いている・普通
+
+【判定の考え方】
+- 会話の文脈と直近の発話を最優先してください
+- 音声特徴（感情値）は補助情報です
+- 微妙な場合は「default」を選んでください
+
+【会話ログ（直近が最後）】
+{conversation_log}
+
+【直近のユーザー発話】
+{latest_user_message}
+
+【音声指標（参考）】
+{json.dumps(indices or {}, ensure_ascii=False)}
+
+【出力形式（厳守）】
+happy
+sad
+angry
+default
+"""
+
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_completion_tokens=10,
+        )
+
+        raw = (res.choices[0].message.content or "").strip().lower()
+
+        if "angry" in raw:
+            return "angry"
+        if "sad" in raw:
+            return "sad"
+        if "happy" in raw:
+            return "happy"
+        return "default"
+
+    except Exception as e:
+        print("[EMOTION GPT ERROR]", e)
+        return "default"
+
+def extract_reply_control(reply_style: str) -> str:
+    """
+    reply_style 内のヒントから返信制御モードを取得
+    """
+    if not reply_style:
+        return "default"
+
+    if "reply_control = answer_only" in reply_style:
+        return "answer_only"
+    if "reply_control = light_chat" in reply_style:
+        return "light_chat"
+
+    return "default"
+
+REPLY_CONTROL = "default"
+REPLY_CONTROL_RULES = {
+    "answer_only": """
+【会話制御ルール】
+- ユーザーから質問された内容のみに答える
+- 自分から質問してはいけない
+- 会話を広げたり深掘りしてはいけない
+- 情報は一つだけ伝える
+""",
+
+    "light_chat": """
+【会話制御ルール】
+- 基本は相手の話題に沿って返答する
+- 軽い問い返しは許可される
+- 深掘りしすぎない
+""",
+
+    "default": """
+【会話制御ルール】
+- シナリオの雰囲気を優先して自然に会話する
+"""
+}
 
 
 
@@ -376,6 +522,13 @@ def generate_reply(message, context):
 - 常にキャラクターになりきって返答する
 - 口調・雰囲気・距離感を維持する
 - 会話履歴を踏まえて自然に返す
+
+
+【話し方・人格】
+{REPLY_STYLE}
+
+{REPLY_CONTROL_RULES.get(REPLY_CONTROL, REPLY_CONTROL_RULES["default"])}
+
 """
 
     user_prompt = f"""
@@ -400,6 +553,124 @@ def generate_reply(message, context):
     log_time(start, "GPT応答生成(generate_reply)")
 
     return res.choices[0].message.content.strip()
+
+
+def calc_empathy_score_by_gpt(transcript: str, indices: dict) -> int:
+    """
+    会話テキスト + openSMILEで算出済みの tone 指標から
+    思いやりスコア（1〜100）を GPT で算出する
+    ※ 数値のみ返す
+    """
+
+    prompt = f"""
+    あなたは「会話トレーニング用の評価AI」です。
+    以下の【評価ルール】を必ず厳守して「思いやりスコア」を算出してください。
+    ==================================================
+    【評価ルール（厳守）】
+    ==================================================
+
+    1. 思いやりスコアは「テキスト」と「声のトーン」から算出する
+    2. テキスト評価は【辞書ロジック】と【数式】を必ず使用する
+    3. トーン評価は tone_score（0〜1）をそのまま使用する
+    4. 最終スコアは以下の式を基本とする
+
+    comp01 = 0.60 * text01 + 0.40 * tone01
+
+    5. 最終スコアは 1〜100 の整数とする（0は使わない）
+    6. 以下の場合のみ補正を許可する
+    - 辞書に載らないが、明確な共感・配慮が自然言語として存在する場合
+    - 補正幅は【±5点以内】に必ず収める
+    7. 出力は「数字のみ」。説明・文章・記号は禁止
+
+    ==================================================
+    【辞書ロジック】
+    ==================================================
+
+    ■ 共感語（E）
+    わかる / 分かる / 共感 / それは大変 / 大変だった / つらいね / しんどいね /
+    無理ない / 嫌だったよね / 怖かったよね / 悲しいよね / 不安だよね / そうだよね
+
+    ■ 気遣い語（C）
+    無理しないで / 無理しなくて / 大丈夫？ / 大丈夫かな / 休んで / 気をつけて /
+    よかったら / もしよければ / 嫌なら / しんどかったら / つらかったら
+
+    ■ 支援語（H）
+    手伝う / 手伝える / 一緒に / 相談 / 力になる / サポート / 考えよう / 助ける / フォロー
+
+    ■ 強い命令・断定語（D：減点）
+    しろ / しなさい / やれ / 黙れ / ありえない / 絶対 / 普通は / 当然 / わけない
+
+    ==================================================
+    【テキスト思いやり度 text01 の算出方法】
+    ==================================================
+
+    - テキスト長 N = max(12, 文字数)
+    - E, C, H, D はそれぞれ辞書語の部分一致数
+
+    raw =
+    0.45 * (E / N)
+    + 0.35 * (C / N)
+    + 0.20 * (H / N)
+    - 0.60 * (D / N)
+
+    text01 = 1 / (1 + exp(-8 * raw))
+    ※ text01 は 0〜1 に収める
+
+    ==================================================
+    【トーン評価】
+    ==================================================
+
+    tone01 = tone_score（0〜1、高いほど優しい）
+
+    参考指標（数値はそのまま解釈せよ）：
+    - tone_score
+    - tone_roughness（荒さ）
+    - tone_force（押しの強さ）
+    - tone_sharpness（角の立ち）
+
+    ==================================================
+    【入力データ】
+    ==================================================
+
+    ■ 会話テキスト
+    {transcript}
+
+    ■ トーン指標
+    tone_score: {indices.get("tone_score")}
+    tone_roughness: {indices.get("tone_roughness")}
+    tone_force: {indices.get("tone_force")}
+    tone_sharpness: {indices.get("tone_sharpness")}
+
+    【出力形式】
+    例：
+    72
+    """
+
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "あなたは数値評価専用AIです。"},
+                {"role": "user", "content": prompt},
+            ],
+            max_completion_tokens=10,
+        )
+
+        raw = (res.choices[0].message.content or "").strip()
+        print("[EMPATHY SCORE RAW]", raw)
+
+        # 数字だけ抜き出す（保険）
+        m = re.search(r"\d+", raw)
+        if not m:
+            return 50  # フォールバック（中立）
+
+        score = int(m.group())
+        return max(1, min(100, score))
+
+    except Exception as e:
+        print("[EMPATHY SCORE GPT ERROR]", e)
+        return 50  # ★安全側
+
 
 
 # =====================================================================
@@ -607,55 +878,69 @@ def conversation_api():
         # 5.5 openSMILE 指標から 5スキル(1〜10点)を算出
         skill_scores = calc_skill_scores(indices)
 
+        # ★ 思いやりスコア（1〜100）を GPT で算出
+        empathy_score_1_100 = calc_empathy_score_by_gpt(transcript, indices)
+
         # 6. GPT：会話の適切性判定（true = 関連する, false = 無関係）
         step = time.time()
-        context = "\n".join(conversation_state["history"][-6:])
-        is_related = check_appropriateness(
-            transcript,
-            context,
-            SCENARIO["scene"],
-            SCENARIO["start_message"],
-        )
+        context = "\n".join(conversation_state["history"][:])
+        appropriateness = check_appropriateness(
+        transcript,
+        context,
+        SCENARIO["scene"],
+        SCENARIO["start_message"],
+         )
+
         # （check_appropriateness 内で時間ログ済）
 
         # 7. GPT：応答生成 or 無関係メッセージ処理
+        finish_reason = None
         step = time.time()
-        if not is_related:
-            # 無関係発言
+        if appropriateness == "unrelated":
             conversation_state["inappropriate"] += 1
 
-            # 終了条件判定（無関係発言が多すぎる場合 → 失敗終了）
             if conversation_state["inappropriate"] >= MAX_INAPPROPRIATE:
                 conversation_state["active"] = False
+                finish_reason = "fail"
                 reply = SCENARIO.get("finish_message_on_fail") or "🚫 終了します。"
             else:
-                reply = "⚠️ 無関係な発言です。もう一度お願いします。"
-        else:
-            # 関連する発言（True）の場合のみ会話として進める
-            reply = generate_reply(transcript, context)  # 内部で時間ログ済み
+                reply = "⚠️ 話題がシナリオとずれています。"
+
+        elif appropriateness in ("related_bad", "related_good"):
+            reply = generate_reply(transcript, context)
 
             conversation_state["history"].append(f"あなた: {transcript}")
             conversation_state["history"].append(f"AI: {reply}")
             conversation_state["turn"] += 1
 
-            # ===============================
-            # ★ 終了条件判定
-            # ===============================
-            finish_reason = None
-
-            # 無関係発言の終了（すでに不適切カウントが閾値超えた場合）
-            if conversation_state["inappropriate"] >= MAX_INAPPROPRIATE:
-                conversation_state["active"] = False
-                finish_reason = "fail"
-                reply = SCENARIO.get("finish_message_on_fail") or "🚫 終了します。"
-
-            # 最大ターンの終了
-            elif conversation_state["turn"] >= MAX_TURNS:
+            # 終了条件（共通）
+            if conversation_state["turn"] >= MAX_TURNS:
                 conversation_state["active"] = False
                 finish_reason = "clear"
                 reply = SCENARIO.get("finish_message_on_clear") or "🎯 終了します。"
 
+
         log_time(step, "conversation: 応答生成・状態更新")
+
+        # ===============================
+        # ★ Emotion 判定
+        # ===============================
+        if appropriateness == "unrelated":
+            emotion_label = "default"
+
+        elif appropriateness == "related_bad":
+         # ★ related_bad の場合は感情を強制上書き
+            emotion_label = random.choice(["sad", "angry"])
+            print(f"[EMOTION OVERRIDE] related_bad → {emotion_label}")
+        else:
+            conversation_log_text = "\n".join(conversation_state["history"][-6:])
+            emotion_label = decide_emotion_by_gpt(
+                conversation_log_text,
+                transcript,
+                indices
+            )
+
+
 
         # 8. VoiceVox（複数対応：長文は分割して連続再生）
         step = time.time()
@@ -663,7 +948,7 @@ def conversation_api():
 
         voice_urls: list[str] = []
         # 無関係メッセージの警告文は読み上げない
-        if tts_text and "無関係な発言" not in tts_text:
+        if appropriateness != "unrelated":
             files = generate_voicevox_audio_multi(tts_text, speaker_id=CHARACTER_SPEAKER_ID)
 
             for f in files:
@@ -672,17 +957,21 @@ def conversation_api():
         log_time(step, "conversation: VoiceVox音声生成")
 
         # ラベルも一応付けておくとフロント側で扱いやすい
-        appropriateness_label = "関連する発言" if is_related else "無関係な発言"
+        # appropriateness_label = "関連する発言" if is_related else "無関係な発言"
 
         # 9. 返却JSON 構築
         step = time.time()
         result = {
             "transcript": transcript,
             "reply": reply,
+            "ai_name": CHARACTER_NAME,
             "emotion": indices,
             "audio_features": feat_dict,
-            "appropriateness": is_related,
-            "appropriateness_label": appropriateness_label,  # 文字ラベル
+            "empathy_score": empathy_score_1_100,
+            "appropriateness": appropriateness,
+            #"appropriateness_label": appropriateness_label,  # 文字ラベル
+            "emotion_label": emotion_label,
+            "finish_type": finish_reason,
             "turn": conversation_state["turn"],
             "inappropriate_count": conversation_state["inappropriate"],
             "active": conversation_state["active"],
@@ -703,6 +992,7 @@ def conversation_api():
         session["emotion_history"].append(
             {
                 "turn": conversation_state["turn"],
+                "emotion_label": emotion_label,
                 **indices,
                 "timestamp": datetime.now().isoformat(),
             }
@@ -710,7 +1000,7 @@ def conversation_api():
         log_time(step, "conversation: セッションデータ追加")
 
         # 11. 各ターンの簡易 turn_xx.json 保存（関連する発言のみ）
-        if is_related:
+        if appropriateness in ("related_good", "related_bad"):
             step = time.time()
             session_dir = Path("logs") / conversation_state["session_file"].stem
             session_dir.mkdir(exist_ok=True)
@@ -893,6 +1183,7 @@ def get_current_scenario():
             {
                 "status": "ready",
                 "character_role": CHARACTER_ROLE,
+                "character_name": CHARACTER_NAME,
                 "max_turns": MAX_TURNS,
                 "scene": SCENARIO.get("scene"),
                 "start_message": SCENARIO.get("start_message"),
