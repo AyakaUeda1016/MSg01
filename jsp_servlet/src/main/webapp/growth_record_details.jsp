@@ -90,9 +90,9 @@ String result = (String) request.getAttribute("RESULT");
 
 		</div>
 					<div class="bottom-buttons">
-				<form action="growth_record">
+				<a href="growth_record">
 					<button name="sb" value="" class="btn btn-wood">戻る</button>
-				</form>
+				</a>
 			</div>
 	</div>
 
