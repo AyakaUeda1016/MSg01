@@ -8,17 +8,25 @@ bgm.loop = true;
 bgm.volume = 0.7;
 
 function setBgm(src) {
-  if (bgm.src && bgm.src.endsWith(src)) return; // 同じなら切り替えない
+  // 同じ曲 & 再生中なら何もしない
+  if (bgm.src && bgm.src.endsWith(src) && !bgm.paused) {
+    return;
+  }
+
   bgm.pause();
-  bgm = new Audio(src);
-  bgm.loop = true;
+  bgm.src = src;          // ★ new Audio しない
+  bgm.currentTime = 0;
   bgm.volume = 0.7;
-  bgm.play();
+
+  bgm.play().catch(err => {
+    console.warn("BGM play blocked:", err);
+  });
 }
 
 function stopBgm() {
   bgm.pause();
   bgm.currentTime = 0;
+  bgm.src = ""; 
 }
 
 window.addEventListener("message", (e) => {
