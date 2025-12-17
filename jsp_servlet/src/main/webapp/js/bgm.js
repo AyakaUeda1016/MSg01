@@ -16,6 +16,11 @@ function setBgm(src) {
   bgm.play();
 }
 
+function stopBgm() {
+  bgm.pause();
+  bgm.currentTime = 0;
+}
+
 window.addEventListener("message", (e) => {
   const page = e.data.page;
   if (!page) return;
@@ -24,7 +29,8 @@ window.addEventListener("message", (e) => {
     setBgm(`${contextPath}/bgm/A.mp3`);
   }
   else if (page === "simulation") {
-    setBgm(`${contextPath}/bgm/C.mp3`);
+	stopBgm(); // ★ シミュレーションは無音
+    //setBgm(`${contextPath}/bgm/C.mp3`); 一応残しときます。
   }
   else if (page === "growth_record") {
     setBgm(`${contextPath}/bgm/B.mp3`);
