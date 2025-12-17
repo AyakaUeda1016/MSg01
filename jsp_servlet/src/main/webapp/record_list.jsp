@@ -41,28 +41,44 @@
 				<h1 class="title" id="pageTitle">棒グラフ画面</h1>
 				<!-- 凡例 -->
 				<div class="legend">
+					<!-- 各凡例項目にツールチップを追加 -->
 					<div class="legend-item" data-category="自己認識">
 						<span class="legend-color" style="background-color: #a855f7;"></span>
 						<span class="legend-text">自己認識</span>
+						<div class="legend-tooltip">
+							不安や緊張に影響されず自分らしい声で話せているかを読み取る項目。
+						</div>
 					</div>
 					<div class="legend-item" data-category="気持ちのコントロール">
 						<span class="legend-color" style="background-color: #ec4899;"></span>
 						<span class="legend-text">気持ちの<br>コントロール
 						</span>
+						<div class="legend-tooltip">
+							焦り・イライラ・興奮などの感情を抑えて落ち着いているかを読み取る項目。
+						</div>
 					</div>
 					<div class="legend-item" data-category="思いやり">
 						<span class="legend-color" style="background-color: #3b82f6;"></span>
 						<span class="legend-text">思いやり</span>
+						<div class="legend-tooltip">
+							相手に安心感・やさしさを伝えられているかを読み取る項目。
+						</div>
 					</div>
 					<div class="legend-item" data-category="理解力">
 						<span class="legend-color" style="background-color: #10b981;"></span>
 						<span class="legend-text">理解力</span>
+						<div class="legend-tooltip">
+							戸惑い・迷いが少なく相手の話を理解できているかを読み取る項目。
+						</div>
 					</div>
 					<div class="legend-item" data-category="話す力">
 						<span class="legend-color" style="background-color: #f97316;"></span>
 						<span class="legend-text">話す力</span>
+						<div class="legend-tooltip">
+							自信を持って分かりやすく伝えようとしている状態かを読み取る項目。
+						</div>
 					</div>
-					<!-- ▼▼ グラフ切り替えボタン（2個） ▼▼ -->
+					<!-- ▼▼ グラフ切り替えボタン(2個) ▼▼ -->
 					<div class="chart-mode-group">
 						<button class="chart-icon-btn" id="btnBar">
 							<svg width="40" height="40" viewBox="0 0 28 28" fill="none"

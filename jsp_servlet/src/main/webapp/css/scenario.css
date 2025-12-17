@@ -68,7 +68,8 @@ body {
 /* タイトルのサイズを縮小 */
 .scenario-select-title {
   color: #ffffff;
-  font-size: 1.8rem;
+  font-size: 2.5rem;
+  margin-bottom: 10vh;
   font-weight: bold;
   text-align: center;
 }
@@ -79,8 +80,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 0.8rem;
+  margin-top: -3vh;
 }
+
 
 /* 右、左イメージ*/
 .scene-img {
@@ -109,13 +111,12 @@ body {
   padding: 0.6rem 1rem;
   text-align: center;
   color: #ffffff;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   min-height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 
 /* テキストサイズを少し縮小 */
 .scenario-title {
