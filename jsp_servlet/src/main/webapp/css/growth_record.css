@@ -5,14 +5,13 @@
   box-sizing: border-box;
 }
 
-/* ✅ CHANGED: 建议把 html 也设满，否则某些浏览器 height:100% 计算怪 */
+
 html,
 body {
   width: 100%;
   height: 100%;
 }
 
-/* ✅ CHANGED: 不要只写 body 的 min-height/height 混用，统一一下 */
 body {
   font-family: "Murecho", sans-serif;
   overflow: hidden;
@@ -26,7 +25,6 @@ body {
   opacity: 0.95;
 }
 
-/* チュートリアル用のオーバーレイとツールチップスタイルを改善 */
 .tutorial-overlay {
   display: none;
   position: fixed;
@@ -162,7 +160,6 @@ body {
   display: none;
 }
 
-/* ステップ7（右矢印）のツールチップを強制的に右矢印の上に配置 */
 .tutorial-tooltip.step-7 {
   position: fixed !important;
   right: 50px !important;
@@ -228,7 +225,6 @@ body {
   transform: scale(1.05);
 }
 
-/* ✅ CHANGED: 这里改成“舞台居中布局”，黑板尺寸跟内容无关 */
 .screen-wrapper {
   width: 100%;
   height: 100vh;
@@ -237,7 +233,7 @@ body {
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   display: grid;
-  place-items: start center; /* 顶部偏上 + 水平居中 */
+  place-items: start center; 
 }
 
 .screen-wrapper.slide-out-left {
@@ -261,7 +257,6 @@ body {
   background-size: cover;
 }
 
-/* header / 内容：你原本是 absolute 百分比定位，保留 */
 .header {
   position: absolute;
   top: 7%;
@@ -272,7 +267,6 @@ body {
   width: 70%;
 }
 
-/* ✅ 可选：把 vw 字体改成 clamp，黑板缩放时更稳（不想动就删这段） */
 .page-title {
   font-family: "Murecho", sans-serif;
   font-size: clamp(22px, 2.5vw, 44px);
