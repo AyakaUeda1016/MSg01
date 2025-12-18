@@ -1,301 +1,360 @@
 /* ================== LocalStorageキー定義 ================== */
-const LS_KEYS = { mic: 'kaiwa.mLevel', vol: 'kaiwa.volumeLevel' };
+const LS_KEYS = { mic: "kaiwa.mLevel", vol: "kaiwa.volumeLevel", bgm: "kaiwa.bgmLevel" }
 
 function levelToGain(lv) {
-  lv = lv | 0;
-  if (lv < 1) lv = 1;
-  if (lv > 10) lv = 10;
-  return lv / 10;
+  lv = lv | 0
+  if (lv < 0) lv = 0 // 0を許可
+  if (lv > 10) lv = 10
+  return lv / 10
 }
 
 /* ================== グローバル音声バス（AudioContext統合） ================== */
-const AudioBus = (function () {
-  let ctx, outputGain, micGainNode, analyser, destNode, micStream;
-  const bc = (typeof BroadcastChannel !== 'undefined')
-    ? new BroadcastChannel('kaiwa-audio-settings')
-    : null;
+const AudioBus = (() => {
+  let ctx, outputGain, bgmGain, micGainNode, analyser, destNode, micStream
+  const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("kaiwa-audio-settings") : null
 
-  const mediaMap = new WeakMap();
+  const mediaMap = new WeakMap()
+  const bgmMediaMap = new WeakMap()
 
   function attachMediaElement(el) {
-    if (!ctx || !outputGain || !el) return;
-    if (mediaMap.has(el)) return;
-    const srcNode = ctx.createMediaElementSource(el);
-    srcNode.connect(outputGain);
-    mediaMap.set(el, srcNode);
+    if (!ctx || !outputGain || !el) return
+    if (mediaMap.has(el)) return
+    const srcNode = ctx.createMediaElementSource(el)
+    srcNode.connect(outputGain)
+    mediaMap.set(el, srcNode)
+  }
+
+  function attachBGMElement(el) {
+    if (!ctx || !bgmGain || !el) return
+    if (bgmMediaMap.has(el)) return
+    const srcNode = ctx.createMediaElementSource(el)
+    srcNode.connect(bgmGain)
+    bgmMediaMap.set(el, srcNode)
   }
 
   function init() {
-    if (ctx) return Promise.resolve();
+    if (ctx) return Promise.resolve()
 
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx = new (window.AudioContext || window.webkitAudioContext)()
 
-    outputGain = ctx.createGain();
-    const volLv = Number(localStorage.getItem(LS_KEYS.vol) || 5);
-    outputGain.gain.value = levelToGain(volLv);
-    outputGain.connect(ctx.destination);
+    outputGain = ctx.createGain()
+    const volLv = Number(localStorage.getItem(LS_KEYS.vol) || 5)
+    outputGain.gain.value = levelToGain(volLv)
+    outputGain.connect(ctx.destination)
 
-    return navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
-    }).then(function (stream) {
-      micStream = stream;
-      const src = ctx.createMediaStreamSource(stream);
-      micGainNode = ctx.createGain();
-      const micLv = Number(localStorage.getItem(LS_KEYS.mic) || 5);
-      micGainNode.gain.value = levelToGain(micLv) * 2.0;
+    bgmGain = ctx.createGain()
+    const bgmLv = Number(localStorage.getItem(LS_KEYS.bgm) || 5)
+    bgmGain.gain.value = levelToGain(bgmLv)
+    bgmGain.connect(ctx.destination)
 
-      analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
-      destNode = ctx.createMediaStreamDestination();
-      src.connect(micGainNode).connect(analyser).connect(destNode);
-    }).catch(function(err) {
-      console.warn('マイク初期化失敗:', err);
-      return Promise.resolve();
-    });
+    return navigator.mediaDevices
+      .getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false },
+      })
+      .then((stream) => {
+        micStream = stream
+        const src = ctx.createMediaStreamSource(stream)
+        micGainNode = ctx.createGain()
+        const micLv = Number(localStorage.getItem(LS_KEYS.mic) || 5)
+        micGainNode.gain.value = levelToGain(micLv) * 2.0
+
+        analyser = ctx.createAnalyser()
+        analyser.fftSize = 2048
+        destNode = ctx.createMediaStreamDestination()
+        src.connect(micGainNode).connect(analyser).connect(destNode)
+      })
+      .catch((err) => {
+        console.warn("マイク初期化失敗:", err)
+        return Promise.resolve()
+      })
   }
 
   function setOutputLevel(level) {
-    localStorage.setItem(LS_KEYS.vol, String(level));
-    if (outputGain) outputGain.gain.value = levelToGain(level);
-    if (bc) bc.postMessage({ volLevel: level });
+    localStorage.setItem(LS_KEYS.vol, String(level))
+    if (outputGain) outputGain.gain.value = levelToGain(level)
+    if (bc) bc.postMessage({ volLevel: level })
+  }
+
+  function setBGMLevel(level) {
+    localStorage.setItem(LS_KEYS.bgm, String(level))
+    if (bgmGain) bgmGain.gain.value = levelToGain(level)
+    if (bc) bc.postMessage({ bgmLevel: level })
   }
 
   function setInputLevel(level) {
-    localStorage.setItem(LS_KEYS.mic, String(level));
-    if (micGainNode) micGainNode.gain.value = levelToGain(level) * 2.0;
-    if (bc) bc.postMessage({ micLevel: level });
+    localStorage.setItem(LS_KEYS.mic, String(level))
+    if (micGainNode) micGainNode.gain.value = levelToGain(level) * 2.0
+    if (bc) bc.postMessage({ micLevel: level })
   }
 
   function getRMS() {
-    if (!analyser) return 0;
-    const buf = new Float32Array(analyser.fftSize);
-    analyser.getFloatTimeDomainData(buf);
-    let sum = 0;
-    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-    return Math.sqrt(sum / buf.length);
+    if (!analyser) return 0
+    const buf = new Float32Array(analyser.fftSize)
+    analyser.getFloatTimeDomainData(buf)
+    let sum = 0
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i]
+    return Math.sqrt(sum / buf.length)
   }
 
   function beep(durationMs, freq) {
-    durationMs = durationMs || 200;
-    freq = freq || 880;
+    durationMs = durationMs || 200
+    freq = freq || 880
 
     function doBeep() {
-      if (!ctx) return Promise.resolve();
-      if (ctx.state === 'suspended') return ctx.resume().catch(() => {}).then(playTone);
-      return playTone();
+      if (!ctx) return Promise.resolve()
+      if (ctx.state === "suspended")
+        return ctx
+          .resume()
+          .catch(() => {})
+          .then(playTone)
+      return playTone()
     }
 
     function playTone() {
-      return new Promise(function (resolve) {
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
+      return new Promise((resolve) => {
+        const osc = ctx.createOscillator()
+        const g = ctx.createGain()
+        osc.type = "sine"
+        osc.frequency.value = freq
 
-        const t = ctx.currentTime;
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(0.5, t + 0.01);
-        g.gain.linearRampToValueAtTime(0.0, t + durationMs / 1000);
+        const t = ctx.currentTime
+        g.gain.setValueAtTime(0, t)
+        g.gain.linearRampToValueAtTime(0.5, t + 0.01)
+        g.gain.linearRampToValueAtTime(0.0, t + durationMs / 1000)
 
-        osc.connect(g).connect(outputGain);
-        osc.start(t);
-        osc.stop(t + durationMs / 1000 + 0.05);
+        osc.connect(g).connect(outputGain)
+        osc.start(t)
+        osc.stop(t + durationMs / 1000 + 0.05)
 
-        osc.onended = () => resolve();
-      });
+        osc.onended = () => resolve()
+      })
     }
 
-    if (!ctx) return init().then(doBeep);
-    return doBeep();
+    if (!ctx) return init().then(doBeep)
+    return doBeep()
   }
 
   return {
     init: init,
     setOutputLevel: setOutputLevel,
+    setBGMLevel: setBGMLevel,
     setInputLevel: setInputLevel,
     getRMS: getRMS,
     beep: beep,
-    stream: () => destNode ? destNode.stream : null,
+    stream: () => (destNode ? destNode.stream : null),
     context: () => ctx || null,
-    output: () => outputGain || null
-  };
-})();
+    output: () => outputGain || null,
+    attachBGM: attachBGMElement,
+  }
+})()
 
 /* ================== 初期化とイベント設定 ================== */
-document.addEventListener('DOMContentLoaded', () => {
-  AudioBus.init().then(() => {
-    console.log('[v0] AudioBus初期化完了');
+document.addEventListener("DOMContentLoaded", () => {
+  AudioBus.init()
+    .then(() => {
+      console.log("[v0] AudioBus初期化完了")
 
-    const savedVolume = Number(localStorage.getItem(LS_KEYS.vol) || 5);
-    const savedMic = Number(localStorage.getItem(LS_KEYS.mic) || 5);
+      const savedVolume = Number(localStorage.getItem(LS_KEYS.vol) || 5)
+      const savedMic = Number(localStorage.getItem(LS_KEYS.mic) || 5)
+      const savedBGM = Number(localStorage.getItem(LS_KEYS.bgm) || 5)
 
-    // 音声音量ボタンの初期化
-    const soundButtons = document.getElementById("soundButtons");
-    if (soundButtons) {
-      // 初期値を設定
-      const soundBtns = soundButtons.querySelectorAll(".number-btn");
-      soundBtns.forEach((btn) => {
-        if (Number.parseInt(btn.dataset.value) === savedVolume) {
-          btn.classList.add("active");
-        }
-      });
+      const soundButtons = document.getElementById("soundButtons")
+      if (soundButtons) {
+        const soundBtns = soundButtons.querySelectorAll(".number-btn")
+        soundBtns.forEach((btn) => {
+          if (Number.parseInt(btn.dataset.value) === savedVolume) {
+            btn.classList.add("active")
+          }
+        })
 
-      soundButtons.addEventListener("click", (e) => {
-        if (e.target.classList.contains("number-btn")) {
-          soundButtons.querySelectorAll(".number-btn").forEach((btn) => {
-            btn.classList.remove("active");
-          });
+        soundButtons.addEventListener("click", (e) => {
+          if (e.target.classList.contains("number-btn")) {
+            soundButtons.querySelectorAll(".number-btn").forEach((btn) => {
+              btn.classList.remove("active")
+            })
 
-          e.target.classList.add("active");
+            e.target.classList.add("active")
 
-          const level = Number.parseInt(e.target.dataset.value);
-          AudioBus.setOutputLevel(level);
-          AudioBus.beep(150, 880);
-          console.log("[v0] 音声音量:", level);
-        }
-      });
-    }
-
-    // マイク音量ボタンの初期化
-    const micButtons = document.getElementById("micButtons");
-    if (micButtons) {
-      // 初期値を設定
-      const micBtns = micButtons.querySelectorAll(".number-btn");
-      micBtns.forEach((btn) => {
-        if (Number.parseInt(btn.dataset.value) === savedMic) {
-          btn.classList.add("active");
-        }
-      });
-
-      micButtons.addEventListener("click", (e) => {
-        if (e.target.classList.contains("number-btn")) {
-          micButtons.querySelectorAll(".number-btn").forEach((btn) => {
-            btn.classList.remove("active");
-          });
-
-          e.target.classList.add("active");
-
-          const level = Number.parseInt(e.target.dataset.value);
-          AudioBus.setInputLevel(level);
-          console.log("[v0] マイク音量:", level);
-        }
-      });
-    }
-
-    const micTestBtn = document.getElementById("micTestBtn");
-    let recorder = null;
-    let recordedChunks = [];
-    let mode = 'idle';
-    let recordMaxTimer = null;
-    const MAX_RECORD_MS = 10000;
-
-    function clearRecordTimer() {
-      if (recordMaxTimer) {
-        clearTimeout(recordMaxTimer);
-        recordMaxTimer = null;
+            const level = Number.parseInt(e.target.dataset.value)
+            AudioBus.setOutputLevel(level)
+            AudioBus.beep(150, 880)
+            console.log("[v0] 音声音量:", level)
+          }
+        })
       }
-    }
 
-    function resetMicTest() {
-      clearRecordTimer();
-      mode = 'idle';
-      recordedChunks = [];
-      if (micTestBtn) micTestBtn.textContent = 'マイクテスト';
-    }
-
-    if (micTestBtn) {
-      micTestBtn.addEventListener("click", () => {
-        const stream = AudioBus.stream();
-
-        if (mode === 'idle') {
-          if (!stream) {
-            alert('マイク入力を取得できませんでした');
-            return;
+      const bgmButtons = document.getElementById("bgmButtons")
+      if (bgmButtons) {
+        const bgmBtns = bgmButtons.querySelectorAll(".number-btn")
+        bgmBtns.forEach((btn) => {
+          if (Number.parseInt(btn.dataset.value) === savedBGM) {
+            btn.classList.add("active")
           }
+        })
 
-          try {
-            recordedChunks = [];
-            recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        bgmButtons.addEventListener("click", (e) => {
+          if (e.target.classList.contains("number-btn")) {
+            bgmButtons.querySelectorAll(".number-btn").forEach((btn) => {
+              btn.classList.remove("active")
+            })
 
-            recorder.ondataavailable = (e) => {
-              if (e.data && e.data.size > 0) recordedChunks.push(e.data);
-            };
+            e.target.classList.add("active")
 
-            recorder.onstop = () => {
-              clearRecordTimer();
-              if (!recordedChunks.length) {
-                resetMicTest();
-                return;
-              }
-
-              const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-              const url = URL.createObjectURL(blob);
-              
-              const audio = new Audio(url);
-              AudioBus.output() && audio.play().then(() => {
-                mode = 'playing';
-                micTestBtn.textContent = '再生中...';
-                
-                audio.onended = () => {
-                  resetMicTest();
-                  URL.revokeObjectURL(url);
-                };
-              }).catch(() => {
-                resetMicTest();
-                URL.revokeObjectURL(url);
-              });
-            };
-
-            recorder.start();
-            mode = 'recording';
-            micTestBtn.textContent = '録音中...（クリックで停止）';
-
-            recordMaxTimer = setTimeout(() => {
-              if (mode === 'recording' && recorder) {
-                try { recorder.stop(); } catch (e) { resetMicTest(); }
-              }
-            }, MAX_RECORD_MS);
-
-          } catch (err) {
-            console.error('[v0] MediaRecorder初期化失敗:', err);
-            alert('録音を開始できませんでした');
-            resetMicTest();
+            const level = Number.parseInt(e.target.dataset.value)
+            AudioBus.setBGMLevel(level)
+            AudioBus.beep(150, 660)
+            console.log("[v0] BGM音量:", level)
           }
-        } else if (mode === 'recording') {
-          clearRecordTimer();
-          try {
-            if (recorder) recorder.stop();
-          } catch (err) {
-            console.error('[v0] recorder.stop失敗:', err);
-            resetMicTest();
+        })
+      }
+
+      const micButtons = document.getElementById("micButtons")
+      if (micButtons) {
+        const micBtns = micButtons.querySelectorAll(".number-btn")
+        micBtns.forEach((btn) => {
+          if (Number.parseInt(btn.dataset.value) === savedMic) {
+            btn.classList.add("active")
           }
-        } else if (mode === 'playing') {
-          resetMicTest();
+        })
+
+        micButtons.addEventListener("click", (e) => {
+          if (e.target.classList.contains("number-btn")) {
+            micButtons.querySelectorAll(".number-btn").forEach((btn) => {
+              btn.classList.remove("active")
+            })
+
+            e.target.classList.add("active")
+
+            const level = Number.parseInt(e.target.dataset.value)
+            AudioBus.setInputLevel(level)
+            console.log("[v0] マイク音量:", level)
+          }
+        })
+      }
+
+      const micTestBtn = document.getElementById("micTestBtn")
+      let recorder = null
+      let recordedChunks = []
+      let mode = "idle"
+      let recordMaxTimer = null
+      const MAX_RECORD_MS = 10000
+
+      function clearRecordTimer() {
+        if (recordMaxTimer) {
+          clearTimeout(recordMaxTimer)
+          recordMaxTimer = null
         }
-      });
-    }
+      }
 
-    // 準備完了ボタン
-    const readyBtn = document.getElementById("readyBtn");
-    if (readyBtn) {
-      readyBtn.addEventListener("click", () => {
-        const vol = Number(localStorage.getItem(LS_KEYS.vol) || 5);
-        const mic = Number(localStorage.getItem(LS_KEYS.mic) || 5);
-        console.log("[v0] 準備完了 - 音声:", vol, "マイク:", mic);
-        AudioBus.beep(300, 660);
-      });
-    }
+      function resetMicTest() {
+        clearRecordTimer()
+        mode = "idle"
+        recordedChunks = []
+        if (micTestBtn) micTestBtn.textContent = "マイクテスト"
+      }
 
+      if (micTestBtn) {
+        micTestBtn.addEventListener("click", () => {
+          const stream = AudioBus.stream()
 
-  }).catch((err) => {
-    console.error('[v0] AudioBus初期化エラー:', err);
-  });
-});
+          if (mode === "idle") {
+            if (!stream) {
+              alert("マイク入力を取得できませんでした")
+              return
+            }
+
+            try {
+              recordedChunks = []
+              recorder = new MediaRecorder(stream, { mimeType: "audio/webm" })
+
+              recorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) recordedChunks.push(e.data)
+              }
+
+              recorder.onstop = () => {
+                clearRecordTimer()
+                if (!recordedChunks.length) {
+                  resetMicTest()
+                  return
+                }
+
+                const blob = new Blob(recordedChunks, { type: "audio/webm" })
+                const url = URL.createObjectURL(blob)
+
+                const audio = new Audio(url)
+                AudioBus.output() &&
+                  audio
+                    .play()
+                    .then(() => {
+                      mode = "playing"
+                      micTestBtn.textContent = "再生中..."
+
+                      audio.onended = () => {
+                        resetMicTest()
+                        URL.revokeObjectURL(url)
+                      }
+                    })
+                    .catch(() => {
+                      resetMicTest()
+                      URL.revokeObjectURL(url)
+                    })
+              }
+
+              recorder.start()
+              mode = "recording"
+              micTestBtn.textContent = "録音中...（クリックで停止）"
+
+              recordMaxTimer = setTimeout(() => {
+                if (mode === "recording" && recorder) {
+                  try {
+                    recorder.stop()
+                  } catch (e) {
+                    resetMicTest()
+                  }
+                }
+              }, MAX_RECORD_MS)
+            } catch (err) {
+              console.error("[v0] MediaRecorder初期化失敗:", err)
+              alert("録音を開始できませんでした")
+              resetMicTest()
+            }
+          } else if (mode === "recording") {
+            clearRecordTimer()
+            try {
+              if (recorder) recorder.stop()
+            } catch (err) {
+              console.error("[v0] recorder.stop失敗:", err)
+              resetMicTest()
+            }
+          } else if (mode === "playing") {
+            resetMicTest()
+          }
+        })
+      }
+
+      const readyBtn = document.getElementById("readyBtn")
+      if (readyBtn) {
+        readyBtn.addEventListener("click", () => {
+          const vol = Number(localStorage.getItem(LS_KEYS.vol) || 5)
+          const mic = Number(localStorage.getItem(LS_KEYS.mic) || 5)
+          console.log("[v0] 準備完了 - 音声:", vol, "マイク:", mic)
+          AudioBus.beep(300, 660)
+        })
+      }
+    })
+    .catch((err) => {
+      console.error("[v0] AudioBus初期化エラー:", err)
+    })
+})
 
 function getSoundVolume() {
-  return Number(localStorage.getItem(LS_KEYS.vol) || 5);
+  return Number(localStorage.getItem(LS_KEYS.vol) || 5)
 }
 
 function getMicVolume() {
-  return Number(localStorage.getItem(LS_KEYS.mic) || 5);
+  return Number(localStorage.getItem(LS_KEYS.mic) || 5)
+}
+
+function getBGMVolume() {
+  return Number(localStorage.getItem(LS_KEYS.bgm) || 5)
 }

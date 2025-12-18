@@ -242,10 +242,11 @@ function renderGraph() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      clip: false,
 
       layout: {
         padding: {
-          top: 40,
+          top: isLineChart ? 80 : 40,
         },
       },
       plugins: {
@@ -267,6 +268,18 @@ function renderGraph() {
       scales: {
         x: {
           stacked: !isLineChart,
+          title: {
+            display: true,
+            text: "一日の平均値",
+            color: "#ffffff",
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+            padding: {
+              top: 15,
+            },
+          },
           ticks: {
             color: "#ffffff",
             font: {
@@ -280,7 +293,7 @@ function renderGraph() {
         y: {
           stacked: !isLineChart,
           min: 0,
-          max: isLineChart ? 10.5 : 50,
+          max: isLineChart ? 10 : 50,
           ticks: {
             stepSize: isLineChart ? 1 : 10,
             color: "#ffffff",
@@ -288,21 +301,16 @@ function renderGraph() {
               size: 20,
             },
             callback: (value) => {
-              if (isLineChart && value === 10.5) {
+              if (isLineChart && value > 10.5) {
                 return ""
               }
               return value
             },
           },
           grid: {
-            color: (ctx) => {
-              const v = ctx.tick && ctx.tick.value
-              if (isLineChart && v === 10.5) {
-                return "rgba(0,0,0,0)"
-              }
-              return "rgba(255,255,255,0.8)"
-            },
+            color: "rgba(255,255,255,0.8)",
             lineWidth: 1.5,
+            display: true,
           },
         },
       },

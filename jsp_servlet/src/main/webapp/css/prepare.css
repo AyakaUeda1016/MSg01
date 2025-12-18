@@ -3,10 +3,11 @@
 /* ========== 3. 黒板内部：音量・マイク行 ========== */
 /* アイコン＋数字ボタンの1行 */
 .control-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 5%;
+  display: flex;
+  margin-left: 100px; /* 20pxから100pxに変更して右に移動 */
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5%;
 }
 
 /* アイコンの白い四角 */
@@ -94,6 +95,12 @@ a {
     color: inherit;
 }
 
+.btn-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 30px;
+  margin-left: 100px;
+}
 /* ========== 6. レスポンシブ（お好みで調整可） ========== */
 @media (max-width: 1024px) {
     .blackboard {
