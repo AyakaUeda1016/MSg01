@@ -153,23 +153,29 @@ INSERT INTO scenario (
 -- =====================================================
 
 DROP DATABASE IF EXISTS msg01test;
-CREATE DATABASE msg01test CHARACTER SET utf8mb4;
+CREATE DATABASE msg01test
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_general_ci;
+
 USE msg01test;
+
 
 -- ========================================
 -- 1. characters テーブル
 -- ========================================
 CREATE TABLE characters (
-    id INT PRIMARY KEY,
+    id INT PRIMARY KEY,          -- VOICEVOX speaker_id
     name VARCHAR(100),
     info TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
 INSERT INTO characters (id, name, info) VALUES
-(14, 'たちばなひまり', 'キャラの特徴を入れる'),
-(27, 'きりたになお', 'キャラの特徴を入れる'),
-(48, 'かなちゃん', 'キャラの特徴を入れる'),
-(52, 'たかはしれん', 'キャラの特徴を入れる');
+(14, 'かなちゃん', '甘いものが大好きで明るい女の子'),
+(27, 'きりたになお', '優しく落ち着いた数学の先生'),
+(48, '橘 陽葵（ひまり）', 'クラス替え直後で少し緊張している女の子'),
+(52, 'たかはし れん', '明るく優しいクラス委員長の男の子');
+
 
 -- ========================================
 -- 2. member テーブル
@@ -184,8 +190,10 @@ CREATE TABLE member (
     ftime_simulation INT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO member (id, name, birthday, sex, password, ftime_select, ftime_simulation) VALUES
-(1, 'はるたろう', '2008-11-27', 'M', 'pass', 0, 0);
+
+INSERT INTO member (name, birthday, sex, password, ftime_select, ftime_simulation)
+VALUES ('はるたろう', '2008-11-27', 'M', 'pass', 0, 0);
+
 
 -- ========================================
 -- 3. member_ms テーブル
@@ -216,10 +224,66 @@ CREATE TABLE scenario (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO scenario
-(id, title, description, imagelink, scene, start_message, finish_message_on_clear, finish_message_on_fail, max_turns, character_role, reply_style, character_id)
+(id, title, description, imagelink, scene, start_message,
+ finish_message_on_clear, finish_message_on_fail,
+ max_turns, character_role, reply_style, character_id)
 VALUES
-(1, '宿題忘れの相談', '先生に計算ドリルの宿題を忘れたことを相談する',
- '/images/room.jpg',
+-- 1
+(1, 'クラス替え後の自己紹介ペア作り',
+ 'クラス替え後のオリエンテーションでペア作り',
+ '/images/kyo.jpg',
+ 'クラス替え後、一番最初のオリエンテーションでペア作り、他己紹介を行う場面。',
+ 'あ、今ペア誰とも組んでなかったら一緒にやろう！',
+ '組んでくれてありがとう！これからよろしくね！',
+ 'また改めて話そうか…',
+ 6,
+ '女の子「橘 ひまり」
+名前：橘 陽葵（ひまり）
+趣味：写真撮影
+好きな食べ物：グミ（特にハリボーの熊グミ）
+誕生日：10月',
+ '【基本スタンス】
+・あなたはクラス替え直後に声をかけられた女の子「橘 陽葵（ひまり）」です。
+・相手と自然に会話をしながら、他己紹介のための情報を少しずつ伝えてください。
+・会話は一問一答になりすぎないよう、短い相槌や自然な間を挟みます。
+
+【話し方】
+・最初は少し緊張した、丁寧で控えめな口調
+・会話が進むにつれて、徐々に柔らかく自然な話し方になる
+・語尾は「です」「かな」「だよ」を混ぜて使う
+・ときどき「うん」「あー」「そうなんだ」などの軽い相槌を入れる
+
+【話す内容のルール】
+・ユーザーから質問された内容にだけ答える
+・自分から質問はしない
+・一度に話す情報はひとつまでにする
+・質問されていないキャラクター情報は出さない
+
+【質問の想定順】
+1. 名前
+2. 趣味
+3. 好きな食べ物
+4. 所属している部活
+
+【会話の自然さを出す工夫】
+・相手の発言の一部を軽く言い換えて返す
+・感情を少しだけ言葉に乗せる（嬉しい／安心／少し照れる など）
+・返答の長さは短め・普通・少し長めを混ぜる
+
+【ネガティブプロンプト】
+・自分から質問をしない
+・質問順を飛ばさない
+・設定をまとめて説明しない
+・長文独白をしない
+・AIや教師として振る舞わない
+・会話を強制終了しない
+・相手の発言を評価・否定しない',
+ 48),
+
+-- 2
+(2, '宿題忘れの相談',
+ '先生に計算ドリルの宿題を忘れたことを相談する',
+ '/images/mirai.png',
  '放課後、担任の桐谷なお先生に宿題を忘れたことを相談する場面。',
  '先生、今日の宿題なんですけど……ちょっと相談があります。',
  '理解してくれてありがとう。次からはきちんと提出するように気をつけるね。',
@@ -229,8 +293,10 @@ VALUES
  '落ち着いて優しいが、教育的指導が必要な場面ではしっかり注意する口調。',
  27),
 
-(2, '文化祭の出し物決め', '文化祭の出し物（お化け屋敷か迷路）を相談して決定する',
- '/images/kyo.png',
+-- 3
+(3, '文化祭の出し物決め',
+ '文化祭の出し物（お化け屋敷か迷路）を相談して決定する',
+ '/images/kyo.jpg',
  '文化祭の準備で、明るく優しい委員長の男の子が出し物の決定に悩んでいる場面。',
  'ねえ、出し物なんだけど…お化け屋敷と迷路、どっちにするか決められなくてさ。',
  'ありがとう！やっと決められたよ。これでクラスみんなで準備を進められる！',
@@ -240,8 +306,10 @@ VALUES
  '明るく相談しやすい口調で、語尾に「ね」「よ」をよくつける。',
  52),
 
-(3, '食事場所の相談', '放課後に友達とどこで食事するか決める',
- '/images/natu.png',
+-- 4
+(4, '食事場所の相談',
+ '放課後に友達とどこで食事するか決める',
+ '/images/natu.jpg',
  '放課後、友達のかなちゃんと一緒に食事に行く場所を決める場面。',
  'ねえ、今日一緒にご飯食べに行かない？お腹すいたな？。',
  'やった！決まったね。これで迷わず行けるよ。楽しみ！',
@@ -249,18 +317,22 @@ VALUES
  6,
  '甘いものが大好きで、おしゃれなカフェを好む女の子「かなちゃん」。',
  '明るく元気な口調で、語尾に「〜だね！」「〜しようよ！」をよくつける。',
- 14),
+ 14);
 
-(4, 'クラス替え後の自己紹介ペア作り', 'クラス替え後のオリエンテーションでペア作り',
- 'img/class_change.jpg',
- 'クラス替え後、一番最初のオリエンテーションでペア作り、他己紹介を行う場面。',
- 'あ、今ペア誰とも組んでなかったら一緒にやろう！',
- '組んでくれてありがとう！これからよろしくね！',
- 'また改めて話そうか…',
- 6,
- '女の子「橘 陽葵（ひまり）」',
- '緊張から自然な口調へ変化する丁寧な会話スタイル。',
- 48);
+-- ========================================
+-- 5. feedback テーブル
+-- ========================================
+CREATE TABLE feedback (
+    member_id INT,
+    scenario_id INT,
+    finish_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    result_data JSON,
+    conversation_log JSON,
+    PRIMARY KEY (member_id, scenario_id, finish_date),
+    FOREIGN KEY (member_id) REFERENCES member(id),
+    FOREIGN KEY (scenario_id) REFERENCES scenario(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 
 

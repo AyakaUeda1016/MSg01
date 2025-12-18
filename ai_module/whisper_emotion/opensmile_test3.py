@@ -83,114 +83,141 @@ FEATURE_KEYS = [
 #  新規追加：LLD → 感情指数＋Pause/Voicing 計算
 # ============================================================
 def compute_voice_indices(df):
-    """LLD DataFrame から感情指数＋Pause/Voicing を計算"""
+    """LLD DataFrame から感情指数＋Pause/Voicing を計算（変化が出やすい版）"""
 
     import numpy as np
 
-    mean = df.mean(axis=0)
-    std = df.std(axis=0)
-
-    def m(key):
-        return float(mean.get(key)) if key in mean.index else None
-
-    def s(key):
-        return float(std.get(key)) if key in std.index else None
-
-    def z(x, lo, hi):
-        if x is None or np.isnan(x):
+    # ===== ユーティリティ（この関数内だけで使用） =====
+    def pnorm(arr, lo=10, hi=90):
+        """パーセンタイル正規化（固定化しにくい）"""
+        arr = np.asarray(arr, float)
+        arr = arr[np.isfinite(arr)]
+        if arr.size == 0:
             return 0.5
-        return max(0.0, min(1.0, (x - lo) / (hi - lo)))
+        p_lo, p_hi = np.percentile(arr, [lo, hi])
+        if p_hi == p_lo:
+            return 0.5
+        v = (np.median(arr) - p_lo) / (p_hi - p_lo)
+        return float(np.clip(v, 0.0, 1.0))
 
-    # ====== 基本 LLD ======
-    loud = m("Loudness_sma3")
-    loud_std = s("Loudness_sma3")
+    # ===== 生系列を直接使用（mean依存をやめる） =====
+    loud_series = df["Loudness_sma3"].values
+    f0_series = df["F0semitoneFrom27.5Hz_sma3nz"].values
+    jitter_series = df["jitterLocal_sma3nz"].values
+    shimmer_series = df["shimmerLocaldB_sma3nz"].values
+    hnr_series = df["HNRdBACF_sma3nz"].values
+    alpha_series = df["alphaRatio_sma3"].values
+    flux_series = df["spectralFlux_sma3"].values
+    mfcc2_series = df["mfcc2_sma3"].values
+    mfcc3_series = df["mfcc3_sma3"].values
 
-    f0 = m("F0semitoneFrom27.5Hz_sma3nz")
-    f0_std = s("F0semitoneFrom27.5Hz_sma3nz")
-
-    flux = m("spectralFlux_sma3")
-    jitter = m("jitterLocal_sma3nz")
-    shimmer = m("shimmerLocaldB_sma3nz")
-    hnr = m("HNRdBACF_sma3nz")
-    alpha = m("alphaRatio_sma3")
-
-    mfcc2 = m("mfcc2_sma3")
-    mfcc3 = m("mfcc3_sma3")
-
-    # ============================================================
-    # ① Arousal
-    # ============================================================
+    # ===== ① Arousal（声量＋変化量ベース）=====
+    loud_range = np.percentile(loud_series, 90) - np.percentile(loud_series, 10)
     arousal = (
-        0.4 * z(loud, -40, 0) +
-        0.3 * z(f0, 15, 35) +
-        0.3 * z(flux, 0.0, 0.05)
+        0.5 * pnorm(np.log1p(loud_series)) +
+        0.3 * pnorm(flux_series) +
+        0.2 * np.tanh(np.log1p(max(0.0, loud_range)))
     )
 
-    # ============================================================
-    # ② Valence
-    # ============================================================
+    # ===== ② Valence（非線形・中央値ベース）=====
     valence = (
-        0.4 * z(hnr, 0, 30) +
-        0.2 * (1 - z(jitter, 0.0, 0.04)) +
-        0.2 * (1 - z(shimmer, 0.0, 2.0)) +
-        0.2 * z(alpha, -10, 20)
+        0.4 * pnorm(hnr_series) +
+        0.2 * (1.0 - pnorm(np.abs(jitter_series))) +
+        0.2 * (1.0 - pnorm(np.abs(shimmer_series))) +
+        0.2 * pnorm(alpha_series)
     )
 
-    # ============================================================
-    # ③ Dominance
-    # ============================================================
+    # ===== ③ Dominance（声量＋F0レンジ）=====
+    f0_range = np.percentile(f0_series, 90) - np.percentile(f0_series, 10)
     dominance = (
-        0.5 * z(loud, -40, 0) +
-        0.3 * z(f0, 15, 35) +
-        0.2 * z(hnr, 0, 30)
+        0.5 * pnorm(np.log1p(loud_series)) +
+        0.3 * np.tanh(np.log1p(max(0.0, f0_range))) +
+        0.2 * pnorm(hnr_series)
     )
 
-    # Pitch variability
-    pitch_var = z(f0_std, 0.0, 4.0)
-
-    # Loudness variability
-    loud_var = z(loud_std, 0.0, 6.0)
-
-    # Stability（声の安定性）
-    stability = (
-        0.4 * (1 - z(jitter, 0.0, 0.04)) +
-        0.3 * (1 - z(shimmer, 0.0, 2.0)) +
-        0.3 * z(hnr, 0, 30)
+    # ===== Pitch / Loudness variability（平均ではなく幅）=====
+    pitch_variability = float(
+    np.log1p(max(0.0, f0_range)) /
+    (np.log1p(max(0.0, f0_range)) + 1.0)
     )
 
-    # Warmth（優しさ・柔らかさ）
+    loudness_variability = float(np.tanh(np.log1p(max(0.0, loud_range))))
+
+    # ===== Stability（jitter / shimmer を非線形圧縮）=====
+    unstable = np.tanh(
+        np.log1p(
+            np.median(np.abs(jitter_series)) +
+            np.median(np.abs(shimmer_series))
+        )
+    )
+    voice_stability = float(1.0 - unstable)
+
+    # ===== Warmth（valence＋スペクトル）=====
     brightness = (
-        0.4 * z(alpha, -10, 20) +
-        0.3 * z(mfcc2, -15, 15) +
-        0.3 * z(mfcc3, -15, 15)
+        0.4 * pnorm(alpha_series) +
+        0.3 * pnorm(mfcc2_series) +
+        0.3 * pnorm(mfcc3_series)
     )
     warmth = 0.6 * valence + 0.4 * brightness
 
-    # ============================================================
-    # ④ Pause（無音率）
-    # ============================================================
-    loud_series = df["Loudness_sma3"]
+    # ===== Pause / Voicing（ここは現状維持）=====
     silent_frames = (loud_series < -50).sum()
     pause_ratio = silent_frames / len(loud_series)
 
-    # ============================================================
-    # ⑤ Voicing（有声率）
-    # ============================================================
-    f0_series = df["F0semitoneFrom27.5Hz_sma3nz"]
     voiced_frames = (f0_series > 0).sum()
     voicing_ratio = voiced_frames / len(f0_series)
 
+    # ============================================================
+    #  ★ Tone score（優しい / 柔らかいトーン）
+    # ============================================================
+
+    # --- roughness（荒さ）---
+    roughness = (
+        0.45 * pnorm(np.abs(jitter_series)) +
+        0.35 * pnorm(np.abs(shimmer_series)) +
+        0.20 * (1.0 - pnorm(hnr_series))
+    )
+
+    # --- force（押しの強さ）---
+    force = (
+        0.70 * pnorm(np.log1p(loud_series)) +
+        0.30 * pnorm(flux_series)
+    )
+
+    # --- sharpness（角の立ち）---
+    slope_500_1500 = df["slope500-1500_sma3"].values
+    sharpness = (
+        0.40 * pnorm(alpha_series) +
+        0.35 * pnorm(df["hammarbergIndex_sma3"].values) +
+        0.25 * pnorm(np.abs(slope_500_1500))    
+    )
+
+    # --- gentle tone ---
+    gentle_tone = (
+        1.0
+        - (0.55 * roughness + 0.30 * force + 0.15 * sharpness)
+    )
+
+    tone_score = float(np.clip(gentle_tone, 0.0, 1.0))
+
+
+    # ★ round はしない（差を潰さない）
     return {
-        "arousal": round(arousal, 3),
-        "valence": round(valence, 3),
-        "dominance": round(dominance, 3),
-        "pitch_variability": round(pitch_var, 3),
-        "loudness_variability": round(loud_var, 3),
-        "voice_stability": round(stability, 3),
-        "warmth": round(warmth, 3),
-        "pause_ratio": round(float(pause_ratio), 3),
-        "voicing_ratio": round(float(voicing_ratio), 3),
+        "arousal": float(arousal),
+        "valence": float(valence),
+        "dominance": float(dominance),
+        "pitch_variability": pitch_variability,
+        "loudness_variability": loudness_variability,
+        "voice_stability": voice_stability,
+        "warmth": float(warmth),
+        "pause_ratio": float(pause_ratio),
+        "voicing_ratio": float(voicing_ratio),
+        "tone_score": tone_score,
+        "tone_roughness": float(roughness),
+        "tone_force": float(force),
+        "tone_sharpness": float(sharpness),
     }
+
 
 
 # ============================================================

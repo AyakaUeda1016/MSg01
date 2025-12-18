@@ -525,7 +525,7 @@ a {
   letter-spacing: 0.5px;
 }
 
-/* 声量：少し派手に（一番目立たせる） */
+/* ① 声量 */
 .skill-item:nth-child(1) .skill-bar {
   background: linear-gradient(
     90deg,
@@ -536,7 +536,7 @@ a {
   box-shadow: 0 0 14px rgba(255, 235, 59, 0.7);
 }
 
-/* 抑揚：動きが分かりやすい色 */
+/* ② 緊張度 */
 .skill-item:nth-child(2) .skill-bar {
   background: linear-gradient(
     90deg,
@@ -546,8 +546,19 @@ a {
   );
 }
 
-/* 安定度：落ち着いた色 */
+/* ③ 思いやり */
 .skill-item:nth-child(3) .skill-bar {
+  background: linear-gradient(
+    90deg,
+    #f8bbd0 0%,
+    #f48fb1 50%,
+    #ce93d8 100%
+  );
+  box-shadow: 0 0 12px rgba(244, 143, 177, 0.6);
+}
+
+/* ④ 感情 */
+.skill-item:nth-child(4) .skill-bar {
   background: linear-gradient(
     90deg,
     #66bb6a 0%,
@@ -555,23 +566,6 @@ a {
   );
 }
 
-/* スムーズさ：沈黙が少ないほど伸びる感覚 */
-.skill-item:nth-child(4) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #ffa726 0%,
-    #ff7043 100%
-  );
-}
-
-/* 発話率：安定した青系 */
-.skill-item:nth-child(5) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #42a5f5 0%,
-    #1e88e5 100%
-  );
-}
 
 /* 変化があった瞬間に「ピクッ」と反応 */
 .skill-bar {
@@ -585,4 +579,68 @@ a {
 .skill-bar[style*="width: 9"],
 .skill-bar[style*="width: 100"] {
   box-shadow: 0 0 18px rgba(255, 255, 255, 0.8);
+}
+
+.emotion-display {
+  position: relative;
+  height: 18px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 13px;
+  color: #fff;
+}
+
+/* 感情ごとの色（任意） */
+.emotion-happy {
+  background: linear-gradient(90deg, #ffb347, #ffcc33);
+}
+
+.emotion-sad {
+  background: linear-gradient(90deg, #6fa8dc, #3c78d8);
+}
+
+.emotion-angry {
+  background: rgba(90deg, #f44336, #ff9800);
+}
+
+.emotion-default {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ===============================
+   🚨 メータ注意 POPUP
+=============================== */
+.meter-popup {
+  position: fixed;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -10px);
+  min-width: 320px;
+  max-width: 480px;
+
+  background: rgba(20, 20, 20, 0.92);
+  color: #ffffff;
+  padding: 14px 22px;
+  border-radius: 14px;
+
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+
+  z-index: 99999;          /* ← 最重要 */
+  opacity: 0;
+  pointer-events: none;
+
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.meter-popup.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }

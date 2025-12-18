@@ -4,7 +4,9 @@ import pymysql
 
 app = Flask(__name__)
 
-# --- DB 接続設定 ---
+# ==================================================
+# DB 接続
+# ==================================================
 def get_db():
     return pymysql.connect(
         host="localhost",
@@ -15,9 +17,9 @@ def get_db():
         cursorclass=pymysql.cursors.DictCursor
     )
 
-# ===================================================================
-#  シナリオ一覧
-# ===================================================================
+# ==================================================
+# シナリオ一覧
+# ==================================================
 @app.route("/scenario")
 def scenario_list():
     conn = get_db()
@@ -29,63 +31,77 @@ def scenario_list():
     <h2>シナリオ一覧</h2>
     <ul>
     {% for row in rows %}
-      <li><a href="/scenario/edit/{{ row.id }}">{{ row.id }}: {{ row.title }}</a></li>
+      <li><a href="/scenario/edit/{{ row.id }}">{{ row.id }} : {{ row.title }}</a></li>
     {% endfor %}
     </ul>
     """
     return render_template_string(html, rows=rows)
 
-
-# ===================================================================
-#  シナリオ編集（比較 → 確認 → 更新）
-# ===================================================================
+# ==================================================
+# シナリオ編集（GET:編集 / POST:比較）
+# ==================================================
 @app.route("/scenario/edit/<int:scenario_id>", methods=["GET", "POST"])
 def scenario_edit(scenario_id):
 
     conn = get_db()
 
-    # -----------------------------
-    # (2) POST: 比較画面 → 更新確認
-    # -----------------------------
+    # ----------------------------------------------
+    # POST：変更内容の比較
+    # ----------------------------------------------
     if request.method == "POST":
-        new_character_role = request.form["character_role"]
-        new_reply_style = request.form["reply_style"]
 
-        # DBの現在値を取得して比較表示
+        fields = [
+            "title",
+            "description",
+            "imagelink",
+            "scene",
+            "start_message",
+            "finish_message_on_clear",
+            "finish_message_on_fail",
+            "max_turns",
+            "character_role",
+            "reply_style",
+            "character_id",
+            "clear_keywords"
+        ]
+
+        new_data = {f: request.form.get(f) for f in fields}
+
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM scenario WHERE id=%s", (scenario_id,))
             old = cur.fetchone()
 
-        # 比較表示テンプレ
         html = """
         <h2>変更内容の確認（ID {{ old.id }}）</h2>
 
-        <h3>character_role</h3>
-        <b>【変更前】</b><pre>{{ old.character_role }}</pre>
-        <b>【変更後】</b><pre>{{ new_character_role }}</pre>
-
-        <h3>reply_style</h3>
-        <b>【変更前】</b><pre>{{ old.reply_style }}</pre>
-        <b>【変更後】</b><pre>{{ new_reply_style }}</pre>
+        {% for f in fields %}
+          <h3>{{ f }}</h3>
+          <b>【変更前】</b>
+          <pre>{{ old[f] }}</pre>
+          <b>【変更後】</b>
+          <pre>{{ new_data[f] }}</pre>
+        {% endfor %}
 
         <form method="POST" action="/scenario/update/{{ old.id }}">
-            <input type="hidden" name="character_role" value="{{ new_character_role }}">
-            <input type="hidden" name="reply_style" value="{{ new_reply_style }}">
-            <button type="submit" style="margin-top:20px;">この内容で更新する</button>
+          {% for f in fields %}
+            <input type="hidden" name="{{ f }}" value="{{ new_data[f] }}">
+          {% endfor %}
+          <button type="submit">この内容で更新する</button>
         </form>
 
         <p><a href="/scenario/edit/{{ old.id }}">戻る</a></p>
         """
+
         return render_template_string(
             html,
             old=old,
-            new_character_role=new_character_role,
-            new_reply_style=new_reply_style,
+            new_data=new_data,
+            fields=fields
         )
 
-    # -----------------------------
-    # (1) GET: 編集フォーム表示
-    # -----------------------------
+    # ----------------------------------------------
+    # GET：編集フォーム表示
+    # ----------------------------------------------
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM scenario WHERE id=%s", (scenario_id,))
         sc = cur.fetchone()
@@ -94,45 +110,108 @@ def scenario_edit(scenario_id):
     <h2>シナリオ編集（ID {{ sc.id }}）</h2>
 
     <form method="POST">
-        <h3>キャラクター設定（character_role）</h3>
-        <textarea name="character_role" rows="8" cols="80">{{ sc.character_role }}</textarea>
 
-        <h3>口調設定（reply_style）</h3>
-        <textarea name="reply_style" rows="12" cols="80">{{ sc.reply_style }}</textarea>
+      <h3>基本情報</h3>
+      <p>title<br>
+      <input type="text" name="title" size="80" value="{{ sc.title }}"></p>
 
-        <br><br>
-        <button type="submit">変更を比較する</button>
+      <p>description<br>
+      <input type="text" name="description" size="80" value="{{ sc.description }}"></p>
+
+      <p>imagelink<br>
+      <input type="text" name="imagelink" size="80" value="{{ sc.imagelink }}"></p>
+
+      <h3>シナリオ本文</h3>
+      <p>scene<br>
+      <textarea name="scene" rows="5" cols="80">{{ sc.scene }}</textarea></p>
+
+      <p>start_message<br>
+      <textarea name="start_message" rows="3" cols="80">{{ sc.start_message }}</textarea></p>
+
+      <p>finish_message_on_clear<br>
+      <textarea name="finish_message_on_clear" rows="3" cols="80">{{ sc.finish_message_on_clear }}</textarea></p>
+
+      <p>finish_message_on_fail<br>
+      <textarea name="finish_message_on_fail" rows="3" cols="80">{{ sc.finish_message_on_fail }}</textarea></p>
+
+      <h3>会話設定</h3>
+      <p>max_turns<br>
+      <input type="number" name="max_turns" value="{{ sc.max_turns }}"></p>
+
+      <p>character_role<br>
+      <textarea name="character_role" rows="6" cols="80">{{ sc.character_role }}</textarea></p>
+
+      <p>reply_style<br>
+      <textarea name="reply_style" rows="6" cols="80">{{ sc.reply_style }}</textarea></p>
+
+      <p>character_id<br>
+      <input type="number" name="character_id" value="{{ sc.character_id }}"></p>
+
+      <p>clear_keywords（クリア判定キーワード）<br>
+      <textarea name="clear_keywords" rows="4" cols="80">{{ sc.clear_keywords }}</textarea></p>
+
+      <br>
+      <button type="submit">変更を比較する</button>
     </form>
 
     <p><a href="/scenario">一覧に戻る</a></p>
     """
+
     return render_template_string(html, sc=sc)
 
-
-# ===================================================================
-#  (3) 更新を確定して DB に反映
-# ===================================================================
+# ==================================================
+# 更新確定
+# ==================================================
 @app.route("/scenario/update/<int:scenario_id>", methods=["POST"])
 def scenario_update(scenario_id):
 
-    new_character_role = request.form["character_role"]
-    new_reply_style = request.form["reply_style"]
+    fields = [
+        "title",
+        "description",
+        "imagelink",
+        "scene",
+        "start_message",
+        "finish_message_on_clear",
+        "finish_message_on_fail",
+        "max_turns",
+        "character_role",
+        "reply_style",
+        "character_id",
+        "clear_keywords"
+    ]
+
+    values = [request.form.get(f) for f in fields]
+
+    sql = """
+    UPDATE scenario SET
+      title=%s,
+      description=%s,
+      imagelink=%s,
+      scene=%s,
+      start_message=%s,
+      finish_message_on_clear=%s,
+      finish_message_on_fail=%s,
+      max_turns=%s,
+      character_role=%s,
+      reply_style=%s,
+      character_id=%s,
+      clear_keywords=%s
+    WHERE id=%s
+    """
 
     conn = get_db()
     with conn.cursor() as cur:
-        cur.execute("""
-            UPDATE scenario
-            SET character_role=%s, reply_style=%s
-            WHERE id=%s
-        """, (new_character_role, new_reply_style, scenario_id))
+        cur.execute(sql, values + [scenario_id])
     conn.commit()
 
     return redirect("/scenario")
 
-
+# ==================================================
+# 起動
+# ==================================================
 if __name__ == "__main__":
     app.run(port=5050, debug=True)
 
-
-#py scenario_edit_app.pyで起動
-#http://localhost:5050/scenario これをブラウザで起動する
+# 起動:
+# py scenario_edit_app.py
+# http://localhost:5050/scenario
