@@ -148,29 +148,19 @@ a {
 }
 
 /* ---------------------------------------------- */
-/* メーターをラリーカウンター下に移動、幅を狭く調整 */
+/* ラリーカウンター
 /* ---------------------------------------------- */
 .score-meter-container {
   position: absolute;
-  top: 170px;
+  top: 185px;
   left: 20px;
-  width: 380px;
+  width: clamp(390px, 33vw, 590px);
   background: rgba(30, 40, 60, 0.95);
   border: 4px solid #4a6fa5;
   border-radius: 16px;
-  padding: 15px 20px;
+  padding: 0.9rem 1rem;
   z-index: 15;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-/* 総合スコア表示エリア */
-.total-score-display {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .rank-badge {
@@ -212,27 +202,29 @@ a {
 .skill-bars {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.45rem;
 }
 
 .skill-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .skill-label {
-  width: 70px;
-  font-size: 12px;
+  width: 4.2rem;
+  font-size: clamp(0.80rem, 0.9vw, 0.9rem);
   font-weight: 600;
   color: #cce4ff;
   text-align: right;
+  white-space: nowrap;
 }
+
 
 .skill-bar-container {
   position: relative;
   flex: 1;
-  height: 18px;
+  height: 1.6rem;
   background: rgba(0, 0, 0, 0.4);
   border-radius: 12px;
   overflow: hidden;
@@ -242,17 +234,17 @@ a {
 .skill-bar {
   height: 100%;
   background: linear-gradient(90deg, #4a90e2 0%, #50c878 50%, #ffd700 100%);
-  border-radius: 12px;
+  border-radius: 14px;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
 }
 
 .skill-score {
   position: absolute;
-  right: 6px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 12px;
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
   font-weight: 700;
   color: #fff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
@@ -296,7 +288,7 @@ a {
 .speaker-name {
   font-size: 17px;
   color: #f0e6d2;
-  margin-bottom: 8px;   /* ← 名前と本文の距離 */
+  margin-bottom: 8px; /* ← 名前と本文の距離 */
   flex-shrink: 0;
 }
 
@@ -305,8 +297,8 @@ a {
   font-size: 22px;
   color: #fff;
 
-  flex: 1;              /* ← 残り高さをすべて使う */
-  overflow-y: auto;     /* ← 長文の時だけスクロール */
+  flex: 1; /* ← 残り高さをすべて使う */
+  overflow-y: auto; /* ← 長文の時だけスクロール */
   overflow-x: hidden;
 
   line-height: 1.6;
@@ -315,7 +307,6 @@ a {
 
   padding-right: 10px;
 }
-
 
 /* Chrome / Edge / Safari 用スクロールバー細くする */
 .message-content::-webkit-scrollbar {
@@ -331,33 +322,156 @@ a {
   background: rgba(0, 0, 0, 0.2);
 }
 
-
 /* ---------------------------------------------- */
-/* 🎙 録音ボタン                                */
+/* 🎙 録音ボタン - 教室風デザイン                */
 /* ---------------------------------------------- */
 .recording-controls {
   position: absolute;
-  top: 120px;
-  right: 40px;
+  top: 65%;
+  right: 10%;
   z-index: 3000;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
 }
 
 .record-btn {
-  padding: 12px 22px;
-  font-size: 18px;
-  color: #fff;
+  padding: 18px 32px;
+  font-size: 19px;
+  font-weight: 700;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
-  margin-left: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 150px;
+  /* ボタン内のアイコンとテキストを配置 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
+/* マイクアイコンのスタイル追加 */
+.mic-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* 🟢 録音開始ボタン - 黒板風デザイン */
 .record-btn.start {
-  background: #4caf50;
+  background: linear-gradient(180deg, #2d5016 0%, #1e3a0f 100%);
+  border: 4px solid #8b7355;
+  border-radius: 6px;
+  color: #f0f0f0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 0 #1a2d0c, 0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 8px
+    rgba(0, 0, 0, 0.3);
 }
 
+/* チョークで書いたような質感を追加 */
+.record-btn.start::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.record-btn.start:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 #1a2d0c, 0 6px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -2px 8px
+    rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, #345917 0%, #234210 100%);
+}
+
+.record-btn.start:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #1a2d0c, 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 2px 10px
+    rgba(0, 0, 0, 0.4);
+}
+
+/* 🔴 停止ボタン - 赤チョーク風デザイン */
 .record-btn.stop {
-  background: #f44336;
+  background: linear-gradient(180deg, #c62828 0%, #b71c1c 100%);
+  border: 4px solid #8b7355;
+  border-radius: 6px;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 6px 0 #8b1a1a, 0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -2px 8px
+    rgba(0, 0, 0, 0.3);
+}
+
+
+/* チョークで書いたような質感を追加 */
+.record-btn.stop::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0.05) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0.05) 4px
+    );
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.record-btn.stop:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 #8b1a1a, 0 6px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 8px
+    rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, #d32f2f 0%, #c62828 100%);
+}
+
+.record-btn.stop:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #8b1a1a, 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 2px 10px
+    rgba(0, 0, 0, 0.4);
+}
+
+/* 木製の枠（教室の掲示板風） */
+.record-btn::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(139, 115, 85, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 /* ---------------------------------------------- */
@@ -459,37 +573,72 @@ a {
   margin-top: 10px;
 }
 
+/* ==============================
+   🎤 録音中ガイド（画面下）
+============================== */
+.recording-guide {
+  position: fixed;
+ 
+  bottom: clamp(160px, 18vh, 260px);
+  left: 50%;
+  transform: translateX(-50%);
+ 
+  padding: 0.8em 1.6em;          
+  border-radius: 2em;            
+ 
+  background: orange;
+  color: #ffffff;
+ 
+  font-size: clamp(18px, 2.2vh, 24px);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+ 
+  z-index: 5000;
+  pointer-events: none;
+ 
+  animation: recordingGuidePulse 1.4s ease-in-out infinite;
+}
+ 
+/* ふわっと呼吸するアニメーション */
+@keyframes recordingGuidePulse {
+  0% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(1.05);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
 /* ================================
    フルスクリーン VoiceVox ローディング
 ================================ */
 
 #voicevoxOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  display: none;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(1px);
-  z-index: 9999;
+  z-index: 20000;
 }
 
 .loading-icon {
   width: 240px;
   height: 240px;
 
-  background-image: url("../images/kaiwanavi-chara.png") !important;
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
+  background-image: url("../images/kaiwanavi-chara.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 
   animation: bounceIcon 0.8s ease-in-out infinite;
 }
-
-
 
 .loading-text {
   color: #ffffff;
@@ -497,16 +646,25 @@ a {
   font-weight: 500;
   text-align: center;
   margin-top: 16px;
-  text-shadow: 0 0 8px rgba(0,0,0,0.8);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
 }
 
-
 @keyframes bounceIcon {
-  0%   { transform: translateY(0); }
-  30%  { transform: translateY(-20px); } /* 上に跳ねる */
-  50%  { transform: translateY(0); }     /* 戻る */
-  70%  { transform: translateY(-10px); } /* もう一度小さく跳ねる */
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-20px);
+  } /* 上に跳ねる */
+  50% {
+    transform: translateY(0);
+  } /* 戻る */
+  70% {
+    transform: translateY(-10px);
+  } /* もう一度小さく跳ねる */
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .loading-wrapper {
@@ -527,51 +685,29 @@ a {
 
 /* ① 声量 */
 .skill-item:nth-child(1) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #4fc3f7 0%,
-    #29b6f6 40%,
-    #ffeb3b 100%
-  );
+  background: linear-gradient(90deg, #4fc3f7 0%, #29b6f6 40%, #ffeb3b 100%);
   box-shadow: 0 0 14px rgba(255, 235, 59, 0.7);
 }
 
 /* ② 緊張度 */
 .skill-item:nth-child(2) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #ab47bc 0%,
-    #7e57c2 60%,
-    #ffca28 100%
-  );
+  background: linear-gradient(90deg, #ab47bc 0%, #7e57c2 60%, #ffca28 100%);
 }
 
 /* ③ 思いやり */
 .skill-item:nth-child(3) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #f8bbd0 0%,
-    #f48fb1 50%,
-    #ce93d8 100%
-  );
+  background: linear-gradient(90deg, #f8bbd0 0%, #f48fb1 50%, #ce93d8 100%);
   box-shadow: 0 0 12px rgba(244, 143, 177, 0.6);
 }
 
 /* ④ 感情 */
 .skill-item:nth-child(4) .skill-bar {
-  background: linear-gradient(
-    90deg,
-    #66bb6a 0%,
-    #43a047 100%
-  );
+  background: linear-gradient(90deg, #66bb6a 0%, #43a047 100%);
 }
-
 
 /* 変化があった瞬間に「ピクッ」と反応 */
 .skill-bar {
-  transition:
-    width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.3s ease;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
 /* 高い値の時は光る（体感用） */
@@ -619,28 +755,205 @@ a {
   top: 60%;
   left: 50%;
   transform: translate(-50%, -10px);
-  min-width: 320px;
-  max-width: 480px;
+  min-width: 420px;
+  max-width: 600px;
 
   background: rgba(20, 20, 20, 0.92);
   color: #ffffff;
   padding: 14px 22px;
   border-radius: 14px;
 
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 600;
   text-align: center;
 
-  z-index: 99999;          /* ← 最重要 */
+  z-index: 99999;
   opacity: 0;
   pointer-events: none;
 
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s ease;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .meter-popup.show {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* ================================
+   チュートリアル用スタイル
+================================ */
+
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 99998; /* z-indexを大幅に上げてキャラクターより確実に前面に表示 */
+  display: none;
+  backdrop-filter: blur(2px);
+}
+
+.tutorial-overlay.active {
+  display: block;
+}
+
+.tutorial-tooltip {
+  position: fixed;
+  background: linear-gradient(135deg, #2d4a3e 0%, #3a5a4a 100%);
+  border: 6px solid #8b7355;
+  border-radius: 16px;
+  padding: 24px 28px;
+  max-width: 420px;
+  min-width: 320px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  z-index: 99999; /* z-indexを大幅に上げて最前面に表示 */
+  display: none;
+  animation: tooltipFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.tutorial-tooltip.active {
+  display: block;
+}
+
+/* 中央表示用スタイル */
+.tutorial-tooltip.center {
+  position: fixed;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.tutorial-tooltip::before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  z-index: 99999; /* 矢印もツールチップと同じz-indexに */
+}
+
+.tutorial-tooltip.arrow-top::before {
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 12px 16px 12px;
+  border-color: transparent transparent #8b7355 transparent;
+}
+
+.tutorial-tooltip.arrow-bottom::before {
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 16px 12px 0 12px;
+  border-color: #8b7355 transparent transparent transparent;
+}
+
+.tutorial-tooltip.arrow-left::before {
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 12px 16px 12px 0;
+  border-color: transparent #8b7355 transparent transparent;
+}
+
+.tutorial-tooltip.arrow-right::before {
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 12px 0 12px 16px;
+  border-color: transparent transparent transparent #8b7355;
+}
+
+/* 中央表示の時は矢印を非表示 */
+.tutorial-tooltip.center::before {
+  display: none !important;
+}
+
+.tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tutorial-step {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.skip-tutorial-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skip-tutorial-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.tutorial-text {
+  font-size: 20px;
+  line-height: 1.7;
+  color: #f0e6d2;
+  font-weight: 500;
+  z-index: 9999;
+}
+
+/* ハイライト効果 */
+.tutorial-highlight {
+  /*  position: relative;  z-indexを有効にするためpositionを追加 */
+  z-index: 99997 !important; /* ハイライトはオーバーレイより少し下に */
+  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.8), 0 0 30px rgba(255, 200, 0, 0.5) !important;
+  border-radius: 12px !important;
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.8), 0 0 30px rgba(255, 200, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 200, 0, 1), 0 0 40px rgba(255, 200, 0, 0.7);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .tutorial-tooltip {
+    max-width: 90vw;
+    min-width: 280px;
+    padding: 20px 24px;
+  }
+
+  .tutorial-text {
+    font-size: 15px;
+  }
+}
+ 

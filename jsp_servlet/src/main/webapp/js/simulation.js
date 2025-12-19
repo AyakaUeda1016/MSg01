@@ -3,14 +3,37 @@
   //------------------------------------------------------
 
   // 🔵 ローディング表示・非表示
+ let isVoicevoxLoading = false;
+
   function showVoicevoxLoading() {
     const overlay = document.getElementById("voicevoxOverlay");
-    if (overlay) overlay.style.display = "flex";
+    if (!overlay || isVoicevoxLoading) return;
+
+    isVoicevoxLoading = true;
+    overlay.style.display = "flex";
+
+    let icon = overlay.querySelector(".loading-icon");
+    if (!icon) {
+      icon = document.createElement("div");
+      icon.className = "loading-icon";
+      overlay.querySelector(".loading-wrapper").prepend(icon);
+    }
   }
+
+
   function hideVoicevoxLoading() {
     const overlay = document.getElementById("voicevoxOverlay");
-    if (overlay) overlay.style.display = "none";
+    if (!overlay || !isVoicevoxLoading) return;
+
+    isVoicevoxLoading = false;
+
+    const icon = overlay.querySelector(".loading-icon");
+    if (icon) icon.remove();
+
+    overlay.style.display = "none";
   }
+
+
   function setLoadingMessage(text) {
     const elem = document.querySelector("#voicevoxOverlay .loading-text");
     if (elem) elem.textContent = text;
@@ -33,6 +56,20 @@
 
 
   //======================================================
+  // 録音中の表示制御
+  //======================================================
+  function showRecordingGuide() {
+    const guide = document.getElementById("recordingGuide");
+    if (guide) guide.style.display = "block";
+  }
+
+  function hideRecordingGuide() {
+    const guide = document.getElementById("recordingGuide");
+    if (guide) guide.style.display = "none";
+  }
+
+
+  //======================================================
   // VoiceVox用：現在再生中の音声を停止可能に
   //======================================================
   let currentAudios = [];
@@ -49,7 +86,7 @@
   //------------------------------------------------------
   let mediaRecorder = null;
   let audioChunks = [];
-  let MAX_TURNS = 10;
+  let MAX_TURNS = 30
 
   let lastAudioBlob = null;
   let pendingResult = null;
@@ -92,8 +129,6 @@
   const maxTurnsElement = document.getElementById("max_turns");
   const replyElement = document.getElementById("reply");
 
-  const totalScoreElement = document.getElementById("totalScore");
-  const rankBadgeElement = document.getElementById("rankBadge");
 
   const selfUnderstandingMeter = document.getElementById("selfUnderstandingMeter");
   const selfUnderstandingScore = document.getElementById("selfUnderstandingScore");
@@ -261,19 +296,28 @@
         lastAudioBlob = new Blob(audioChunks, { type: "audio/webm" });
         console.log("[DEBUG] lastAudioBlob size:", lastAudioBlob.size);
 
-        const preview = await sendPreviewToFlask(lastAudioBlob);
-        if (preview) {
-          console.log("[PREVIEW] received:", preview);
-          showTranscriptionConfirmation(preview);
+        const previewResult = await sendPreviewToFlask(lastAudioBlob);
+
+        if (previewResult?.ok) {
+          console.log("[PREVIEW] received:", previewResult.data);
+          showTranscriptionConfirmation(previewResult.data);
         } else {
-          console.warn("[PREVIEW] failed to get preview");
+          console.warn("[PREVIEW ERROR]", previewResult);
+          // ★ 無音（400）を明示表示
+          if (previewResult?.error === "無音でした") {
+            showPopup("🎤 録音に失敗しました");
+          } else {
+            showPopup("⚠️ 録音に失敗しました。もう一度お試しください");
+          }
+
+          retryRecording(); // 再録音できる状態へ
         }
 
-        //restoreBgm(); // ← 録音後にBGM復帰
       };
 
       mediaRecorder.start();
       updateRecordingStatus(true);
+      showRecordingGuide();
       console.log("録音開始");
 
     } catch (err) {
@@ -297,6 +341,7 @@
       console.log("[REC] not recording, ignore stop");
     }
     updateRecordingStatus(false);
+    hideRecordingGuide();
   }
 
 
@@ -317,19 +362,40 @@
         body: fd,
       });
 
-      hideVoicevoxLoading();
-
       if (!res.ok) {
-        console.error("[PREVIEW] response not ok:", res.status);
-        return null;
+        let errorMsg = "録音に失敗しました";
+
+        try {
+          const errJson = await res.json();
+          if (errJson?.error) errorMsg = errJson.error; // ← Flaskの「無音でした」
+        } catch (_) {}
+
+        return {
+          ok: false,
+          error: errorMsg,
+          status: res.status,
+        };
       }
-      return res.json();
-    } catch (err) {
-      hideVoicevoxLoading();
-      console.error("[PREVIEW] fetch error:", err);
-      return null;
+
+      const json = await res.json();
+      return {
+        ok: true,
+        data: json,
+      };
+
+      } catch (err) {
+        console.error("[PREVIEW] fetch error:", err);
+         return {
+           ok: false,
+           error: "通信エラーが発生しました",
+           status: 0,
+         };
+
+      } finally {
+        // ★ 無音・エラー・成功すべてで解除
+        hideVoicevoxLoading();
+      }
     }
-  }
 
   //======================================================
   // 本番API
@@ -426,32 +492,38 @@
 
 
   function updateMetersByDelta(delta, contentState = "normal") {
-    let GAIN_STEP1 = 6;
-    let GAIN_STEP2 = 12;
-    let DECAY = 10;
+  let GAIN_STEP1 = 6;
+  let GAIN_STEP2 = 12;
+  let DECAY = 10;
 
-    if (contentState === "bad") {
-      DECAY = 15;
-    }
-
-    let step = 0;
-    if (delta >= 1.5) step = 2;
-    else if (delta >= 0.8) step = 1;
-
-    if (step === 2) {
-      meterState.voice_loudness += GAIN_STEP2;
-      meterState.tension        += GAIN_STEP2;
-    } else if (step === 1) {
-      meterState.voice_loudness += GAIN_STEP1;
-      meterState.tension        += GAIN_STEP1;
-    } else {
-      meterState.voice_loudness -= DECAY;
-      meterState.tension        -= DECAY;
-    }
-
-    meterState.voice_loudness = Math.max(0, Math.min(100, meterState.voice_loudness));
-    meterState.tension        = Math.max(0, Math.min(100, meterState.tension));
+  if (contentState === "bad") {
+    DECAY = 15;
   }
+
+  let step = 0;
+  if (delta >= 1.5) step = 2;
+  else if (delta >= 0.8) step = 1;
+
+  if (step === 2) {
+    // 声量：従来どおり増加
+    meterState.voice_loudness += GAIN_STEP2;
+    // 緊張度：反転 → 減少
+    meterState.tension        -= GAIN_STEP2;
+
+  } else if (step === 1) {
+    meterState.voice_loudness += GAIN_STEP1;
+    meterState.tension        -= GAIN_STEP1;
+
+  } else {
+    // 変化が少ない → 声量は減衰、緊張度は上昇
+    meterState.voice_loudness -= DECAY;
+    meterState.tension        += DECAY;
+  }
+
+  meterState.voice_loudness = Math.max(0, Math.min(100, meterState.voice_loudness));
+  meterState.tension        = Math.max(0, Math.min(100, meterState.tension));
+}
+
 
 
   //======================================================
@@ -477,14 +549,17 @@
   function checkAndShowMeterPopup(prevState, currState, empathyScore, turn) {
 
     // --- 声量 ---
-    if (currState.voice_loudness <= 35) {
-      showPopup("もう少しはっきり話してみてもいいかも");
+    if (currState.voice_loudness <= 30) {
+      showPopup("もう少しはっきり話してみよう");
       return;
     }
 
-    // --- 緊張度（※中身は落ち着き度） ---
-    if (currState.tension <= 35) {
-      showPopup("ちょっと力が入りすぎているかも");
+    // --- 緊張度 ---
+    if (
+      prevState.tension < 70 &&
+      currState.tension >= 70
+    ) {
+      showPopup("緊張しているかも");
       return;
     }
 
@@ -494,8 +569,6 @@
       return;
     }
   }
-
-
 
 
 
@@ -548,7 +621,7 @@
      // ★ 無関係な発言は UI を更新しない（完全遮断）
     if (result.appropriateness === "unrelated") {
       showPopup("今はこの話題について話しています。内容を戻してみましょう。");
-      return; // ← ★ ここでこのターンの処理を全停止
+//      return; // ← ★ ここでこのターンの処理を全停止
     }
 
       // ★ 思いやりスコア（py → js）
@@ -582,7 +655,21 @@
     let delta = 0;
     if (prevEmotionRaw) {
       delta = calcDelta(prevEmotionRaw, result.emotion);
-    }
+    } else {
+    // ★ 初回は delta 判定を完全スキップ
+    console.log("[DELTA SKIP] first turn");
+
+    // 次回のために emotion だけ保存して終了
+    prevEmotionRaw = result.emotion;
+
+    // 表示だけは更新したいので、メータ更新や POPUP を通さず return
+    updateSkillScoresDisplay({
+      voice_loudness: Math.round(meterState.voice_loudness),
+      voice_warmth:   Math.round(meterState.tension)
+    });
+
+//    return;
+  }
 
 
     // ★ AI名を表示（Flask → DB由来）
@@ -737,6 +824,8 @@
   // プレビューUI
   //======================================================
   function showTranscriptionConfirmation(preview) {
+ hideRecordingGuide();
+    hideVoicevoxLoading();
     pendingResult = preview;
     confirmedText.value = preview.transcript || "";
     transcriptionConfirmation.style.display = "flex";
@@ -819,8 +908,6 @@
     meterState.voice_loudness = 50;
     meterState.tension = 50;
 
-
-    showVoicevoxLoading();
     setRecordingEnabled(true);
 
     isConversationFinished = false;
@@ -832,7 +919,7 @@
       .then(res => res.json())
       .then(async data => {
         console.log("Flaskからシナリオ情報取得成功", data);
-        MAX_TURNS = data.max_turns || 6;
+        MAX_TURNS = Number(data.max_turns ?? 30);
 
         if (maxTurnsElement) maxTurnsElement.textContent = MAX_TURNS;
 
@@ -856,12 +943,10 @@
         await showStartMessageAndSpeak(data.start_message);
       })
       .catch(err => console.error("[INIT] scenario fetch error:", err))
-      .finally(() => hideVoicevoxLoading());
-
-      showPopup("POPUP 動作テスト");
-
-  });
-
+      .finally(() => {
+        hideVoicevoxLoading();
+      });
+    });
   //======================================================
   // グローバル公開
   //======================================================
@@ -871,3 +956,4 @@
     confirmTranscription,
     retryRecording,
   };
+ 
