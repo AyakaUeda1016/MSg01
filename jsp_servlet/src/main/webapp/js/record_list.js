@@ -233,6 +233,56 @@ function renderGraph() {
     evaluationChart.destroy()
   }
 
+  const rankZonePlugin = {
+    id: "rankZoneBackground",
+    beforeDraw: (chart) => {
+      // 棒グラフのみ適用
+      if (currentChartType !== "bar") return
+
+      const { ctx, chartArea, scales } = chart
+      if (!chartArea) return
+
+      const yScale = scales.y
+      const { left, right } = chartArea
+
+      const zones = [
+        { min: 0, max: 20, color: "rgba(113, 63, 18, 0.2)", label: "C" }, // 暗い茶黄色 (C)
+        { min: 20, max: 30, color: "rgba(161, 98, 7, 0.3)", label: "B" }, // 中間の黄色 (B)
+        { min: 30, max: 40, color: "rgba(234, 179, 8, 0.4)", label: "A" }, // 明るい黄色 (A)
+        { min: 40, max: 50, color: "rgba(255, 215, 0, 0.5)", label: "S" }, // 非常に明るい黄色/ゴールド (S)
+      ]
+
+      // 各ゾーンを描画
+      zones.forEach((zone) => {
+        const yTop = yScale.getPixelForValue(zone.max)
+        const yBottom = yScale.getPixelForValue(zone.min)
+        const height = yBottom - yTop
+
+        // ゾーンの背景色
+        ctx.fillStyle = zone.color
+        ctx.fillRect(left, yTop, right - left, height)
+
+        // ゾーンの境界線
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(left, yTop)
+        ctx.lineTo(right, yTop)
+        ctx.stroke()
+
+        // ランクラベルを右側に表示
+        ctx.save()
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)"
+        ctx.font = "bold 28px Arial"
+        ctx.textAlign = "left"
+        ctx.textBaseline = "middle"
+        const labelY = (yTop + yBottom) / 2
+        ctx.fillText(zone.label, right + 15, labelY)
+        ctx.restore()
+      })
+    },
+  }
+
   evaluationChart = new window.Chart(ctx, {
     type: currentChartType,
     data: {
@@ -247,6 +297,7 @@ function renderGraph() {
       layout: {
         padding: {
           top: isLineChart ? 80 : 40,
+          right: isLineChart ? 20 : 60, // 右側にランクラベル用のスペースを確保
         },
       },
       plugins: {
@@ -315,6 +366,7 @@ function renderGraph() {
         },
       },
     },
+    plugins: [rankZonePlugin], // カスタムプラグインを登録
   })
 
   setupCustomLegendControls()
@@ -344,7 +396,7 @@ function setupCustomLegendControls() {
     const isSelected = currentChartType === "line" ? category === selectedLineCategory : true
 
     if (currentChartType === "line") {
-      // 折れ線グラフモード：選択されていない凡例を薄く表示し、クリック可能
+      // 折れ線グラフモード:選択されていない凡例を薄く表示し、クリック可能
       item.classList.toggle("is-dimmed", !isSelected)
       item.style.cursor = "pointer"
 
@@ -353,7 +405,7 @@ function setupCustomLegendControls() {
         renderGraph()
       }
     } else {
-      // 棒グラフモード：全て通常表示でクリック不可
+      // 棒グラフモード:全て通常表示でクリック不可
       item.classList.remove("is-dimmed")
       item.style.cursor = "default"
       item.onclick = null
