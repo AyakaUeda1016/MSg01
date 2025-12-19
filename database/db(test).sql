@@ -238,7 +238,7 @@ VALUES
  'また改めて話そうか…',
  6,
  '女の子「橘 ひまり」
-名前：橘 陽葵（ひまり）
+名前：橘 陽葵
 趣味：写真撮影
 好きな食べ物：グミ（特にハリボーの熊グミ）
 誕生日：10月',
@@ -334,9 +334,19 @@ CREATE TABLE feedback (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+ALTER TABLE scenario
+ADD COLUMN clear_keywords TEXT;
+ 
+UPDATE scenario
+SET clear_keywords = 'よろしく,ありがとう,楽しかった,これからも'
+WHERE id = 1;
 
 
-個人用
+
+
+
+
+本田の個人用
 SELECT 
     id,
     title,
