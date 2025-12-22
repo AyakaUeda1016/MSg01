@@ -1,315 +1,435 @@
-/* フォント設定 */
-body {
+@charset "UTF-8";
+
+* {
   margin: 0;
   padding: 0;
-  font-family: "Murecho", sans-serif;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* 教室背景 */
+body {
+  font-family: "Murecho", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  overflow: auto;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 .classroom {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  background-image: url("../images/classroom-background-with-desks-and-windows.jpg");
+  width: 100%;
+  min-height: 100vh;
+  background-image: url("../images/room.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-/* 黒板画像レイヤー（独立） */
+.chalkboard {
+  position: relative;
+  width: 1000px;
+  height: 750px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .chalkboard-image {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("../images/green-chalkboard-texture-with-wooden-frame.jpg");
-  background-size: 90% 100vh;
-  background-position: center;
+  background-image: url("../images/blackboard-1.png");
   background-repeat: no-repeat;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* コンテンツレイヤー */
-.chalkboard {
-  position: relative;
-  width: 90%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
+  background-position: center;
+  background-size: contain;
+  background-size: 120%;
+  transform: scale(1.13);
 }
 
 .chalkboard-content {
-  flex: 1;
+  position: relative;
+  width: 1000px;
+  height: 750px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 14vh 5vw 2vh 12vw;
-  gap: 3vw;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
 }
 
-/* 左側：フィードバックセクション */
 .left-section {
-  position: relative;
-  width: 45%;
-  height: 100%;
+  position: absolute;
+  top: 8%;
+  left: 5%;
+  width: 46%;
+  height: 78%;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
 }
 
-.doodle-graph-left {
-  position: absolute;
-  top: -50px;
-  right: 50px;
-  width: 50px;
-  height: 50px;
-  transform: rotate(-15deg);
-  opacity: 0.8;
-}
-
-.left-header {
-  margin-bottom: 20px;
-}
-
 .title {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #ffffff;
-  margin: 0 0 10px 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.subtitle {
-  font-size: 1.8rem;
+  font-size: 2.1rem;
   font-weight: 700;
-  color: #ffe4b5;
-  margin: 0 0 20px 0;
+  margin-bottom: 0.4rem;
 }
 
 .feedback-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #ffd700;
-  margin: 0 0 15px 0;
+  color: orange;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.6rem;
 }
 
-.left-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 10px;
-}
+/*.left-scroll {*/
+/*  flex: 1;*/
+/*  overflow-y: auto;*/
+/*  padding-right: 0.6rem;*/
+/*  margin-top: 0.4rem;*/
+/*}*/
 
-/* カスタムスクロールバー */
 .left-scroll::-webkit-scrollbar {
   width: 6px;
 }
-
 .left-scroll::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
-
 .left-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4);
   border-radius: 3px;
-}
-
-.left-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.feedback-section {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
 }
 
 .feedback-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 1.2rem;
+  opacity: 0;
+  transform: translateX(-24px);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Remove border from the last feedback item */
+.feedback-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0.8rem;
+}
+
+/* Added yellow highlight style for highest score feedback item */
+.feedback-item-highest {
+  background: rgba(255, 215, 0, 0.15);
+  border-left: 4px solid #ffd700;
+  padding: 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.feedback-item-highest p {
+  color: #ffd700 !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+}
+
+.feedback-item-highest .doodle-bullet {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+/* Blue highlight style for lowest score feedback item */
+.feedback-item-lowest {
+  background: rgba(66, 153, 225, 0.15);
+  border-left: 4px solid #4299e1;
+  padding: 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(66, 153, 225, 0.3);
+}
+
+.feedback-item-lowest p {
+  color: #4299e1 !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+}
+
+.feedback-item-lowest .doodle-bullet {
+  filter: drop-shadow(0 0 8px rgba(66, 153, 225, 0.8));
+}
+
+.feedback-item-highlight {
+  background: rgba(255, 215, 0, 0.15);
+  border-left: 4px solid #ffd700;
+  padding: 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.feedback-item-highlight p {
+  color: #ffd700 !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+}
+
+.feedback-item-highlight .doodle-bullet {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
 }
 
 .doodle-bullet {
-  width: 24px;
-  height: 24px;
+  width: 40px;
   flex-shrink: 0;
-  margin-top: 2px;
+  opacity: 0.85;
 }
 
 .feedback-item p {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #ffffff;
-  line-height: 1.6;
-  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.5;
 }
 
-/* 右側：レーダーチャートセクション */
 .right-section {
-  position: relative;
-  width: 45%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  width: 42%;
+  height: 80%;
 }
 
 .radar-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.ki-box {
-  width: 40px;
-  height: 40px;
+  position: absolute;
+  top: 0;
+  right: 4%;
+  width: 500px;
 }
 
 .ki-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  position: absolute;
+  margin-top: 50px;
+  top: 80%;
+  left: 70%;
+  transform: translate(-50%, -50%);
   color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 #radarChart {
-  width: 100% !important;
-  max-width: 400px;
-  height: auto !important;
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 400px !important;
+  height: 400px !important;
 }
 
-/* 落書き用デコレーション */
 .doodle-star-top {
   position: absolute;
-  top: 10px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  transform: rotate(15deg);
-  opacity: 0.7;
+  top: 12%;
+  right: 36%;
+  width: 50px;
+  opacity: 0.9;
 }
 
 .doodle-arrow {
   position: absolute;
-  top: 50%;
-  left: -30px;
-  width: 35px;
-  height: 35px;
-  transform: rotate(-45deg);
-  opacity: 0.6;
+  top: 28%;
+  right: 80%;
+  width: 80px;
+  transform: rotate(10deg);
+  opacity: 0.9;
 }
 
 .doodle-graph-right {
   position: absolute;
-  bottom: 100px;
-  right: -20px;
-  width: 45px;
-  height: 45px;
-  transform: rotate(20deg);
-  opacity: 0.7;
+  top: 30%;
+  right: 0%;
+  width: 50px;
+  opacity: 0.9;
+}
+
+/* ===== ランク側（左 → 右へ移動） ===== */
+.icon-rank-text {
+  position: absolute;
+  margin-bottom: 50px;
+  bottom: 2%;
+  right: 1%; /* left → right */
+  width: 70px;
+  height: auto;
+  opacity: 0.9;
 }
 
 .icon-s {
   position: absolute;
-  top: 60px;
-  left: -40px;
-  width: 50px;
-  height: 50px;
+  bottom: 0%;
+  right: 8%; /* left → right */
+  margin-top: 100px;
+  width: 100px;
 }
 
 .icon-underline {
   position: absolute;
-  top: 100px;
-  left: 20px;
-  width: 80px;
-  height: 10px;
+  margin-top: 50px;
+  bottom: 0%;
+  right: 2%; /* left → right */
+  width: 140px;
 }
 
 .icon-star2 {
   position: absolute;
-  bottom: 80px;
-  left: 10px;
-  width: 35px;
-  height: 35px;
-  transform: rotate(-10deg);
+  bottom: 20%;
+  right: 24%; /* left → right */
+  width: 46px;
+}
+
+/* ===== ログ・スマイル側（右 → 左へ移動） ===== */
+.icon-log-text {
+  position: absolute;
+  bottom: 10%;
+  left: 10%; /* right → left */
+  width: 60px;
+  height: auto;
+  opacity: 0.9;
 }
 
 .smile-link {
   position: absolute;
-  bottom: 20px;
-  right: 40px;
+  bottom: 6%;
+  left: 20%; /* right → left */
 }
 
 .icon-smile {
-  width: 60px;
-  height: 60px;
+  width: 90px;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.icon-smile:hover {
-  transform: scale(1.1);
 }
 
 .icon-magnet {
   position: absolute;
-  bottom: 30px;
-  left: 30px;
-  width: 40px;
-  height: 40px;
+  bottom: 7%;
+  right: 40%;
+  width: 56px;
 }
 
 .extra-area {
-  flex: 1;
-}
-
-/* 戻るボタン */
-.bottom-buttons {
-  position: relative;
-  width: 100%;
-  padding: 0 60px 60px;
-}
-
-.bottom-buttons a {
   position: absolute;
-  bottom: 60px;
-  left: 60px;
-  z-index: 30;
+  bottom: 20%;
+  right: 8%;
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.total-score-text {
+  text-align: right;
+}
+
+.bottom-buttons {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
 }
 
 .btn {
-  position: relative;
-  width: 180px;
-  padding: 18px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #2b1d0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   border: none;
-  border-radius: 22px;
+  background: none;
   cursor: pointer;
-  transition: all 0.2s;
+  padding: 0;
+
+  transition: opacity 0.3s;
+}
+
+.btn img {
+  width: auto;
+  object-fit: contain;
+}
+
+.btn span {
+  font-weight: bold;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.btn:hover {
+  opacity: 0.9;
 }
 
 .btn-wood {
-  background-image: url("../images/wooden-button-texture.jpg");
-  background-size: cover;
-  background-position: center;
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 180px;
+  padding: 16px 18px;
+  color: #2b1d0f;
+  text-shadow: 0 1px 0 rgba(255, 203, 203, 0.35);
+  border-radius: 22px;
+  background: url("../images/button.png") center / cover no-repeat;
   box-shadow: 0 6px 0 rgba(120, 80, 40, 0.55), 0 8px 14px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
+
+.btn-wood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.25), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.06));
+  pointer-events: none;
 }
 
 .btn-wood:hover {
-  filter: brightness(1.1) saturate(1.05);
+  filter: brightness(1.03) saturate(1.02);
 }
 
 .btn-wood:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(120, 80, 40, 0.55), 0 4px 8px rgba(0, 0, 0, 0.25);
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Moved retry button to the right edge and added floating hover animation */
+.btn-retry {
+  left: auto;
+  right: 60px;
+  animation: float 2s ease-in-out infinite; /* Added constant floating animation */
+}
+
+/* Floating animation keyframes */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Apply floating animation on hover */
+.btn-retry:hover {
+  /* Removed animation property since it's now always applied */
+  filter: brightness(1.05);
+}
+
+/* Override active state for retry button to maintain floating effect */
+.btn-retry:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(120, 80, 40, 0.55), 0 6px 10px rgba(0, 0, 0, 0.25);
+  animation: none;
+}
+
+@media (max-width: 1200px) {
+  .chalkboard {
+    transform: scale(0.9);
+  }
 }

@@ -122,6 +122,17 @@ body {
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* ラリー番号のスタイル追加 */
+.rally-number {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2b1d0f;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-left: 10px;
+}
+
 .log-row {
   position: relative;
   display: flex;

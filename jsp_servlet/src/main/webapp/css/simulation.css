@@ -220,7 +220,6 @@ a {
   white-space: nowrap;
 }
 
-
 .skill-bar-container {
   position: relative;
   flex: 1;
@@ -235,8 +234,69 @@ a {
   height: 100%;
   background: linear-gradient(90deg, #4a90e2 0%, #50c878 50%, #ffd700 100%);
   border-radius: 14px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+  position: relative;
+}
+
+@keyframes meterIncrease {
+  0% {
+    box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+    transform: scaleY(1);
+  }
+  25% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 45px rgba(255, 255, 100, 0.9);
+    filter: brightness(1.5);
+    transform: scaleY(1.08);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(255, 215, 0, 1), 0 0 50px rgba(255, 255, 100, 0.95);
+    filter: brightness(1.6);
+    transform: scaleY(1.1);
+  }
+  75% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 40px rgba(255, 255, 100, 0.8);
+    filter: brightness(1.4);
+    transform: scaleY(1.05);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(80, 200, 120, 0.7);
+    transform: scaleY(1);
+  }
+}
+
+@keyframes meterDecrease {
+  0% {
+    box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+    transform: scaleY(1);
+  }
+  25% {
+    box-shadow: 0 0 20px rgba(100, 100, 150, 0.8), 0 0 30px rgba(50, 50, 100, 0.7);
+    filter: brightness(0.5);
+    transform: scaleY(0.95);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(100, 100, 150, 0.9), 0 0 35px rgba(50, 50, 100, 0.8);
+    filter: brightness(0.4);
+    transform: scaleY(0.92);
+  }
+  75% {
+    box-shadow: 0 0 18px rgba(100, 100, 150, 0.7), 0 0 28px rgba(50, 50, 100, 0.6);
+    filter: brightness(0.6);
+    transform: scaleY(0.96);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+    transform: scaleY(1);
+  }
+}
+
+.skill-bar.meter-increase {
+  animation: meterIncrease 1.2s ease-in-out;
+}
+
+.skill-bar.meter-decrease {
+  animation: meterDecrease 1.2s ease-in-out;
 }
 
 .skill-score {
@@ -248,6 +308,75 @@ a {
   font-weight: 700;
   color: #fff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.skill-score.score-changed {
+  animation: scoreChange 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scoreChange {
+  0% {
+    transform: translateY(-50%) scale(1);
+  }
+  30% {
+    transform: translateY(-50%) scale(1.4);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.2);
+  }
+  70% {
+    transform: translateY(-50%) scale(1.35);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.skill-bar-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.skill-bar-container.ripple-effect::before {
+  animation: ripple 0.8s ease-out;
+  border: 3px solid rgba(255, 215, 0, 0.8);
+}
+
+.skill-bar[style*="width: 7"],
+.skill-bar[style*="width: 8"],
+.skill-bar[style*="width: 9"],
+.skill-bar[style*="width: 100"] {
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 215, 0, 0.7);
+  animation: highValuePulse 2s ease-in-out infinite;
+}
+
+@keyframes highValuePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 12px rgba(255, 215, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 215, 0, 0.9);
+  }
 }
 
 /* ---------------------------------------------- */
@@ -421,7 +550,6 @@ a {
     rgba(0, 0, 0, 0.3);
 }
 
-
 /* チョークで書いたような質感を追加 */
 .record-btn.stop::before {
   content: "";
@@ -578,27 +706,27 @@ a {
 ============================== */
 .recording-guide {
   position: fixed;
- 
+
   bottom: clamp(160px, 18vh, 260px);
   left: 50%;
   transform: translateX(-50%);
- 
-  padding: 0.8em 1.6em;          
-  border-radius: 2em;            
- 
+
+  padding: 0.8em 1.6em;
+  border-radius: 2em;
+
   background: orange;
   color: #ffffff;
- 
+
   font-size: clamp(18px, 2.2vh, 24px);
   font-weight: 600;
   letter-spacing: 0.05em;
- 
+
   z-index: 5000;
   pointer-events: none;
- 
+
   animation: recordingGuidePulse 1.4s ease-in-out infinite;
 }
- 
+
 /* ふわっと呼吸するアニメーション */
 @keyframes recordingGuidePulse {
   0% {
@@ -789,10 +917,8 @@ a {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.3);
   z-index: 99998; /* z-indexを大幅に上げてキャラクターより確実に前面に表示 */
   display: none;
-  backdrop-filter: blur(2px);
 }
 
 .tutorial-overlay.active {
@@ -807,7 +933,7 @@ a {
   padding: 24px 28px;
   max-width: 420px;
   min-width: 320px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+/*  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);*/
   z-index: 99999; /* z-indexを大幅に上げて最前面に表示 */
   display: none;
   animation: tooltipFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -956,4 +1082,3 @@ a {
     font-size: 15px;
   }
 }
- 

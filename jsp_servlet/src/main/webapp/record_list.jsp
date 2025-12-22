@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>棒グラフ画面</title>
+<title>自己紹介の成長記録</title>
 <link
 	href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap"
 	rel="stylesheet">
@@ -38,7 +38,7 @@
 				</div>
 
 				<!-- タイトル -->
-				<h1 class="title" id="pageTitle">棒グラフ画面</h1>
+				<h1 class="title" id="pageTitle">自己紹介の成長記録</h1>
 				<!-- 凡例 -->
 				<div class="legend">
 					<!-- 各凡例項目にツールチップを追加 -->

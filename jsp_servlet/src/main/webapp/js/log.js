@@ -20,18 +20,23 @@ function renderConversations(conversations) {
     return
   }
 
-  // 各会話ターンを処理
-  conversations.forEach((conv) => {
-    // AIの発言（NPC）を追加
-    if (conv.ai && conv.ai.trim() !== "") {
-      const npcRow = createNPCBubble(conv.ai)
-      logArea.appendChild(npcRow)
-    }
+  conversations.forEach((conv, index) => {
+    // ラリー番号を追加
+    const rallyNumber = document.createElement("div")
+    rallyNumber.className = "rally-number"
+    rallyNumber.textContent = `${index + 1}ラリー目`
+    logArea.appendChild(rallyNumber)
 
-    // ユーザーの発言（ME）を追加
+    // ユーザーの発言（ME）を先に追加
     if (conv.user && conv.user.trim() !== "") {
       const meRow = createUserBubble(conv.user)
       logArea.appendChild(meRow)
+    }
+
+    // AIの発言（NPC）を後に追加
+    if (conv.ai && conv.ai.trim() !== "") {
+      const npcRow = createNPCBubble(conv.ai)
+      logArea.appendChild(npcRow)
     }
   })
 }
