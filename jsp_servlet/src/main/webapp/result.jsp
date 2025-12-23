@@ -14,7 +14,7 @@ String result = (String) request.getAttribute("RESULT");
 <link
 	href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap"
 	rel="stylesheet">
-<link rel="stylesheet" href="css/growth_record_details.css">
+<link rel="stylesheet" href="css/result.css">
 </head>
 
 <body>
@@ -29,8 +29,7 @@ String result = (String) request.getAttribute("RESULT");
 				<div class="left-section">
 					<!-- 上部なきごえ用グラフアイコン -->
 					<div class="left-header">
-						<h1 class="title">シナリオ 雑談</h1>
-						<h2 class="subtitle">総評~~</h2>
+						<h1 class="title">シナリオ 自己紹介</h1>
 						<h3 class="feedback-title">KAIWA NAVIからのフィードバック</h3>
 					</div>
 
@@ -38,29 +37,29 @@ String result = (String) request.getAttribute("RESULT");
 						<div class="feedback-section">
 							<div class="feedback-item">
 								<img src="images/star.png" class="doodle-bullet" alt="星">
-								<p data-role="feedback-comment">自分の感情をある程度言語化できています。</p>
+								<p data-role="feedback-comment">自己認識：<br>自分の感情をある程度言語化できています。</p>
 							</div>
 
 							<div class="feedback-item">
 								<img src="images/arrow.png" class="doodle-bullet" alt="やじるし">
-								<p data-role="feedback-comment">はっきりした話し方で会話の流れも自然です。</p>
+								<p data-role="feedback-comment">気持ちのコントロール:<br>はっきりした話し方で会話の流れも自然です。</p>
 							</div>
 
 							<div class="feedback-item">
 								<img src="images/graph.png" class="doodle-bullet" alt="グラフ">
 								<p data-role="feedback-comment">
-									文脈理解が良好で、相手の意図を理解した発言が多かったです。</p>
+									思いやり:<br>文脈理解が良好で、相手の意図を理解した発言が多かったです。</p>
 							</div>
 
 							<div class="feedback-item">
 								<img src="images/star.png" class="doodle-bullet" alt="星">
-								<p data-role="feedback-comment">落ち着いた発話が多く、会話の安定感がありました。</p>
+								<p data-role="feedback-comment">理解力:<br>落ち着いた発話が多く、会話の安定感がありました。</p>
 							</div>
 
 							<div class="feedback-item">
 								<img src="images/arrow.png" class="doodle-bullet" alt="やじるし">
 								<p data-role="feedback-comment">
-									相手に配慮した返答が見られましたが、もう少し寄り添える余地があります。</p>
+									話す力<br>相手に配慮した返答が見られましたが、もう少し寄り添える余地があります。</p>
 							</div>
 						</div>
 					</div>
@@ -76,25 +75,40 @@ String result = (String) request.getAttribute("RESULT");
 					<img src="${pageContext.request.contextPath}/images/star.png"
 						alt="星" class="doodle-star-top"> <img src="images/arrow.png"
 						alt="やじるし" class="doodle-arrow"> <img src="images/graph.png"
-						alt="グラフ" class="doodle-graph-right"> <img
-						src="images/S.png" alt="Sランク" class="icon-s"> <img
+						alt="グラフ" class="doodle-graph-right">
+					
+					<!-- Fixed rank.png path from absolute to relative -->
+					<img src="images/rank.png" 
+						alt="ランク" class="icon-rank-text">
+					
+					<img
+						src="images/B.png" alt="Sランク" class="icon-s"> <img
 						src="images/line.png" alt="下線" class="icon-underline"> <img
-						src="images/star2.png" alt="星2" class="icon-star2"> <a
+						src="images/star2.png" alt="星2" class="icon-star2">
+					
+					<!-- Fixed log.png path from absolute to relative -->
+					<img src="images/log.png" 
+						alt="ログ" class="icon-log-text">
+					
+					<a
 						href="result?sb=log" class="smile-link"> <img
 						src="images/smile2.png" alt="ログへ" class="icon-smile">
 					</a> <img src="images/magnet.png" alt="マグネット" class="icon-magnet">
-
 
 					<div class="extra-area"></div>
 				</div>
 			</div>
 
 		</div>
-					<div class="bottom-buttons">
-				<a href="result?sb=home">
-					<button name="sb" value="home" class="btn btn-wood">ホームに戻る</button>
-				</a>
-			</div>
+		<!-- Added retry button next to home button -->
+		<div class="bottom-buttons">
+			<a href="result?sb=home">
+				<button name="sb" value="home" class="btn btn-wood">ホームに戻る</button>
+			</a>
+			<a href="${pageContext.request.contextPath}/simulation.jsp">
+				<button class="btn btn-wood btn-retry">リトライ</button>
+			</a>
+		</div>
 	</div>
 
 	<div id="resultDataHolder" data-json='${RESULT_JSON}'></div>
@@ -102,8 +116,7 @@ String result = (String) request.getAttribute("RESULT");
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 	<script>
-  const feedbackData = JSON.parse(`<%=result%>
-		`);
+  const feedbackData = JSON.parse(`<%=result%>`);
 	</script>
 	<script src="js/result.js"></script>
 </body>

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="ja">
- 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/simulation.css">
 </head>
- 
+
 <body>
     <script>
         window.parent.postMessage({ page: "simulation" }, "*");
@@ -20,11 +20,11 @@
             <div class="loading-text" id="loadingText">読み込み中...</div>
         </div>
     </div>
- 
+
     <div class="background-container">
         <img src="${pageContext.request.contextPath}/images/room.png" alt="背景" class="background-image">
     </div>
- 
+
     <div class="main-content">
         <div id="rally-counter" class="rally-counter">
             <div class="compass-container">
@@ -36,7 +36,7 @@
                 </div>
             </div>
         </div>
- 
+
         <div id="score-meter" class="score-meter-container">
             <div class="skill-bars">
                 <div class="skill-item">
@@ -46,7 +46,7 @@
                         <div class="skill-score" id="selfUnderstandingScore">0</div>
                     </div>
                 </div>
- 
+
                 <div class="skill-item">
                     <div class="skill-label">緊張度</div>
                     <div class="skill-bar-container">
@@ -54,7 +54,7 @@
                         <div class="skill-score" id="comprehensionScore">0</div>
                     </div>
                 </div>
- 
+
                 <div class="skill-item">
                     <div class="skill-label">思いやり</div>
                     <div class="skill-bar-container">
@@ -62,7 +62,7 @@
                         <div class="skill-score" id="empathyScore">0</div>
                     </div>
                 </div>
- 
+
                 <div class="skill-item">
                     <div class="skill-label">相手の感情</div>
                     <div class="skill-bar-container emotion-display">
@@ -71,29 +71,29 @@
                 </div>
             </div>
         </div>
- 
+
         <a href="${pageContext.request.contextPath}/simulation">
-            <button id="menuButton" class="menu-button">
+            <!--  <button id="menuButton" class="menu-button">
                 <span class="menu-icon">|||</span>
-            </button>
+            </button>-->
         </a>
- 
+
         <div class="character-container" id="characterContainer">
             <img src="/placeholder.svg" alt="AIキャラ" class="character-image">
         </div>
- 
+
         <div class="user-message-box" id="userMessageBox">
             <div class="user-name">あなた</div>
             <div class="user-content" id="transcript">...</div>
         </div>
- 
+
         <div id="message-box" class="message-box">
             <div class="speaker-name" id="speakerName">AI</div>
             <div class="message-content" id="reply">
                 会話を開始してください...
             </div>
         </div>
- 
+
         <div id="recording-controls" class="recording-controls">
             <button class="record-btn start" onclick="chatInterface.startRecording()">
                 <svg class="mic-icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve">
@@ -119,14 +119,14 @@
 		<div id="recordingGuide" class="recording-guide" style="display: none;">
 		  録音中
 		</div>
- 
+
         <div class="transcription-confirmation" id="transcriptionConfirmation" style="display: none;">
             <div class="confirmation-overlay" onclick="chatInterface.confirmTranscription()"></div>
             <div class="confirmation-box">
                 <h3>発話内容を確認してください</h3>
                 <textarea class="confirmed-text" id="confirmedText" readonly
                     style="width: 100%; height: 120px; font-size: 18px; padding: 10px;"></textarea>
- 
+
                 <div class="confirmation-actions">
                     <button class="confirm-btn retry" onclick="chatInterface.retryRecording()">🎙️
                         録音し直す</button>
@@ -136,7 +136,7 @@
                 <p class="confirm-hint">画面のどこでもクリックで送信できます</p>
             </div>
         </div>
- 
+
         <div id="tutorial-overlay" class="tutorial-overlay">
             <div id="tutorial-tooltip" class="tutorial-tooltip">
                 <div class="tutorial-header">
@@ -147,7 +147,7 @@
                     チュートリアルのテキストがここに表示されます</div>
             </div>
         </div>
- 
+
         <form id="resultForm" action="${pageContext.request.contextPath}/simulation" method="post"
             style="display: none;">
             <input type="hidden" name="action" value="save_result">
@@ -164,5 +164,5 @@
     <script src="${pageContext.request.contextPath}/js/simulation.js"></script>
     <script src="${pageContext.request.contextPath}/js/tutorial.js"></script>
 </body>
- 
+
 </html>

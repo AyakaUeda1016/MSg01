@@ -12,87 +12,84 @@
 
 /* アイコンの白い四角 */
 .icon-container {
-    margin-right: 8px;
-    background: #ffffff;
-    border-radius: 12px;
-    font-size: 50px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-right: 8px;
+  border-radius: 12px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  /* アイコンに縁を追加 */
+  border: 8px solid #ffffff;
 }
 
 /* 数字ボタン */
 .number-btn {
-    margin: 0 8px;
-    width: 64px;
-    height: 64px;
-    background: #ffffff;
-    border: none;
-    border-radius: 12px;
-    font-size: 23px;
-    font-weight: 600;
-    font-family: "Murecho", sans-serif;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 8px;
+  width: 64px;
+  height: 64px;
+  background: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 23px;
+  font-weight: 600;
+  font-family: "Murecho", sans-serif;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .number-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .number-btn.active {
-    background: #e07856;
-    color: #ffffff;
+  background: #e07856;
+  color: #ffffff;
 }
 
 /* ========== 4. マイクテスト / 準備完了 ボタン ========== */
 
 /* オレンジボタン（マイクテスト） */
 .btn-orange {
-    color: #ffffff;
-    background: url("images/ki.png") center / cover no-repeat;
-    background-color: #e07856;
-    box-shadow:
-        0 6px 0 rgba(180, 90, 60, 0.6),
-        0 8px 14px rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  background: url("images/ki.png") center / cover no-repeat;
+  background-color: #e07856;
+  box-shadow: 0 6px 0 rgba(180, 90, 60, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
 }
 
 .btn-orange:hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 .btn-orange:active {
-    transform: translateY(2px);
-    box-shadow:
-        0 4px 0 rgba(180, 90, 60, 0.6),
-        0 6px 10px rgba(0, 0, 0, 0.25);
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(180, 90, 60, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* ライトオレンジボタン（準備完了） */
 .btn-light-orange {
-    color: #2b1d0f;
-    background: url("images/ki.png") center / cover no-repeat;
-    background-color: #e8b878;
-    box-shadow:
-        0 6px 0 rgba(200, 150, 90, 0.6),
-        0 8px 14px rgba(0, 0, 0, 0.25);
+  color: #2b1d0f;
+  background: url("images/ki.png") center / cover no-repeat;
+  background-color: #e8b878;
+  box-shadow: 0 6px 0 rgba(200, 150, 90, 0.6), 0 8px 14px rgba(0, 0, 0, 0.25);
 }
 
 .btn-light-orange:hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 .btn-light-orange:active {
-    transform: translateY(2px);
-    box-shadow:
-        0 4px 0 rgba(200, 150, 90, 0.6),
-        0 6px 10px rgba(0, 0, 0, 0.25);
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(200, 150, 90, 0.6), 0 6px 10px rgba(0, 0, 0, 0.25);
 }
 
 a {
-    text-decoration: none;
-    color: inherit;
+  text-decoration: none;
+  color: inherit;
 }
 
 .btn-container {
@@ -101,38 +98,40 @@ a {
   margin-top: 30px;
   margin-left: 100px;
 }
+
 /* ========== 6. レスポンシブ（お好みで調整可） ========== */
 @media (max-width: 1024px) {
-    .blackboard {
-        width: 95%;
-        padding-top: 10vh;
-        padding-left: 8vw;
-        padding-right: 4vw;
-    }
+  .blackboard {
+    width: 95%;
+    padding-top: 10vh;
+    padding-left: 8vw;
+    padding-right: 4vw;
+  }
 
-    .control-row {
-        max-width: 90%;
-    }
+  .control-row {
+    max-width: 90%;
+  }
 
-    .icon-container {
-        width: 64px;
-        height: 64px;
-        font-size: 36px;
-    }
+  .icon-container {
+    width: 64px;
+    height: 64px;
+    /* レスポンシブでのパディング調整 */
+    padding: 10px;
+  }
 
-    .number-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 16px;
-    }
+  .number-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
 
-    .btn {
-        padding: 14px 40px;
-        font-size: 18px;
-    }
+  .btn {
+    padding: 14px 40px;
+    font-size: 18px;
+  }
 
-    .btn-wood {
-        bottom: 20px;
-        left: 20px;
-    }
+  .btn-wood {
+    bottom: 20px;
+    left: 20px;
+  }
 }

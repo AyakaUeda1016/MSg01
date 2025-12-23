@@ -90,8 +90,8 @@ String result = (String) request.getAttribute("RESULT");
 
 		</div>
 					<div class="bottom-buttons">
-				<a href="growth_record">
-					<button name="sb" value="" class="btn btn-wood">戻る</button>
+				<a href="growth_record.jsp">
+					<button name="sb" value="home" class="btn btn-wood">戻る</button>
 				</a>
 			</div>
 	</div>
