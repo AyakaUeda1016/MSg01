@@ -110,6 +110,10 @@ public class ResultServlet extends HttpServlet {
 			session.removeAttribute("SCENARIOID");
 			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
 			rd.forward(request, response);
+		}else if(sb.equals("retry")) {
+			session.removeAttribute("SCENARIOID");
+			RequestDispatcher rd = request.getRequestDispatcher("./register.jsp");
+			rd.forward(request, response);
 		}
 	}
 
