@@ -105,8 +105,8 @@ String result = (String) request.getAttribute("RESULT");
 			<a href="result?sb=home">
 				<button name="sb" value="home" class="btn btn-wood">ホームに戻る</button>
 			</a>
-			<a href="${pageContext.request.contextPath}/simulation.jsp">
-				<button class="btn btn-wood btn-retry">リトライ</button>
+			<a href="${pageContext.request.contextPath}/result?sb=retry">
+				<button class="btn btn-wood btn-retry">次の人へ</button>
 			</a>
 		</div>
 	</div>

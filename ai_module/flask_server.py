@@ -122,7 +122,7 @@ CORS(app)
 
 # ==== OpenAI設定 ====
 client = OpenAI(
-    api_key=""  # ★実運用時は自分のキーを設定してください
+    api_key="タケチンセンのAPIキー"  # ★実運用時は自分のキーを設定してください
 )
 
 # ==== VoiceVox設定（ローカルEngine前提） ====
@@ -1096,7 +1096,11 @@ def conversation_api():
                     print("[EVAL READ ERROR]", read_err)
 
                 conversation_log_json = json.dumps(text_only, ensure_ascii=False)
+                userid = request.form.get("userid")
 
+                if userid is None:
+                    raise Exception("userid がセッションに存在しません")
+                
                 conn = get_db_connection()
                 with conn:
                     with conn.cursor() as cur:
@@ -1113,7 +1117,7 @@ def conversation_api():
                         cur.execute(
                             sql,
                             (
-                                1,
+                                userid,
                                 CURRENT_SCENARIO_ID,
                                 datetime.now(),
                                 result_data_json,

@@ -42,7 +42,7 @@ window.parent.postMessage({ page: "normal" }, "*");
             <div class="buttons-container">
                 <!-- Updated button structure with description placeholders -->
                 <div class="button-wrapper">
-                    <a href="home?sb=scenario" class="menu-button simulation" data-description="学習シミュレーションを行います">
+                    <a href="home?sb=register" class="menu-button simulation" data-description="学習シミュレーションを行います">
                         <img src="images/sticky note_red.png" alt="付箋" class="sticky-note">
                         <span class="button-text">シミュレーション</span>
                         <img src="images/red.png" alt="赤線" class="red-underline">

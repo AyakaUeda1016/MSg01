@@ -61,6 +61,8 @@ public class HomeServlet extends HttpServlet {
 			userid = (Integer)session.getAttribute("USERID");
 		}
 		
+		System.out.println(userid);
+		
 		if(sb.equals("scenario")) {
 			List<Scenario> list = logic.findScenario();
 			request.setAttribute("LIST", list);
@@ -76,6 +78,9 @@ public class HomeServlet extends HttpServlet {
 			rd.forward(request, response);
 		}else if(sb.equals("home")) {
 			RequestDispatcher rd = request.getRequestDispatcher("./home.jsp");
+			rd.forward(request, response);
+		}else if(sb.equals("register")) {
+			RequestDispatcher rd = request.getRequestDispatcher("./register.jsp");
 			rd.forward(request, response);
 		}
 		

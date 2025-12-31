@@ -391,6 +391,9 @@ async function sendAudioToFlask(blob, text) {
   const fd = new FormData()
   fd.append("file", blob, "audio.webm")
   if (text) fd.append("manual_transcript", text)
+  
+  // ★ userid を追加
+  fd.append("userid", window.userid)
 
   try {
     const res = await fetch("http://127.0.0.1:5000/api/conversation", {

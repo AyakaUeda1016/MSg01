@@ -7,6 +7,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import model.MemberLogic;
 
 	@WebServlet("/register")
 	public class RegisterServlet extends HttpServlet {
@@ -20,29 +23,47 @@ import javax.servlet.http.HttpServletResponse;
 
 	        // ▼ JSP から送られてきたデータを受け取る
 	        String username = request.getParameter("username");
-	        String id = request.getParameter("id");
-	        String birthdate = request.getParameter("birthdate");
-	        String gender = request.getParameter("gender");
-	        String password = request.getParameter("password");
+	        String sb = request.getParameter("sb");
+	        int userid = 0;
+	        MemberLogic logic = new MemberLogic();
+	        
+	        /**セッションの開始(セッションを使うときは必ず書く)**/
+			HttpSession session = request.getSession(false);
+			/*
+			 * request.getSession(false);
+			 * セッションが存在していなければnullを返す
+			 * セッションがあるかないか判断するために使用
+			 */
+			if(null == session) {
+				session = request.getSession(true);
+				/*
+				 * request.getSession(true);
+				 * セッションを新しく発行する
+				 */
+			}
 
-	        // ▼ 必須チェック（必要なら拡張） 
-	        if (username == null || username.isEmpty() ||
-	            id == null || id.isEmpty() ||
-	            password == null || password.isEmpty()) {
+	        
+	        
 
-	            request.setAttribute("errorMessage", "入力されていない項目があります。");
-	            request.getRequestDispatcher("register.jsp").forward(request, response);
-	            return;
+	        if("register".equals(sb)) {
+	        	// ▼ 必須チェック（必要なら拡張） 
+	        	if (username == null || username.isEmpty()) {
+		            request.setAttribute("errorMessage", "名前が入力されていません");
+		            request.getRequestDispatcher("register.jsp").forward(request, response);
+		            return;
+		        }
+	        	// ▼ 本来は DB に保存する（今は仮登録）
+		        userid = logic.insertMember(username);
+		        
+
+		        // ▼ セッションにユーザー名を保存してホーム画面へ
+		        session.setAttribute("USERID", userid);
+
+		        // ▼ ホーム画面へ遷移
+		        request.getRequestDispatcher("./home?sb=scenario").forward(request, response);
+	        }else if("back".equals(sb)) {
+	        	request.getRequestDispatcher("./home?sb=home").forward(request, response);
 	        }
-
-	        // ▼ 本来は DB に保存する（今は仮登録）
-	        // TODO: DB 保存処理を入れる（必要なら書きます）
-
-	        // ▼ セッションにユーザー名を保存してホーム画面へ
-	        request.getSession().setAttribute("id", id);
-
-	        // ▼ ホーム画面へ遷移
-	        request.getRequestDispatcher("home.jsp").forward(request, response);
 	    }
 	    
 	    /**

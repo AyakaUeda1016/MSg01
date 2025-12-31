@@ -1,7 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="ja">
-
+<%
+	Integer userid = (Integer)session.getAttribute("USERID");
+%>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -160,7 +162,9 @@
     
     <script>
         window.contextPath = "${pageContext.request.contextPath}";
+        window.userid = <%= userid != null ? userid : "null" %>;
     </script>
+    
     <script src="${pageContext.request.contextPath}/js/simulation.js"></script>
     <script src="${pageContext.request.contextPath}/js/tutorial.js"></script>
 </body>
