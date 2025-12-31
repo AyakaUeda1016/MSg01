@@ -2,7 +2,10 @@ package dao.impl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import dao.MemberDAO;
 import model.Member;
@@ -26,7 +29,38 @@ public class MemberDAOImpl implements MemberDAO{
 	@Override
 	public int insertMemberForShow(Member member) {
 		int userid = 0;
-		//展示用のユーザー登録。登録項目は名前だけ。
+		String sql = "INSERT INTO member_MS(name) VALUES(?)";
+		Connection con = null;
+		PreparedStatement prst = null;
+		ResultSet rs = null;
+		try {
+			con = getConnection();
+			prst = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+			prst.setString(1, member.getName());
+			int result = prst.executeUpdate();
+			if (result == 1) {
+				rs = prst.getGeneratedKeys();
+				if (rs.next()) {
+					userid = rs.getInt(1);
+				}
+			}
+		}catch(SQLException e){
+			e.printStackTrace();
+		}finally {
+			try {
+				if(rs != null) {
+					rs.close();
+				}
+				if(prst != null) {
+					prst.close();
+				}
+				if(con != null) {
+					con.close();
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return userid;
 	}
 

@@ -1,6 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     const birthdateInput = document.getElementById('birthdate');
+    const nameInput = document.getElementById("username");
     let isProcessing = false;
+    let warned = false;
+     // username が存在しないページでは何もしない
+	if (!nameInput) return;
+    
+    nameInput.addEventListener("input", function(){
+		if(nameInput.value.length > 6){
+			if(!warned){
+				alert("ユーザー名は6文字までにしてください");
+				warned = true;
+			}
+			nameInput.value = nameInput.value.slice(0,6);
+		}else{
+			warned = false;
+		}
+	})
+    
     
     birthdateInput.addEventListener('input', function(e) {
         if (isProcessing) return;
@@ -55,4 +72,5 @@ document.addEventListener('DOMContentLoaded', function() {
             eyeOpen.style.display = 'block';
         }
     });
+    
 });

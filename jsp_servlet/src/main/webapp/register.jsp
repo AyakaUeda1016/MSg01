@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="css/register.css">
 </head>
 <body>
+	<script>
+	window.parent.postMessage({ page: "normal" }, "*");
+	</script>
+	
     <div class="container">
         <div class="card">
             <h1 class="title">新規登録</h1>
@@ -22,8 +26,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn btn-back" onclick="history.back()">戻る</button>
-                    <button type="submit" class="btn btn-submit">作成</button>
+                    <button type="submit" class="btn btn-back" name="sb" value="back">戻る</button>
+                    <button type="submit" class="btn btn-submit" name="sb" value="register">作成</button>
                 </div>
             </form>
         </div>
